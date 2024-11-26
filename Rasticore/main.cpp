@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <cstdio>
 #include <GL/glew.h>
 #include <cstring>
@@ -15,9 +16,12 @@
 #include "rasti_models.h"
 #include "objload.h"
 
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+
 #undef main
 
 // Test models ids
@@ -164,10 +168,10 @@ void CreateMeshes(objl::Loader* ldr, rasticore::RastiCoreRender* r, int of, rast
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		green.genMipmap();
-
+		
 		rasticore::Texture2DBindless bndl = rasticore::Texture2DBindless(green);
 		bndl.MakeResident();
-
+		
 		r->newModel(of + i, myModelVao, pr, cm.Indices.size(), GL_TRIANGLES, bndl, am);
 		r->BindActiveModel(of + i);
 		//std_bmp_empty_texture = Texture2D(0, 1, 1, GL_RGBA, GL_RGBA, GL_TEXTURE1);
@@ -179,8 +183,10 @@ void CreateMeshes(objl::Loader* ldr, rasticore::RastiCoreRender* r, int of, rast
 			cModel->model_count = ldr->LoadedMeshes.size();
 		}
 
+		/*
 		if (cm.MeshMaterial.map_bump != "")
 		{
+			
 			int bmp_x, bmp_y, bmp_chn;
 			void* bmp_data = LoadImageData(cm.MeshMaterial.map_bump.c_str(), false, &bmp_chn, &bmp_x, &bmp_y);
 
@@ -192,6 +198,7 @@ void CreateMeshes(objl::Loader* ldr, rasticore::RastiCoreRender* r, int of, rast
 			bmp.genMipmap();
 			//r->md->std_normalMap = bmp;
 		}
+		*/
 
 	}
 }
@@ -201,7 +208,7 @@ int main(int argc, char* argv[])
 	MAPPEDFILE a = rasticore::MapFile("rasticore_shdrVertex.glsl");
 
 	rasticore::RsMatrixAllocator MatrixGen = rasticore::RsMatrixAllocator(4);
-
+	
 	glm::mat4* mat0 = (glm::mat4*)MatrixGen.AllocMatrix();
 	glm::mat4* mat1 = (glm::mat4*)MatrixGen.AllocMatrix();
 
@@ -233,8 +240,8 @@ int main(int argc, char* argv[])
 	_program_n.programAddShader(_shdr_fg_n.id);
 	_program_n.programCompile();
 
-	_program_n.use();
-	glUniform1i(glGetUniformLocation(_program_n.id, "image0"), 0); // BindSampler
+	//_program_n.use();
+	//glUniform1i(glGetUniformLocation(_program_n.id, "image0"), 0); // BindSampler
 
 	CreateMeshes(&ldr, &_r, 5, _program_n, 5000, 0);
 
@@ -268,6 +275,18 @@ int main(int argc, char* argv[])
 		for (int ii = 0; ii < 7; ii++)
 			_r.newObject(5+ii, scale(translate(mat4(1.0f), vec3(3.0f * i - 15.0f, 0.0f, 0.0f)), vec3(3.0f)));
 	}
+
+	//stbi_set_flip_vertically_on_load(1);
+	rasticore::Image ld_image = rasticore::Image("falka.png", 0);
+
+	PBYTE ld_image_block = new BYTE[3 * 800 * 800];
+	ld_image.CopyImageBlock(400, 400, 800, 800, ld_image_block);
+
+	//stbi_write_png("write.png", 200, 200, 3, ld_image_block, 200*3);
+	auto _tx = rasticore::Texture2D(ld_image_block, 800, 800, GL_RGB, GL_RGBA32F);
+	_tx.genMipmap();
+	auto _txb = rasticore::Texture2DBindless(_tx);
+	_txb.MakeResident();
 	
 
 	//_r.SetObjectMatrix(0, translate(mat4(1.0f), vec3(15.0f, 0.0f, 15.0f)));
@@ -277,6 +296,7 @@ int main(int argc, char* argv[])
 	bool s = false;
 
 	int cntr = 0;
+
 
 	RS_ENABLE_FRATURE(GL_DEPTH_TEST);
 	RS_BACKGROUND_CLEAR_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
@@ -295,6 +315,7 @@ int main(int argc, char* argv[])
 				{
 					_r.BindActiveModel(5 + i);
 					_r.DisableObjectNoSync(cntr);
+					_r.md->std_texture2d = _txb;
 				}
 			}
 			else

@@ -944,7 +944,6 @@ rasticore::Texture2DBindless::Texture2DBindless()
 rasticore::Texture2DBindless::Texture2DBindless(Texture2D tex)
 {
 	glBindTexture(GL_TEXTURE_2D, tex.id);
-
 	handle = glGetTextureHandleARB(tex.id);
 }
 

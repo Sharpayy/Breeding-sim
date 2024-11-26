@@ -1,5 +1,29 @@
 #pragma once
 #include <Windows.h>
+#include <cstring>
+#include <cstdlib>
+#include <cstdint>
+
+#include <stb_image.h>
+
+namespace rasticore
+{
+	class Image
+	{
+	public:
+		uint8_t* data;
+		uint32_t x_, y_;
+		uint32_t channels;
+
+		Image(const char* filename, int comps);
+		~Image();
+
+		void WritePixel(uint32_t x, uint32_t y, uint32_t d);
+		uint32_t ReadPixel(uint32_t x, uint32_t y);
+
+		void CopyImageBlock(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t* d);
+	};
+}
 
 typedef struct RS_MAPPEDFILE
 {
