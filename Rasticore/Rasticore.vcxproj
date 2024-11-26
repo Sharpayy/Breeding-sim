@@ -142,6 +142,7 @@
     <ClInclude Include="objload.h" />
     <ClCompile Include="rasti_adv.cpp" />
     <ClCompile Include="rasti_window.cpp" />
+    <None Include="..\.gitignore" />
     <None Include="rasticore_fragment_shader.glsl">
       <FileType>Document</FileType>
     </None>

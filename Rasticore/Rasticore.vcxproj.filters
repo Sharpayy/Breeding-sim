@@ -64,5 +64,8 @@
     <None Include="rasticore_fragment_shader.glsl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\.gitignore">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
