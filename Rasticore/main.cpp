@@ -261,7 +261,7 @@ int main(int argc, char* argv[])
 	// TODO: do this better and put this inside one class 
 
 	//Camera _g_camera = Camera(vec3(5.0f, 0.0f, 5.0f));
-	mat4 _g_camera = lookAt(vec3(0.5f, 3.0f, 7.0f), (vec3(0.0f, 3.0f, 0.0f)), vec3(0.0f, 1.0f, 0.0f));
+	mat4 _g_camera = lookAt(vec3(0.5f, 3.0f, 15.0f), (vec3(0.0f, 3.0f, 0.0f)), vec3(0.0f, 1.0f, 0.0f));
 
 	_r.setCameraMatrix(_g_camera);
 	_r.setProjectionMatrix(_win.GetProjectionMatrix(radians(90.0f)));
@@ -275,18 +275,6 @@ int main(int argc, char* argv[])
 		for (int ii = 0; ii < 7; ii++)
 			_r.newObject(5+ii, scale(translate(mat4(1.0f), vec3(3.0f * i - 15.0f, 0.0f, 0.0f)), vec3(3.0f)));
 	}
-
-	//stbi_set_flip_vertically_on_load(1);
-	rasticore::Image ld_image = rasticore::Image("falka.png", 0);
-
-	PBYTE ld_image_block = new BYTE[3 * 800 * 800];
-	ld_image.CopyImageBlock(400, 400, 800, 800, ld_image_block);
-
-	//stbi_write_png("write.png", 200, 200, 3, ld_image_block, 200*3);
-	auto _tx = rasticore::Texture2D(ld_image_block, 800, 800, GL_RGB, GL_RGBA32F);
-	_tx.genMipmap();
-	auto _txb = rasticore::Texture2DBindless(_tx);
-	_txb.MakeResident();
 	
 
 	//_r.SetObjectMatrix(0, translate(mat4(1.0f), vec3(15.0f, 0.0f, 15.0f)));
@@ -296,6 +284,7 @@ int main(int argc, char* argv[])
 	bool s = false;
 
 	int cntr = 0;
+
 
 
 	RS_ENABLE_FRATURE(GL_DEPTH_TEST);
@@ -315,7 +304,6 @@ int main(int argc, char* argv[])
 				{
 					_r.BindActiveModel(5 + i);
 					_r.DisableObjectNoSync(cntr);
-					_r.md->std_texture2d = _txb;
 				}
 			}
 			else
@@ -339,7 +327,6 @@ int main(int argc, char* argv[])
 		for (int i = 0; i < 7; i++)
 		{
 			_r.UpdateShaderIdSpace(5+i);
-			
 		}
 		_r.SetObjectMatrix(5, translate(mat4(1.0f), vec3(0.0f, 0.0f, (sin(t) + 1.0f) * 10.0f - 5.0f)));
 

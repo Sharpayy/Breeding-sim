@@ -388,6 +388,7 @@ void rasticore::RastiCoreRender::deleteObject(uint32_t m_id, RENDER_OBJECT_ID o_
 	//NotifyFreeIdx(o_id, obj->matrixId);
 	NotifyFreeIdx(o_id, cObjectIdx);
 	md->objAmount--;
+	MatrixAlloc.FreeMatrix((LPVOID)GetMdObject(cObjectIdx));
 	//md->objects.del_last();
 	//md->objAmount--;
 	//poolAllocator.freeAlignedMemory(obj);
