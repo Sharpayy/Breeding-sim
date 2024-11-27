@@ -1,0 +1,67 @@
+#pragma once
+#include <unordered_set>
+#include <queue>
+#include <unordered_map>
+#include <vector>
+
+#define SQRT2 sqrt(2)
+
+class Astar {
+public:
+
+	struct point {
+		int x, y;
+
+		bool operator==(const point& other) const;
+	};
+private:
+
+	struct queueData {
+		float f;
+		point p;
+	};
+
+	struct compareQueueData {
+		bool operator()(queueData const& p1, queueData const& p2);
+		
+	};
+
+	struct tileData {
+		float x, y;
+		point parrent;
+	};
+public:
+
+	Astar();
+	~Astar();
+	
+	void addBlockade(point p);
+
+	std::vector<point> findPath(point s, point e);
+
+	void clearCollisionBlocks();
+private:
+
+	double ManhattanDistance(point s, point e);
+
+	float DiagonalDistance(point s, point e, float D1);
+
+	float EuclideanDistance(point s, point e);
+
+	bool tileIsBlocked(point p);
+
+	bool tileExist(point p);
+
+	void calculateTilesWeight(point p, point e, std::priority_queue<queueData, std::vector<queueData>, compareQueueData>& lCostQueue);
+
+	point findNewLowestPoint(std::priority_queue<queueData, std::vector<queueData>, compareQueueData>& lCostQueue);
+
+	struct pointHash {
+		std::size_t operator()(const point& p) const;
+	};
+
+	std::unordered_map<point, tileData, pointHash> tiles;
+	std::unordered_set<point, pointHash> collisionBlocks;
+
+};
+
