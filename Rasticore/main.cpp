@@ -16,6 +16,8 @@
 #include "rasti_models.h"
 #include "objload.h"
 
+#include "MapRenderer.cpp"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -243,7 +245,7 @@ int main(int argc, char* argv[])
 	//_program_n.use();
 	//glUniform1i(glGetUniformLocation(_program_n.id, "image0"), 0); // BindSampler
 
-	CreateMeshes(&ldr, &_r, 5, _program_n, 5000, 0);
+	CreateMeshes(&ldr, &_r, 5, _program_n, 15, 0);
 
 	// TODO: do this better and put this inside one class 
 	rasticore::Buffer<GL_ARRAY_BUFFER> _cube_model_vbo = rasticore::Buffer<GL_ARRAY_BUFFER>(sizeof(rasticore::cube::vertex), rasticore::cube::vertex, GL_STATIC_DRAW);
@@ -268,13 +270,16 @@ int main(int argc, char* argv[])
 	_r.UpdateShaderData();
 	
 
-	_r.newModel(RASTICORE_MODEL_CUBE, _cube_vb, _program_n, sizeof(rasticore::cube::indice) / 4, GL_TRIANGLES, rasticore::Texture2DBindless(), 10001);
+	_r.newModel(RASTICORE_MODEL_CUBE, _cube_vb, _program_n, sizeof(rasticore::cube::indice) / 4, GL_TRIANGLES, rasticore::Texture2DBindless(), 10);
 
 	for (int i = 0; i < 10; i++)
 	{
 		for (int ii = 0; ii < 7; ii++)
 			_r.newObject(5+ii, scale(translate(mat4(1.0f), vec3(3.0f * i - 15.0f, 0.0f, 0.0f)), vec3(3.0f)));
 	}
+
+	rasticore::Image mapImg = rasticore::Image("mm.png", 4);
+	GameMap gm = GameMap(mapImg, 4);
 	
 
 	//_r.SetObjectMatrix(0, translate(mat4(1.0f), vec3(15.0f, 0.0f, 15.0f)));

@@ -20,6 +20,8 @@ void rasticore::UnmapFile(MAPPEDFILE mf)
 rasticore::Image::Image(const char* filename, int comps)
 {
 	data = stbi_load(filename, (int*)&x_, (int*)&y_, (int*)&channels, comps);
+	if (comps != 0)
+		channels = comps;
 }
 
 rasticore::Image::~Image()

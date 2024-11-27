@@ -8,13 +8,11 @@ class MapChunk
 public:
 	rasticore::Texture2DBindless txb;
 	rasticore::Texture2D tx;
-	STACK<void*> units;
 
 	MapChunk()
 	{
 		tx = rasticore::Texture2D();
 		txb = rasticore::Texture2DBindless(tx);
-		units = STACK<void*>(8);
 	}
 
 	void SetTexture(rasticore::Texture2D tex)
@@ -27,7 +25,6 @@ public:
 	{
 		tx = tex;
 		txb = rasticore::Texture2DBindless(tx);
-		units = STACK<void*>(8);
 	}
 };
 
@@ -39,7 +36,8 @@ public:
 
 	uint32_t blk;
 
-	rasticore::VertexBuffer rChunkVbo;
+	rasticore::VertexBuffer rChunkVao;
+	rasticore::Buffer<GL_ARRAY_BUFFER> rChunkVbo;
 
 	MapChunk* aChunkArray;
 
@@ -56,14 +54,37 @@ public:
 		blk = blocks;
 
 		aChunkArray = new MapChunk[blk*blk];
+		uint8_t* img_buffer = new uint8_t[pChunkSizeX * pChunkSizeY * 4];
+
+		float plane_vtx[] = {
+		
+				-0.5f, -0.5f, 0.0f,
+				-0.5f, 0.5f, 0.0f,
+				0.5, -0.5f, 0.0f,
+				0.5f, 0.5f, 0.0f
+		};
+
+		rChunkVbo = rasticore::Buffer<GL_ARRAY_BUFFER>(sizeof(plane_vtx), plane_vtx, GL_STATIC_DRAW);
+		rChunkVao = rasticore::VertexBuffer();
+		rChunkVao.bind();
+
+		rChunkVao.bind();
+		rChunkVao.addAttrib(GL_FLOAT, 0, 3, 12, 0);
+		rChunkVao.enableAttrib(0);
+		
 
 		for (int y = 0; y < blk; y++)
 		{
 			for (int x = 0; x < blk; x++)
 			{
-				
+				rasticore::Texture2D _tx;
+				mapImg.CopyImageBlock(x * pChunkSizeX, y * pChunkSizeY, pChunkSizeX, pChunkSizeY, img_buffer);
+				_tx = rasticore::Texture2D(img_buffer, pChunkSizeX, pChunkSizeY, GL_RGBA, GL_RGBA8);
+				aChunkArray[blk * y + x] = MapChunk(_tx);
 			}
 		}
+
+		delete[] img_buffer;
 
 	}
 
