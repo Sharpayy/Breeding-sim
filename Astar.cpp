@@ -6,16 +6,8 @@ bool Astar::point::operator==(const point& other) const {
 	return x == other.x && y == other.y;
 }
 
-//struct point {
-//	int x, y;
-//
-//	bool operator==(const point& other) const {
-//		return x == other.x && y == other.y;
-//	}
-//};
-
 bool Astar::compareQueueData::operator()(queueData const& p1, queueData const& p2) {
-	return p1.f >= p2.f;
+	return p1.f > p2.f;
 }
 
 Astar::Astar() = default;
@@ -81,9 +73,8 @@ bool Astar::tileExist(point p) {
 //, float (*operation)(point, point) = EuclideanDistance
 void Astar::calculateTilesWeight(point p, point e, std::priority_queue<queueData, std::vector<queueData>, compareQueueData>& lCostQueue) {
 	int y, x;
-	float cs, ce;
-	point c, lp = p;
-	tileData lpD;
+	float cs, ce, f;
+	point c;
 	for (y = p.y - 1; y <= p.y + 1; y++) {
 		for (x = p.x - 1; x <= p.x + 1; x++) {
 			c = point{ x, y };
@@ -92,17 +83,20 @@ void Astar::calculateTilesWeight(point p, point e, std::priority_queue<queueData
 			ce = DiagonalDistance(c, e);
 
 			if (!tileExist(c)) {
+				f = cs + ce;
 				tiles[c].x = cs + tiles[p].x;
-				tiles[c].y = cs + ce;
+				tiles[c].y = f;
 				tiles[c].parrent = p;
-				lCostQueue.push({ cs + ce, c });
+				lCostQueue.push(queueData{ f , c });
 			}
 
 			//ADD THIS FOR BETTER PATHS
 			else if (cs + tiles.at(p).x < tiles.at(c).x) {
 				tiles.at(c).x = cs + tiles.at(p).x;
+				tiles.at(c).y = tiles.at(c).x + ce;
 				tiles.at(c).parrent = p;
-				lCostQueue.push({ cs + ce, c });
+				//lCostQueue.push({ cs + ce, c });
+				lCostQueue.push({ cs + tiles.at(p).x + ce, c });
 			}
 		}
 	}
