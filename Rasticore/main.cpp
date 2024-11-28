@@ -207,15 +207,6 @@ void CreateMeshes(objl::Loader* ldr, rasticore::RastiCoreRender* r, int of, rast
 
 int main(int argc, char* argv[])
 {
-	MAPPEDFILE a = rasticore::MapFile("rasticore_shdrVertex.glsl");
-
-	rasticore::RsMatrixAllocator MatrixGen = rasticore::RsMatrixAllocator(4);
-	
-	glm::mat4* mat0 = (glm::mat4*)MatrixGen.AllocMatrix();
-	glm::mat4* mat1 = (glm::mat4*)MatrixGen.AllocMatrix();
-
-	MatrixGen.FreeMatrix(mat1);
-
 	rasticore::RastiCoreWindow _win = rasticore::RastiCoreWindow("Rasticore test!", 800, 800, SDL_WINDOW_OPENGL);
 	_win.glCreateContext();
 
@@ -223,11 +214,7 @@ int main(int argc, char* argv[])
 
 
 
-
 	rasticore::RastiCoreRender _r = rasticore::RastiCoreRender(100);
-
-	objl::Loader ldr = objl::Loader();
-	ldr.LoadFile("girl OBJ.obj");
 
 	MAPPEDFILE _t_shader_file = rasticore::MapFile("rasticore_vertex_shader.glsl");
 	rasticore::Shader<GL_VERTEX_SHADER> _shdr_vt_n = rasticore::Shader<GL_VERTEX_SHADER>((char*)_t_shader_file.data);
@@ -242,55 +229,27 @@ int main(int argc, char* argv[])
 	_program_n.programAddShader(_shdr_fg_n.id);
 	_program_n.programCompile();
 
-	//_program_n.use();
+	_program_n.use();
 	//glUniform1i(glGetUniformLocation(_program_n.id, "image0"), 0); // BindSampler
 
-	CreateMeshes(&ldr, &_r, 5, _program_n, 15, 0);
-
-	// TODO: do this better and put this inside one class 
-	rasticore::Buffer<GL_ARRAY_BUFFER> _cube_model_vbo = rasticore::Buffer<GL_ARRAY_BUFFER>(sizeof(rasticore::cube::vertex), rasticore::cube::vertex, GL_STATIC_DRAW);
-	rasticore::Buffer<GL_ELEMENT_ARRAY_BUFFER> _cube_model_ebo = rasticore::Buffer<GL_ELEMENT_ARRAY_BUFFER>(sizeof(rasticore::cube::indice), rasticore::cube::indice, GL_STATIC_DRAW);
-
-	rasticore::VertexBuffer _cube_vb = rasticore::VertexBuffer();
-	_cube_model_ebo.bind();
-	_cube_model_vbo.bind();
-	
-	_cube_vb.addAttrib(GL_FLOAT, 0, 3, 20, 0);	// vertex x y z
-	_cube_vb.addAttrib(GL_FLOAT, 1, 2, 20, 12);	// uv x and y
-
-	_cube_vb.enableAttrib(0);
-	_cube_vb.enableAttrib(1);
-	// TODO: do this better and put this inside one class 
-
 	//Camera _g_camera = Camera(vec3(5.0f, 0.0f, 5.0f));
-	mat4 _g_camera = lookAt(vec3(0.5f, 3.0f, 15.0f), (vec3(0.0f, 3.0f, 0.0f)), vec3(0.0f, 1.0f, 0.0f));
 
-	_r.setCameraMatrix(_g_camera);
-	_r.setProjectionMatrix(_win.GetProjectionMatrix(radians(90.0f)));
+	glViewport(0, 0, 800, 800);
+	_r.setCameraMatrix(lookAt(vec3(0.0f, 0.0f, 2000.0f), (vec3(0.0f, 0.0f, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
+	//_r.setProjectionMatrix(ortho(-1400.0f, 1400.0f, -1400.0f, 1400.0f, -5000.0f, 5000.0f));
+	_r.setProjectionMatrix(perspective(radians(90.0f), 1.0f, 1.0f, 5000.0f));
 	_r.UpdateShaderData();
 	
-
-	_r.newModel(RASTICORE_MODEL_CUBE, _cube_vb, _program_n, sizeof(rasticore::cube::indice) / 4, GL_TRIANGLES, rasticore::Texture2DBindless(), 10);
-
-	for (int i = 0; i < 10; i++)
-	{
-		for (int ii = 0; ii < 7; ii++)
-			_r.newObject(5+ii, scale(translate(mat4(1.0f), vec3(3.0f * i - 15.0f, 0.0f, 0.0f)), vec3(3.0f)));
-	}
+	stbi_set_flip_vertically_on_load(true);
 
 	rasticore::Image mapImg = rasticore::Image("mm.png", 4);
-	GameMap gm = GameMap(mapImg, 4);
-	
+	GameMap gm = GameMap(&mapImg, 4);
 
-	//_r.SetObjectMatrix(0, translate(mat4(1.0f), vec3(15.0f, 0.0f, 15.0f)));
-
-	float t = 0.0f;
-	int tf = 0;
-	bool s = false;
-
-	int cntr = 0;
-
-
+	_program_n.use();
+	uint32_t lShdrScaleX = glGetUniformLocation(_program_n.id, "gScalex");
+	uint32_t lShdrScaleY = glGetUniformLocation(_program_n.id, "gScaley");
+	uint32_t lShdrMoveX = glGetUniformLocation(_program_n.id, "gMovex");
+	uint32_t lShdrMoveY = glGetUniformLocation(_program_n.id, "gMovey");
 
 	RS_ENABLE_FRATURE(GL_DEPTH_TEST);
 	RS_BACKGROUND_CLEAR_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
@@ -298,57 +257,29 @@ int main(int argc, char* argv[])
 	{
 		RS_CLEAR_FRAMEBUFFER(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		tf++;
-		if (tf == 60)
+		_program_n.use();
+		gm.rChunkVao.bind();
+
+		glUniform1f(lShdrScaleX, gm.pChunkSizeX);
+		glUniform1f(lShdrScaleY, gm.pChunkSizeY);
+		for (int y = 0; y < gm.blk; y++)
 		{
-			tf = 0;
-
-			if (s == 0)
+			for (int x = 0; x < gm.blk; x++)
 			{
-				for (int i = 0; i < 7; i++)
-				{
-					_r.BindActiveModel(5 + i);
-					_r.DisableObjectNoSync(cntr);
-				}
+
+				glUniform1f(lShdrMoveX, gm.pChunkSizeX*x);
+				glUniform1f(lShdrMoveY, gm.pChunkSizeY*y);
+
+				glUniformHandleui64ARB(1, gm.aChunkArray[gm.blk * y + x].txb.handle);
+
+				glDrawArrays(GL_TRIANGLES, 0, 6);
 			}
-			else
-			{
-				for (int i = 0; i < 7; i++)
-				{
-					_r.BindActiveModel(5 + i);
-					_r.EnableObjectNoSync(cntr);
-				}
-			}
-
-			cntr++;
-
-			if (cntr == 9)
-			{
-				cntr = 0;
-				s = !s;
-			}
-
-		}
-		for (int i = 0; i < 7; i++)
-		{
-			_r.UpdateShaderIdSpace(5+i);
-		}
-		_r.SetObjectMatrix(5, translate(mat4(1.0f), vec3(0.0f, 0.0f, (sin(t) + 1.0f) * 10.0f - 5.0f)));
-
-		//_r.RenderSelectedModel(5);
-
-		_r.SetObjectMatrix(1, translate(mat4(1.0f), vec3(0.0f, 5.0f, 0.0f)));
-
-		for (int i = 0; i < 7; i++)
-		{
-			_r.RenderSelectedModel(5 + i);
 		}
 
 			
 
 		_win.swap();
 		_win.handleEvents();
-		t += 0.003f;
 		SDL_Delay(16);
 	}
 
