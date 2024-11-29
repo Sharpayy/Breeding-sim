@@ -96,7 +96,7 @@ void Astar::calculateTilesWeight(point p, point e, std::priority_queue<queueData
 				tiles.at(c).y = tiles.at(c).x + ce;
 				tiles.at(c).parrent = p;
 				//lCostQueue.push({ cs + ce, c });
-				lCostQueue.push({ cs + tiles.at(p).x + ce, c });
+				lCostQueue.push({ ce + tiles.at(p).x , c });
 			}
 		}
 	}

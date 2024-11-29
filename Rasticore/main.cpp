@@ -216,11 +216,11 @@ int main(int argc, char* argv[])
 
 	rasticore::RastiCoreRender _r = rasticore::RastiCoreRender(100);
 
-	MAPPEDFILE _t_shader_file = rasticore::MapFile("rasticore_vertex_shader.glsl");
+	MAPPEDFILE _t_shader_file = rasticore::MapFile("Rasticore\\rasticore_vertex_shader.glsl");
 	rasticore::Shader<GL_VERTEX_SHADER> _shdr_vt_n = rasticore::Shader<GL_VERTEX_SHADER>((char*)_t_shader_file.data);
 	rasticore::UnmapFile(_t_shader_file);
 
-	_t_shader_file = rasticore::MapFile("rasticore_fragment_shader.glsl");
+	_t_shader_file = rasticore::MapFile("Rasticore\\rasticore_fragment_shader.glsl");
 	rasticore::Shader<GL_FRAGMENT_SHADER> _shdr_fg_n = rasticore::Shader<GL_FRAGMENT_SHADER>((char*)_t_shader_file.data);
 	rasticore::UnmapFile(_t_shader_file);
 
@@ -242,7 +242,7 @@ int main(int argc, char* argv[])
 	
 	stbi_set_flip_vertically_on_load(true);
 
-	rasticore::Image mapImg = rasticore::Image("mm.png", 4);
+	rasticore::Image mapImg = rasticore::Image("Rasticore\\mm.png", 4);
 	GameMap gm = GameMap(&mapImg, 4);
 
 	_program_n.use();
