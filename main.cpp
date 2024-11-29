@@ -9,14 +9,14 @@
 #include <ctime>
 #include <cmath>
 
-#include "rasti_window.h"
-#include "rasti_utils.h"
-#include "rasti_alloc.h"
-#include "rasti_main.h"
-#include "rasti_models.h"
-#include "objload.h"
+#include "Rasticore/rasti_window.h"
+#include "Rasticore/rasti_utils.h"
+#include "Rasticore/rasti_alloc.h"
+#include "Rasticore/rasti_main.h"
+#include "Rasticore/rasti_models.h"
+#include "Rasticore/objload.h"
 
-#include "MapRenderer.cpp"
+#include "Rasticore/MapRenderer.cpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -29,6 +29,9 @@
 // Test models ids
 #define RASTICORE_MODEL_CUBE			1
 #define RASTICORE_MODEL_TRIANGLE		2
+
+//Tests includes
+#include "MovementManager.h"
 
 using namespace glm;
 
@@ -253,6 +256,11 @@ int main(int argc, char* argv[])
 
 	RS_ENABLE_FRATURE(GL_DEPTH_TEST);
 	RS_BACKGROUND_CLEAR_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
+
+	//TESTS
+	std::filesystem::path path = std::filesystem::current_path().append("\\Data\\collision.txt");
+	MovementManager m{path};
+
 	while (1)
 	{
 		RS_CLEAR_FRAMEBUFFER(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
