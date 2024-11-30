@@ -238,7 +238,7 @@ int main(int argc, char* argv[])
 	//Camera _g_camera = Camera(vec3(5.0f, 0.0f, 5.0f));
 
 	glViewport(0, 0, 800, 800);
-	_r.setCameraMatrix(lookAt(vec3(0.0f, 0.0f, 2000.0f), (vec3(0.0f, 0.0f, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
+	_r.setCameraMatrix(lookAt(vec3(0.0f, 0.0f, 500.0f), (vec3(0.0f, 0.0f, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
 	//_r.setProjectionMatrix(ortho(-1400.0f, 1400.0f, -1400.0f, 1400.0f, -5000.0f, 5000.0f));
 	_r.setProjectionMatrix(perspective(radians(90.0f), 1.0f, 1.0f, 5000.0f));
 	_r.UpdateShaderData();
@@ -258,7 +258,9 @@ int main(int argc, char* argv[])
 	RS_BACKGROUND_CLEAR_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
 	//TESTS
-	std::filesystem::path path = std::filesystem::current_path().append("\\Data\\collision.txt");
+	//Squad s1 = {};
+
+	std::filesystem::path path = std::filesystem::current_path().append("Data\\collision.txt");
 	MovementManager m{path};
 
 	while (1)
@@ -275,8 +277,8 @@ int main(int argc, char* argv[])
 			for (int x = 0; x < gm.blk; x++)
 			{
 
-				glUniform1f(lShdrMoveX, gm.pChunkSizeX*x);
-				glUniform1f(lShdrMoveY, gm.pChunkSizeY*y);
+				glUniform1f(lShdrMoveX, gm.pChunkSizeX*x - (gm.pMapSizeX / 2));
+				glUniform1f(lShdrMoveY, gm.pChunkSizeY*y - (gm.pMapSizeY / 2));
 
 				glUniformHandleui64ARB(1, gm.aChunkArray[gm.blk * y + x].txb.handle);
 
