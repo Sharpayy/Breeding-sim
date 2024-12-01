@@ -12,7 +12,10 @@ class MovementManager {
 public:
 	MovementManager() = default;
 	MovementManager(std::filesystem::path path, uint32_t mapSize, uint8_t tileSize) {
+		b = Astar::border{ -((int)mapSize / 2), ((int)mapSize / 2), (int)mapSize, (int)mapSize, tileSize };
+		this->movement = Astar{ &b };
 		loadCollisionData(path);
+
 		this->mapSize = mapSize;
 		this->tileSize = tileSize;
 	}
@@ -76,9 +79,10 @@ private:
 		Squad* squad;
 		std::vector<Astar::point> path;
 	};
-
+	
 	uint8_t tileSize;
 	uint32_t mapSize;
+	Astar::border b;
 	Astar movement;
 	std::unordered_map<uint64_t, SquadMovementInfo> squadsMovementData;
 };

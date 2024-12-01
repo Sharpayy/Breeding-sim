@@ -10,7 +10,11 @@ bool Astar::compareQueueData::operator()(queueData const& p1, queueData const& p
 	return p1.f > p2.f;
 }
 
-Astar::Astar() = default;
+Astar::Astar(border* border) {
+	b = border;
+	tiles = {};
+	collisionBlocks = {};
+}
 
 Astar::~Astar() {
 	clearCollisionBlocks();
@@ -30,7 +34,7 @@ std::vector<Astar::point> Astar::findPath(point s, point e, int offset) {
 
 	while (!(c == e)) {
 		c = findNewLowestPoint(lCostQueue);
-		calculateTilesWeight(c, e, lCostQueue, offset);
+		calculateTilesWeight(c, s, e, lCostQueue, offset);
 	}
 
 	result.push_back(e);
@@ -64,6 +68,12 @@ float Astar::EuclideanDistance(point s, point e) {
 }
 
 bool Astar::tileIsBlocked(point p) {
+	if (b) {;
+		if ((p.x <= b->x || p.x >= b->x + b->width) 
+			&& (p.y <= b->y || p.y >= b->height - b->y)) {
+			return true;
+		}
+	}
 	return collisionBlocks.find(p) != collisionBlocks.end();
 }
 
@@ -72,23 +82,24 @@ bool Astar::tileExist(point p) {
 }
 
 //, float (*operation)(point, point) = EuclideanDistance
-void Astar::calculateTilesWeight(point p, point e, std::priority_queue<queueData, std::vector<queueData>, compareQueueData>& lCostQueue, int offset) {
+void Astar::calculateTilesWeight(point p, point s, point e, std::priority_queue<queueData, std::vector<queueData>, compareQueueData>& lCostQueue, int offset) {
 	int y, x;
-	float cs, ce, f;
+	float cs, ce, cc, f;
 	point c;
 	for (y = p.y - offset ; y <= p.y + offset; y+=offset) {
 		for (x = p.x - offset; x <= p.x + offset; x+=offset) {
 			c = point{ x, y };
 			if (c == p || tileIsBlocked(c)) continue;
-			cs = DiagonalDistance(c, p);
+			cs = DiagonalDistance(c, s);
+			//cc = DiagonalDistance(c, p);
 			ce = DiagonalDistance(c, e);
 
 			if (!tileExist(c)) {
 				f = cs + ce;
 				tiles[c].x = cs + tiles[p].x;
-				tiles[c].y = f;
+				tiles[c].y = tiles[c].x + ce;
 				tiles[c].parrent = p;
-				lCostQueue.push(queueData{ f , c });
+				lCostQueue.push(queueData{ tiles[c].x + ce , c });
 			}
 
 			//ADD THIS FOR BETTER PATHS
@@ -97,7 +108,8 @@ void Astar::calculateTilesWeight(point p, point e, std::priority_queue<queueData
 				tiles.at(c).y = tiles.at(c).x + ce;
 				tiles.at(c).parrent = p;
 				//lCostQueue.push({ cs + ce, c });
-				lCostQueue.push({ ce + tiles.at(p).x , c });
+
+				lCostQueue.push({ tiles.at(c).y , c });
 			}
 		}
 	}

@@ -14,6 +14,12 @@ public:
 
 		bool operator==(const point& other) const;
 	};
+
+	struct border {
+		int x, y, width, height, offset;
+
+	};
+
 private:
 
 	struct queueData {
@@ -27,13 +33,12 @@ private:
 	};
 
 	struct tileData {
-		float x, y;
+		float x, y, z;
 		point parrent;
 	};
 
 public:
-
-	Astar();
+	Astar(border* border = nullptr);
 	~Astar();
 	
 	void addBlockade(point p);
@@ -54,7 +59,7 @@ private:
 
 	bool tileExist(point p);
 
-	void calculateTilesWeight(point p, point e, std::priority_queue<queueData, std::vector<queueData>, compareQueueData>& lCostQueue, int offset = 1);
+	void calculateTilesWeight(point p, point s, point e, std::priority_queue<queueData, std::vector<queueData>, compareQueueData>& lCostQueue, int offset = 1);
 
 	point findNewLowestPoint(std::priority_queue<queueData, std::vector<queueData>, compareQueueData>& lCostQueue);
 
@@ -62,6 +67,7 @@ private:
 		std::size_t operator()(const point& p) const;
 	};
 
+	border* b;
 	std::unordered_map<point, tileData, pointHash> tiles;
 	std::unordered_set<point, pointHash> collisionBlocks;
 
