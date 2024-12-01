@@ -53,15 +53,26 @@ public:
 
 		blk = blocks;
 
-		float plane_vtx[] = {
-		
-				-0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-				-0.5f, 0.5f, 1.0f, 0.0f, 1.0f,
-				0.5, -0.5f, 1.0f, 1.0f, 0.0f,
+		//float plane_vtx[] = {
+		//
+		//		-0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+		//		-0.5f, 0.5f, 1.0f, 0.0f, 1.0f,
+		//		0.5, -0.5f, 1.0f, 1.0f, 0.0f,
 
-				-0.5f, 0.5f, 1.0f, 0.0f, 1.0f,
-				0.5, -0.5f, 1.0f, 1.0f, 0.0f,
-				0.5, 0.5f, 1.0f, 1.0f, 1.0f
+		//		-0.5f, 0.5f, 1.0f, 0.0f, 1.0f,
+		//		0.5, -0.5f, 1.0f, 1.0f, 0.0f,
+		//		0.5, 0.5f, 1.0f, 1.0f, 1.0f
+		//};
+
+		float plane_vtx[] = {
+
+			0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+			1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+
+			0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+			1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+			1.0f, 1.0f, 1.0f, 1.0f, 1.0f
 		};
 
 		rChunkVbo = rasticore::Buffer<GL_ARRAY_BUFFER>(sizeof(plane_vtx), plane_vtx, GL_STATIC_DRAW);

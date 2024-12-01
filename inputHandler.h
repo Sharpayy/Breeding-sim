@@ -14,7 +14,7 @@ public:
 		return inputData.keysPressed[keycode];
 	}
 
-	bool keyPressedOnce(SDL_Scancode key) {
+	bool KeyPressedOnce(SDL_Scancode key) {
 		if (inputData.keysPressed[key]) {
 			if (inputData.wasPressed[key] == true) return false;
 			inputData.wasPressed[key] = true;

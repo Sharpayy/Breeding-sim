@@ -30,6 +30,7 @@ private:
 		float x, y;
 		point parrent;
 	};
+
 public:
 
 	Astar();
@@ -37,9 +38,23 @@ public:
 	
 	void addBlockade(point p);
 
-	std::vector<point> findPath(point s, point e);
+	std::vector<point> findPath(point s, point e, int offset = 1);
 
 	void clearCollisionBlocks();
+
+
+	struct rect {
+		int x, y, width, height;
+
+		bool intersects(const point& p) const {
+			int left = std::min(x, x + width);
+			int right = std::max(x, x + width);
+			int top = std::min(y, y + height);
+			int bottom = std::max(y, y + height);
+
+			return (p.x >= left && p.x <= right && p.y >= top && p.y <= bottom);
+		}
+	};
 private:
 
 	double ManhattanDistance(point s, point e);
@@ -52,7 +67,7 @@ private:
 
 	bool tileExist(point p);
 
-	void calculateTilesWeight(point p, point e, std::priority_queue<queueData, std::vector<queueData>, compareQueueData>& lCostQueue);
+	void calculateTilesWeight(point p, point e, std::priority_queue<queueData, std::vector<queueData>, compareQueueData>& lCostQueue, int offset = 1);
 
 	point findNewLowestPoint(std::priority_queue<queueData, std::vector<queueData>, compareQueueData>& lCostQueue);
 

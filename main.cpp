@@ -29,9 +29,11 @@
 // Test models ids
 #define RASTICORE_MODEL_CUBE			1
 #define RASTICORE_MODEL_TRIANGLE		2
+#define MENDA_MODEL 3
 
 //Tests includes
 #include "MovementManager.h"
+#include "inputHandler.h"
 
 using namespace glm;
 
@@ -227,24 +229,74 @@ int main(int argc, char* argv[])
 	rasticore::Shader<GL_FRAGMENT_SHADER> _shdr_fg_n = rasticore::Shader<GL_FRAGMENT_SHADER>((char*)_t_shader_file.data);
 	rasticore::UnmapFile(_t_shader_file);
 
+	MAPPEDFILE menda = rasticore::MapFile("Rasticore\\menda.glsl");
+	rasticore::Shader<GL_VERTEX_SHADER> mendashader = rasticore::Shader<GL_VERTEX_SHADER>((char*)menda.data);
+	rasticore::UnmapFile(menda);
+
+
 	rasticore::Program _program_n = rasticore::Program();
 	_program_n.programAddShader(_shdr_vt_n.id);
 	_program_n.programAddShader(_shdr_fg_n.id);
 	_program_n.programCompile();
 
 	_program_n.use();
+
+	rasticore::Program mendaprogram = rasticore::Program();
+	mendaprogram.programAddShader(mendashader.id);
+	mendaprogram.programAddShader(_shdr_fg_n.id);
+	mendaprogram.programCompile();
+
+	mendaprogram.use();
+
+	stbi_set_flip_vertically_on_load(true);
+
+
+	rasticore::Image img{ "Rasticore\\menda.png",4 };
+	rasticore::Texture2D texture{ img.data, (int)img.x_, (int)img.y_, GL_RGBA, GL_RGBA8 };
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	texture.genMipmap();
+	rasticore::Texture2DBindless texturebind{ texture };
+	texturebind.MakeResident();
+
+
+	float plane_vtx[] = {
+		-0.5f * 100.0f, -0.5f * 100.0f, 1.0f, 0.0f, 0.0f,
+		-0.5f * 100.0f, 0.5f * 100.0f, 1.0f, 0.0f, 1.0f,
+		0.5 * 100.0f, -0.5f * 100.0f, 1.0f, 1.0f, 0.0f,
+
+		0.5 * 100.0f, 0.5f * 100.0f, 1.0f, 1.0f, 1.0f
+	};
+
+	uint32_t chuj[] = {
+		0,1,2,1,2,3
+	};
+
+	rasticore::Buffer<GL_ARRAY_BUFFER> SquareVBO = rasticore::Buffer<GL_ARRAY_BUFFER>(sizeof(plane_vtx), plane_vtx, GL_STATIC_DRAW);
+	rasticore::Buffer<GL_ELEMENT_ARRAY_BUFFER> SquareEBO = rasticore::Buffer<GL_ELEMENT_ARRAY_BUFFER>(sizeof(chuj), chuj, GL_STATIC_DRAW);
+
+	rasticore::VertexBuffer Square = rasticore::VertexBuffer();
+	Square.bind();
+	SquareVBO.bind();
+	SquareEBO.bind();
+
+	Square.addAttrib(GL_FLOAT, 0, 3, sizeof(float) * 5, 0);
+	Square.addAttrib(GL_FLOAT, 1, 2, sizeof(float) * 5, 12);
+	Square.enableAttrib(0);
+	Square.enableAttrib(1);
 	//glUniform1i(glGetUniformLocation(_program_n.id, "image0"), 0); // BindSampler
 
 	//Camera _g_camera = Camera(vec3(5.0f, 0.0f, 5.0f));
 
-	glViewport(0, 0, 800, 800);
-	_r.setCameraMatrix(lookAt(vec3(0.0f, 0.0f, 500.0f), (vec3(0.0f, 0.0f, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
+	//glViewport(-400, 0, 400, 400);
+
+	_r.setCameraMatrix(lookAt(vec3(0.0f, 0.0f, 2000.0f), (vec3(0.0f, 0.0f, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
 	//_r.setProjectionMatrix(ortho(-1400.0f, 1400.0f, -1400.0f, 1400.0f, -5000.0f, 5000.0f));
 	_r.setProjectionMatrix(perspective(radians(90.0f), 1.0f, 1.0f, 5000.0f));
 	_r.UpdateShaderData();
 	
-	stbi_set_flip_vertically_on_load(true);
-
 	rasticore::Image mapImg = rasticore::Image("Rasticore\\mm.png", 4);
 	GameMap gm = GameMap(&mapImg, 4);
 
@@ -258,17 +310,40 @@ int main(int argc, char* argv[])
 	RS_BACKGROUND_CLEAR_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
 	//TESTS
-	//Squad s1 = {};
+	struct chuj {
+		int x = 0, y = 0;
+	} md;
+
+	int xx, yy;
+	xx = 16 * 18 + 4;
+	yy = -16 * 83 + 5;
+	Squad s1(10, { xx, yy });
+	_r.newModel(MENDA_MODEL, Square, mendaprogram, 6, GL_TRIANGLES, texturebind, 100);
+	auto id = _r.newObject(MENDA_MODEL, {});
+
+	InputHandler ih;
 
 	std::filesystem::path path = std::filesystem::current_path().append("Data\\collision.txt");
-	MovementManager m{path};
+	MovementManager m{path, 4096, 16};
+	auto start = std::chrono::system_clock::now();
 
+	m.createSquadPath({ 960,960 }, s1);
+	auto end = std::chrono::system_clock().now();
+	auto elapsedMil = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	auto elapsedMic = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+	std::cout << "Time in miliseconds : " << elapsedMil << " Time in microseconds : " << elapsedMic;
 	while (1)
 	{
 		RS_CLEAR_FRAMEBUFFER(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		_program_n.use();
 		gm.rChunkVao.bind();
+
+		_r.setCameraMatrix(lookAt(vec3(md.x, md.y, 2000.0f), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
+		_r.UpdateShaderData();
+		m.update();
+
 
 		glUniform1f(lShdrScaleX, gm.pChunkSizeX);
 		glUniform1f(lShdrScaleY, gm.pChunkSizeY);
@@ -277,19 +352,33 @@ int main(int argc, char* argv[])
 			for (int x = 0; x < gm.blk; x++)
 			{
 
-				glUniform1f(lShdrMoveX, gm.pChunkSizeX*x - (gm.pMapSizeX / 2));
-				glUniform1f(lShdrMoveY, gm.pChunkSizeY*y - (gm.pMapSizeY / 2));
+				glUniform1f(lShdrMoveX, (int)gm.pChunkSizeX * x - ((int)gm.pMapSizeX / 2));
+				glUniform1f(lShdrMoveY, (int)gm.pChunkSizeY * y - ((int)gm.pMapSizeY / 2));
 
 				glUniformHandleui64ARB(1, gm.aChunkArray[gm.blk * y + x].txb.handle);
 
 				glDrawArrays(GL_TRIANGLES, 0, 6);
 			}
 		}
+		_r.RenderSelectedModel(MENDA_MODEL);
+		_r.SetObjectMatrix(id, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ s1.getSquadPosition().x, s1.getSquadPosition().y, 1.1f }));
 
-			
+		if (ih.KeyPressed(SDL_SCANCODE_W)) {
+			md.y += 20;
+		}
+		if (ih.KeyPressed(SDL_SCANCODE_S)) {
+			md.y -= 20;
+		}
+		if (ih.KeyPressed(SDL_SCANCODE_A)) {
+			md.x -= 20;
+		}
+		if (ih.KeyPressed(SDL_SCANCODE_D)) {
+			md.x += 20;
+		}
 
 		_win.swap();
-		_win.handleEvents();
+		//_win.handleEvents();
+		ih.handleKeys();
 		SDL_Delay(16);
 	}
 

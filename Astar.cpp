@@ -20,7 +20,7 @@ void Astar::addBlockade(point p) {
 	collisionBlocks.insert(p);
 }
 
-std::vector<Astar::point> Astar::findPath(point s, point e) {
+std::vector<Astar::point> Astar::findPath(point s, point e, int offset) {
 	if (tileIsBlocked(s) || tileIsBlocked(e)) return {};
 	std::vector<point> result;
 
@@ -30,7 +30,7 @@ std::vector<Astar::point> Astar::findPath(point s, point e) {
 
 	while (!(c == e)) {
 		c = findNewLowestPoint(lCostQueue);
-		calculateTilesWeight(c, e, lCostQueue);
+		calculateTilesWeight(c, e, lCostQueue, 16);
 	}
 
 	result.push_back(e);
@@ -40,6 +40,7 @@ std::vector<Astar::point> Astar::findPath(point s, point e) {
 	}
 
 	tiles.clear();
+	std::reverse(result.begin(), result.end());	
 	return result;
 
 }
@@ -63,7 +64,14 @@ float Astar::EuclideanDistance(point s, point e) {
 }
 
 bool Astar::tileIsBlocked(point p) {
-	return collisionBlocks.find(p) != collisionBlocks.end();
+	for (const auto& block : collisionBlocks) {
+		rect blockRect = { block.x, block.y, 16, 16 };
+		if (blockRect.intersects(p)) {
+			return true;
+		}
+	}
+	return false;
+	//return collisionBlocks.find(p) != collisionBlocks.end();
 }
 
 bool Astar::tileExist(point p) {
@@ -71,12 +79,12 @@ bool Astar::tileExist(point p) {
 }
 
 //, float (*operation)(point, point) = EuclideanDistance
-void Astar::calculateTilesWeight(point p, point e, std::priority_queue<queueData, std::vector<queueData>, compareQueueData>& lCostQueue) {
+void Astar::calculateTilesWeight(point p, point e, std::priority_queue<queueData, std::vector<queueData>, compareQueueData>& lCostQueue, int offset) {
 	int y, x;
 	float cs, ce, f;
 	point c;
-	for (y = p.y - 1; y <= p.y + 1; y++) {
-		for (x = p.x - 1; x <= p.x + 1; x++) {
+	for (y = p.y - offset ; y <= p.y + offset; y+=offset) {
+		for (x = p.x - offset; x <= p.x + offset; x+=offset) {
 			c = point{ x, y };
 			if (c == p || tileIsBlocked(c)) continue;
 			cs = DiagonalDistance(c, p);

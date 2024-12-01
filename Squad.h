@@ -17,10 +17,16 @@ public:
 	};
 	Squad(uint64_t squadID, glm::vec2 position) {
 		squadComp.entities[0] = Entity{};
+		this->squadID = squadID;
+		this->position = position;
 	}
 
 	void setSquadPosition(glm::vec2 position) {
 		this->position = position;
+	}
+
+	glm::vec2 getSquadPosition() const {
+		return position;
 	}
 
 	uint64_t getSquadID() {
