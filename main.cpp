@@ -317,7 +317,7 @@ int main(int argc, char* argv[])
 	int xx, yy;
 	xx = 16 * 18 + 4;
 	yy = -16 * 83 + 5;
-	Squad s1(10, { -2000, 300 });
+	Squad s1(10, { -1600, 1600 });
 	_r.newModel(MENDA_MODEL, Square, mendaprogram, 6, GL_TRIANGLES, texturebind, 100);
 	auto id = _r.newObject(MENDA_MODEL, {});
 

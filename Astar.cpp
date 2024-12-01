@@ -30,7 +30,8 @@ std::vector<Astar::point> Astar::findPath(point s, point e, int offset) {
 
 	point c = s;
 	std::priority_queue<queueData, std::vector<queueData>, compareQueueData> lCostQueue;
-	lCostQueue.push({ (float)INT_MAX, c });
+	tiles[c] = { 0, (float)DiagonalDistance(c, e, 1) };
+	lCostQueue.push({ tiles[c].y, c});
 
 	while (!(c == e)) {
 		c = findNewLowestPoint(lCostQueue);
@@ -90,24 +91,22 @@ void Astar::calculateTilesWeight(point p, point s, point e, std::priority_queue<
 		for (x = p.x - offset; x <= p.x + offset; x+=offset) {
 			c = point{ x, y };
 			if (c == p || tileIsBlocked(c)) continue;
-			cs = DiagonalDistance(c, s);
-			//cc = DiagonalDistance(c, p);
+			cs = tiles[p].x;
+			cc = DiagonalDistance(c, p);
 			ce = DiagonalDistance(c, e);
 
 			if (!tileExist(c)) {
-				f = cs + ce;
-				tiles[c].x = cs + tiles[p].x;
+				tiles[c].x = cs + cc;//cs + tiles[p].x;
 				tiles[c].y = tiles[c].x + ce;
 				tiles[c].parrent = p;
 				lCostQueue.push(queueData{ tiles[c].x + ce , c });
 			}
 
 			//ADD THIS FOR BETTER PATHS
-			else if (cs + tiles.at(p).x < tiles.at(c).x) {
-				tiles.at(c).x = cs + tiles.at(p).x;
+			else if (tiles.at(p).x + cc < tiles.at(c).x) {
+				tiles.at(c).x = tiles.at(p).x + cc;
 				tiles.at(c).y = tiles.at(c).x + ce;
 				tiles.at(c).parrent = p;
-				//lCostQueue.push({ cs + ce, c });
 
 				lCostQueue.push({ tiles.at(c).y , c });
 			}
