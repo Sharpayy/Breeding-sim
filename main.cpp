@@ -327,7 +327,7 @@ int main(int argc, char* argv[])
 	MovementManager m{path, 4096, 16};
 	auto start = std::chrono::system_clock::now();
 
-	m.createSquadPath({ 960,960 }, s1);
+	m.createSquadPath({ -960,1600 }, s1);
 	auto end = std::chrono::system_clock().now();
 	auto elapsedMil = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	auto elapsedMic = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
