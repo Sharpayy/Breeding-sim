@@ -28,7 +28,7 @@ public:
 		position.t = (int)(position.y / tileSize) * tileSize;
 		e.x = (int)(e.y / tileSize)* tileSize;
 		e.y = (int)(e.y / tileSize) * tileSize;
-		auto path = movement.findPath(Astar::point{(int)position.x, (int)position.y}, e);
+		auto path = movement.findPath(Astar::point{(int)position.x, (int)position.y}, e, tileSize);
 		squadsMovementData[squad.getSquadID()] = SquadMovementInfo{ &squad, path };
 	}
 	

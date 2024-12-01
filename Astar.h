@@ -42,19 +42,6 @@ public:
 
 	void clearCollisionBlocks();
 
-
-	struct rect {
-		int x, y, width, height;
-
-		bool intersects(const point& p) const {
-			int left = std::min(x, x + width);
-			int right = std::max(x, x + width);
-			int top = std::min(y, y + height);
-			int bottom = std::max(y, y + height);
-
-			return (p.x >= left && p.x <= right && p.y >= top && p.y <= bottom);
-		}
-	};
 private:
 
 	double ManhattanDistance(point s, point e);

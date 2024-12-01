@@ -30,7 +30,7 @@ std::vector<Astar::point> Astar::findPath(point s, point e, int offset) {
 
 	while (!(c == e)) {
 		c = findNewLowestPoint(lCostQueue);
-		calculateTilesWeight(c, e, lCostQueue, 16);
+		calculateTilesWeight(c, e, lCostQueue, offset);
 	}
 
 	result.push_back(e);
@@ -64,14 +64,7 @@ float Astar::EuclideanDistance(point s, point e) {
 }
 
 bool Astar::tileIsBlocked(point p) {
-	for (const auto& block : collisionBlocks) {
-		rect blockRect = { block.x, block.y, 16, 16 };
-		if (blockRect.intersects(p)) {
-			return true;
-		}
-	}
-	return false;
-	//return collisionBlocks.find(p) != collisionBlocks.end();
+	return collisionBlocks.find(p) != collisionBlocks.end();
 }
 
 bool Astar::tileExist(point p) {
