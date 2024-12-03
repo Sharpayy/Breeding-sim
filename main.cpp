@@ -34,6 +34,7 @@
 //Tests includes
 #include "MovementManager.h"
 #include "inputHandler.h"
+#include "gameManager.h"
 
 using namespace glm;
 
@@ -322,12 +323,12 @@ int main(int argc, char* argv[])
 
 	InputHandler ih;
 
-	std::filesystem::path path = std::filesystem::current_path().append("Data\\collision.txt");
-	MovementManager m{path, 4096, 16};
+	//std::filesystem::path path = std::filesystem::current_path().append("Data\\collision.txt");
+	//MovementManager m{path, 4096, 16};
 	auto start = std::chrono::system_clock::now();
 
 	//m.createSquadPath({ -960,1600 }, s1);
-	m.createSquadPath({ 1300,1300}, s1);
+	//m.createSquadPath({ 1300,1300}, s1);
 	auto end = std::chrono::system_clock().now();
 	auto elapsedMil = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	auto elapsedMic = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
@@ -336,6 +337,7 @@ int main(int argc, char* argv[])
 
 	uint32_t lShdrPp = glGetUniformLocation(_program_n.id, "gPp");
 	//*lookAt(vec3(md.x, md.y, 5.0f), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f))
+	gameManager gmanager;
 	while (1)
 	{
 		RS_CLEAR_FRAMEBUFFER(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -373,7 +375,8 @@ int main(int argc, char* argv[])
 				glDrawArrays(GL_TRIANGLES, 0, 6);
 			}
 		}
-		m.update();
+		gmanager.update();
+		//m.update();
 
 		_r.RenderSelectedModel(MENDA_MODEL);
 		_r.SetObjectMatrix(id, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ s1.getSquadPosition().x, s1.getSquadPosition().y, 1.1f }));
