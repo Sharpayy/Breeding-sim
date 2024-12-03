@@ -13,9 +13,8 @@ class MovementManager {
 public:
 	MovementManager() = default;
 	MovementManager(std::filesystem::path path, uint32_t mapSize, uint8_t tileSize) {
-		//b = Astar::border{ -((int)mapSize / 2), ((int)mapSize / 2), (int)mapSize, (int)mapSize, tileSize };
-		//this->movement = Astar{ &b };
-		this->movement = Astar{};
+		border = Astar::border{ -((int)mapSize / 2), ((int)mapSize / 2), (int)mapSize, (int)mapSize, tileSize };
+		this->movement = Astar{ &border };
 		loadCollisionData(path);
 
 		this->mapSize = mapSize;
@@ -43,12 +42,6 @@ public:
 	}
 
 private:
-
-	//if (glm::distance(current, nextPosition) <= 0.1f) {
-	//	squadData.second.path.erase(squadData.second.path.begin());
-	//	squadData.second.dt = 0;
-	//	continue;
-	//}
 	void moveSquads() {
 		Astar::point prevAP, nextAP;
 		glm::vec2 prevPosition, nextPosition, currentPosition;
@@ -70,7 +63,10 @@ private:
 				squadData.second.squad->setSquadPosition(currentPosition);
 			}
 			else {
-				squadData.second.path.erase(squadData.second.path.begin());
+				if (squadData.second.path.size()) {
+					squadData.second.path.clear();
+					squadsPathToRemove.push_back(squadData.first);
+;				}
 			}
 		}
 
@@ -131,7 +127,7 @@ private:
 	
 	uint8_t tileSize;
 	uint32_t mapSize;
-	Astar::border b;
+	Astar::border border;
 	Astar movement;
 	std::unordered_map<uint64_t, SquadMovementInfo> squadsMovementData;
 };

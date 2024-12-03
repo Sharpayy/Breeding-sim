@@ -333,6 +333,9 @@ int main(int argc, char* argv[])
 	auto elapsedMic = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 	std::cout << "Time in miliseconds : " << elapsedMil << " Time in microseconds : " << elapsedMic;
+
+	uint32_t lShdrPp = glGetUniformLocation(_program_n.id, "gPp");
+	//*lookAt(vec3(md.x, md.y, 5.0f), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f))
 	while (1)
 	{
 		RS_CLEAR_FRAMEBUFFER(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -343,6 +346,17 @@ int main(int argc, char* argv[])
 		_r.setCameraMatrix(lookAt(vec3(md.x, md.y, md.z), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
 		_r.UpdateShaderData();
 
+		vec4 proj_p = _r.MVP.matProjCamera * vec4(s1.getSquadPosition().x, s1.getSquadPosition().y, 1.1f, 1.0f);
+
+		//vec4 proj_p = _r.MVP.matProj * lookAt(vec3(md.x, md.y, 700.0f), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)) * vec4(s1.getSquadPosition().x, s1.getSquadPosition().y, 1.1f, 1.0f);
+		//vec4 proj_pasd = _r.MVP.matProjCamera * vec4(s1.getSquadPosition().x, s1.getSquadPosition().y, 1.1f, 1.0f);
+
+
+		vec2 Pp;
+		Pp.x = (proj_p.x * 800.0f) / (2.0f * proj_p.w) + 400;
+		Pp.y = (proj_p.y * 800.0f) / (2.0f * proj_p.w) + 400;
+
+		glUniform2fv(lShdrPp, 1, (float*)&Pp);
 
 		glUniform1f(lShdrScaleX, gm.pChunkSizeX);
 		glUniform1f(lShdrScaleY, gm.pChunkSizeY);
