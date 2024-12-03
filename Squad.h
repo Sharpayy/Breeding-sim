@@ -33,6 +33,10 @@ public:
 		return squadID;
 	}
 
+	uint8_t getArmySize() {
+		return squadComp.size;
+	}
+
 private:
 	glm::vec2 position;
 

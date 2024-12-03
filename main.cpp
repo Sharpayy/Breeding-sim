@@ -250,7 +250,6 @@ int main(int argc, char* argv[])
 
 	stbi_set_flip_vertically_on_load(true);
 
-
 	rasticore::Image img{ "Rasticore\\menda.png",4 };
 	rasticore::Texture2D texture{ img.data, (int)img.x_, (int)img.y_, GL_RGBA, GL_RGBA8 };
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -292,7 +291,7 @@ int main(int argc, char* argv[])
 
 	//glViewport(-400, 0, 400, 400);
 
-	_r.setCameraMatrix(lookAt(vec3(0.0f, 0.0f, 2000.0f), (vec3(0.0f, 0.0f, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
+	_r.setCameraMatrix(lookAt(vec3(0.0f, 0.0f, 1000.0f), (vec3(0.0f, 0.0f, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
 	//_r.setProjectionMatrix(ortho(-1400.0f, 1400.0f, -1400.0f, 1400.0f, -5000.0f, 5000.0f));
 	_r.setProjectionMatrix(perspective(radians(90.0f), 1.0f, 1.0f, 5000.0f));
 	_r.UpdateShaderData();
@@ -310,14 +309,14 @@ int main(int argc, char* argv[])
 	RS_BACKGROUND_CLEAR_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
 	//TESTS
-	struct chuj {
-		int x = 0, y = 0;
+	struct chuj {	
+		int x = 0, y = 0, z = 2000;
 	} md;
 
 	int xx, yy;
 	xx = 16 * 18 + 4;
 	yy = -16 * 83 + 5;
-	Squad s1(10, { -1600, 1600 });
+	Squad s1(10, { -2000, -2000 });
 	_r.newModel(MENDA_MODEL, Square, mendaprogram, 6, GL_TRIANGLES, texturebind, 100);
 	auto id = _r.newObject(MENDA_MODEL, {});
 
@@ -327,7 +326,8 @@ int main(int argc, char* argv[])
 	MovementManager m{path, 4096, 16};
 	auto start = std::chrono::system_clock::now();
 
-	m.createSquadPath({ -960,1600 }, s1);
+	//m.createSquadPath({ -960,1600 }, s1);
+	m.createSquadPath({ 1300,1300}, s1);
 	auto end = std::chrono::system_clock().now();
 	auto elapsedMil = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	auto elapsedMic = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
@@ -340,9 +340,8 @@ int main(int argc, char* argv[])
 		_program_n.use();
 		gm.rChunkVao.bind();
 
-		_r.setCameraMatrix(lookAt(vec3(md.x, md.y, 2000.0f), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
+		_r.setCameraMatrix(lookAt(vec3(md.x, md.y, md.z), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
 		_r.UpdateShaderData();
-		m.update();
 
 
 		glUniform1f(lShdrScaleX, gm.pChunkSizeX);
@@ -360,6 +359,8 @@ int main(int argc, char* argv[])
 				glDrawArrays(GL_TRIANGLES, 0, 6);
 			}
 		}
+		m.update();
+
 		_r.RenderSelectedModel(MENDA_MODEL);
 		_r.SetObjectMatrix(id, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ s1.getSquadPosition().x, s1.getSquadPosition().y, 1.1f }));
 
@@ -375,11 +376,17 @@ int main(int argc, char* argv[])
 		if (ih.KeyPressed(SDL_SCANCODE_D)) {
 			md.x += 20;
 		}
+		if (ih.KeyPressed(SDL_SCANCODE_Q)) {
+			md.z -= 20;
+		}
+		if (ih.KeyPressed(SDL_SCANCODE_E)) {
+			md.z += 20;
+		}
 
 		_win.swap();
 		//_win.handleEvents();
 		ih.handleKeys();
-		SDL_Delay(16);
+		SDL_Delay(10);
 	}
 
 

@@ -7,13 +7,15 @@
 #include "Squad.h"
 #include <unordered_map>
 
+#define STANDARD_SPEED 2
 
 class MovementManager {
 public:
 	MovementManager() = default;
 	MovementManager(std::filesystem::path path, uint32_t mapSize, uint8_t tileSize) {
-		b = Astar::border{ -((int)mapSize / 2), ((int)mapSize / 2), (int)mapSize, (int)mapSize, tileSize };
-		this->movement = Astar{ &b };
+		//b = Astar::border{ -((int)mapSize / 2), ((int)mapSize / 2), (int)mapSize, (int)mapSize, tileSize };
+		//this->movement = Astar{ &b };
+		this->movement = Astar{};
 		loadCollisionData(path);
 
 		this->mapSize = mapSize;
@@ -41,14 +43,34 @@ public:
 	}
 
 private:
+
+	//if (glm::distance(current, nextPosition) <= 0.1f) {
+	//	squadData.second.path.erase(squadData.second.path.begin());
+	//	squadData.second.dt = 0;
+	//	continue;
+	//}
 	void moveSquads() {
-		Astar::point p;
+		Astar::point prevAP, nextAP;
+		glm::vec2 prevPosition, nextPosition, currentPosition;
+		float offset = tileSize / 2.0f;
 		std::vector<uint64_t> squadsPathToRemove;
-		for (auto& squad : squadsMovementData) {
-			if (squad.second.path.size()) {
-				p = squad.second.path.at(0);
-				squad.second.squad->setSquadPosition(glm::vec2{ p.x, p.y });
-				squad.second.path.erase(squad.second.path.begin());
+		for (auto& squadData : squadsMovementData) {
+			if (squadData.second.path.size() >= 2) {
+				prevAP = squadData.second.path.at(0);
+				nextAP = squadData.second.path.at(1);
+				prevPosition = glm::vec2{ prevAP.x, prevAP.y } + offset;
+				nextPosition = glm::vec2{ nextAP.x, nextAP.y } + offset;
+				float speed = calculateSquadMovementSpeed(*squadData.second.squad);
+				currentPosition = lerp(prevPosition, nextPosition, squadData.second.dt);
+				if (currentPosition == nextPosition) {
+					squadData.second.path.erase(squadData.second.path.begin());
+					squadData.second.dt = 0;
+					continue;
+				}
+				squadData.second.squad->setSquadPosition(currentPosition);
+			}
+			else {
+				squadData.second.path.erase(squadData.second.path.begin());
 			}
 		}
 
@@ -75,9 +97,36 @@ private:
 		}
 	}
 
+	glm::vec2 lerp(const glm::vec2& actualPos, const glm::vec2& destination, float dt) {
+		dt = glm::clamp(dt, 0.0f, 1.0f);
+		return actualPos + (destination - actualPos) * dt;
+	}
+
+	glm::vec2 smoothstep(const glm::vec2& actualPos, const glm::vec2& destination, float dt) {
+		dt = glm::clamp(dt, 0.0f, 1.0f);
+		float smoothT = glm::smoothstep(0.0f, 1.0f, dt);
+		return glm::mix(actualPos, destination, smoothT);
+	}
+
+	glm::vec2 easeOutCubic(const glm::vec2& actualPos, const glm::vec2& destination, float dt) {
+		float clampedDt = glm::clamp(dt, 0.0f, 1.0f);
+		float easeValue = 1.0f - std::pow(1.0f - clampedDt, 3.0f);
+		return actualPos + (destination - actualPos) * easeValue;
+	}
+
+	//time = current time;
+	float calculateSquadMovementSpeed(Squad& squad, float t = 1.0f) {
+		float armySizeFactor = 1.0f - ((float)squad.getArmySize() / (float)SQUAD_MAX_SIZE);
+		float totalSpeed = t * armySizeFactor / ((float)tileSize / (float)STANDARD_SPEED);
+		SquadMovementInfo& data = squadsMovementData[squad.getSquadID()];
+		data.dt += totalSpeed;
+		return data.dt;
+	}
+
 	struct SquadMovementInfo {
 		Squad* squad;
 		std::vector<Astar::point> path;
+		float dt;
 	};
 	
 	uint8_t tileSize;
