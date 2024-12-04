@@ -16,3 +16,37 @@ void rasticore::UnmapFile(MAPPEDFILE mf)
 	CloseHandle(mf.map);
 	CloseHandle(mf.file);
 }
+
+rasticore::Image::Image(const char* filename, int comps)
+{
+	data = stbi_load(filename, (int*)&x_, (int*)&y_, (int*)&channels, comps);
+	if (comps != 0)
+		channels = comps;
+}
+
+rasticore::Image::~Image()
+{
+	stbi_image_free(data);
+}
+
+void rasticore::Image::WritePixel(uint32_t x, uint32_t y, uint32_t d)
+{
+		
+}
+
+uint32_t rasticore::Image::ReadPixel(uint32_t x, uint32_t y)
+{
+	return 0;
+}
+
+void rasticore::Image::CopyImageBlock(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t* d)
+{
+	uint32_t of = (x_ * y + x) * channels;//(x_ * channels * y) + (channels * x);
+	uint32_t off = 0;
+	for (int i = 0; i < h; i++)
+	{
+		memcpy(d + off, data + of, channels * w);
+		of += channels * x_;
+		off += channels * w;
+	}
+}

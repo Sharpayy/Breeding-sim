@@ -365,3 +365,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Rasticore/falka.jpg
+/Rasticore/Rasticore.vcxproj.filters
+/Rasticore/Rasticore.vcxproj
+*.png
