@@ -76,8 +76,8 @@
     <LibraryPath>C:\libs\lib\x64;C:\libs\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\libs\include;C:\libs\stb-master</IncludePath>
-    <LibraryPath>C:\libs\lib\x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>C:\Users\Dawid\Downloads\LIBSSSSSS\stb;C:\Users\Dawid\Downloads\LIBSSSSSS\glew-2.1.0\include;C:\Users\Dawid\Downloads\LIBSSSSSS\glm\glm;C:\Users\Dawid\Downloads\LIBSSSSSS\SDL2-2.24.1\SDL2-2.24.1\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Dawid\Downloads\LIBSSSSSS\glew-2.1.0\lib\Release\x64;C:\Users\Dawid\Downloads\LIBSSSSSS\SDL2-2.24.1\SDL2-2.24.1\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
