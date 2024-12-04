@@ -3,15 +3,17 @@
 #include "MovementManager.h";
 #include <array>
 #include "inputHandler.h"
-#include "fstream"
+#include "BuildingManager.h"
 
 class gameManager {
 public:
 	gameManager() {
 		std::filesystem::path path = std::filesystem::current_path();
-		std::filesystem::path collisionPath = path;
+		std::filesystem::path collisionPath = path, buildingPath = path;
 		collisionPath.append("Data\\collision.txt");
+		buildingPath.append("Data\\buildings.txt");
 		movementManager = MovementManager{ collisionPath, 4096, 16 };
+		buildingManager = BuildingManager{ buildingPath };
 		initGame(path);
 	}
 	
@@ -23,35 +25,12 @@ private:
 	void initGame(std::filesystem::path path) {
 		//DO TOTALNEJ ZMIANY
 		path = path.append("Data\\buildings.txt");
-		
-		//enum {
-		//	ORKS = 0,
-		//	HUMANS = 1,
-		//	NOMADS = 2,
-		//	EVIL_HUMANS = 3,
-		//	GOBLINS = 4,
-		//};
 
-		std::unordered_map<uint8_t, std::vector<Building>> fBuildings;
-		int id, race, size;
-		glm::vec2 position;
-		std::ifstream file;
-		file.open(path.string());
-		if (!file) {
-			std::cout << "buildings.txt File not found\n";
-			return;
-		};
-		file >> size;
-		for (int i = 0; i < size; i++) {
-			file >> position.x >> position.y >> id >> race;
-			fBuildings[race].push_back(Building{ position });
-		}
-
-		Faction orks = { "Orks",  fBuildings[0] };
-		Faction humans = { "Humans", fBuildings[1] };
-		Faction nomands = { "Nomads", fBuildings[2] };
-		Faction evilHumans = { "EvilHumans", fBuildings[3] };
-		Faction goblins = { "Dwards", fBuildings[4] };
+		Faction orks = { "Orks",  buildingManager.getRaceBuildings(0) };
+		Faction humans = { "Humans", buildingManager.getRaceBuildings(1) };
+		Faction nomands = { "Nomads", buildingManager.getRaceBuildings(2) };
+		Faction evilHumans = { "EvilHumans",buildingManager.getRaceBuildings(3) };
+		Faction goblins = { "Dwards", buildingManager.getRaceBuildings(4) };
 		Faction animals = { "Animals" };
 		Faction bandits = { "Bandits" };
 
@@ -65,6 +44,7 @@ private:
 
 	Squad* player;
 	MovementManager movementManager;
+	BuildingManager buildingManager;
 	std::array<Faction, 5> factions;
 	std::vector<Squad> squads;
 	InputHandler inputManager;
