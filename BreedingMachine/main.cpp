@@ -27,9 +27,7 @@
 #undef main
 
 // Test models ids
-#define RASTICORE_MODEL_CUBE			1
-#define RASTICORE_MODEL_TRIANGLE		2
-#define MENDA_MODEL 3
+#define FURRY_RACE			0
 
 //Tests includes
 #include "MovementManager.h"
@@ -251,17 +249,6 @@ int main(int argc, char* argv[])
 
 	stbi_set_flip_vertically_on_load(true);
 
-	rasticore::Image img{ "Rasticore\\menda.png",4 };
-	rasticore::Texture2D texture{ img.data, (int)img.x_, (int)img.y_, GL_RGBA, GL_RGBA8 };
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	texture.genMipmap();
-	rasticore::Texture2DBindless texturebind{ texture };
-	texturebind.MakeResident();
-
-
 	float plane_vtx[] = {
 		-0.5f * 100.0f, -0.5f * 100.0f, 1.0f, 0.0f, 0.0f,
 		-0.5f * 100.0f, 0.5f * 100.0f, 1.0f, 0.0f, 1.0f,
@@ -286,11 +273,12 @@ int main(int argc, char* argv[])
 	Square.addAttrib(GL_FLOAT, 1, 2, sizeof(float) * 5, 12);
 	Square.enableAttrib(0);
 	Square.enableAttrib(1);
-	//glUniform1i(glGetUniformLocation(_program_n.id, "image0"), 0); // BindSampler
-
-	//Camera _g_camera = Camera(vec3(5.0f, 0.0f, 5.0f));
-
-	//glViewport(-400, 0, 400, 400);
+	
+	rasticore::ModelCreationDetails rect_mcd;
+	rect_mcd.p = mendaprogram;
+	rect_mcd.rm = GL_TRIANGLES;
+	rect_mcd.v_cnt = 6;
+	rect_mcd.vb = Square;
 
 	_r.setCameraMatrix(lookAt(vec3(0.0f, 0.0f, 1000.0f), (vec3(0.0f, 0.0f, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
 	//_r.setProjectionMatrix(ortho(-1400.0f, 1400.0f, -1400.0f, 1400.0f, -5000.0f, 5000.0f));
@@ -318,26 +306,17 @@ int main(int argc, char* argv[])
 	xx = 16 * 18 + 4;
 	yy = -16 * 83 + 5;
 	Squad s1(10, { -2000, -2000 });
-	_r.newModel(MENDA_MODEL, Square, mendaprogram, 6, GL_TRIANGLES, texturebind, 100);
-	auto id = _r.newObject(MENDA_MODEL, {});
 
 	InputHandler ih;
+	gameManager gmanager(&_r);
+	gmanager.CreateNewFaction(0, "Data\\race_furry.png", &rect_mcd, "Furry");
 
-	//std::filesystem::path path = std::filesystem::current_path().append("Data\\collision.txt");
-	//MovementManager m{path, 4096, 16};
-	auto start = std::chrono::system_clock::now();
+	uint64_t s0 = gmanager.CreateNewSquad(FURRY_RACE, vec2(0.0f));
+	gmanager.SetSquadPosition(s0, vec2(500.0f));
 
-	//m.createSquadPath({ -960,1600 }, s1);
-	//m.createSquadPath({ 1300,1300}, s1);
-	auto end = std::chrono::system_clock().now();
-	auto elapsedMil = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-	auto elapsedMic = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-	std::cout << "Time in miliseconds : " << elapsedMil << " Time in microseconds : " << elapsedMic;
+	//_r.newObject(FURRY_RACE, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 1.1f }));
 
-	uint32_t lShdrPp = glGetUniformLocation(_program_n.id, "gPp");
-	//*lookAt(vec3(md.x, md.y, 5.0f), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f))
-	gameManager gmanager;
 	while (1)
 	{
 		RS_CLEAR_FRAMEBUFFER(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -348,17 +327,6 @@ int main(int argc, char* argv[])
 		_r.setCameraMatrix(lookAt(vec3(md.x, md.y, md.z), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
 		_r.UpdateShaderData();
 
-		vec4 proj_p = _r.MVP.matProjCamera * vec4(s1.getSquadPosition().x, s1.getSquadPosition().y, 1.1f, 1.0f);
-
-		//vec4 proj_p = _r.MVP.matProj * lookAt(vec3(md.x, md.y, 700.0f), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)) * vec4(s1.getSquadPosition().x, s1.getSquadPosition().y, 1.1f, 1.0f);
-		//vec4 proj_pasd = _r.MVP.matProjCamera * vec4(s1.getSquadPosition().x, s1.getSquadPosition().y, 1.1f, 1.0f);
-
-
-		vec2 Pp;
-		Pp.x = (proj_p.x * 800.0f) / (2.0f * proj_p.w) + 400;
-		Pp.y = (proj_p.y * 800.0f) / (2.0f * proj_p.w) + 400;
-
-		glUniform2fv(lShdrPp, 1, (float*)&Pp);
 
 		glUniform1f(lShdrScaleX, gm.pChunkSizeX);
 		glUniform1f(lShdrScaleY, gm.pChunkSizeY);
@@ -378,8 +346,8 @@ int main(int argc, char* argv[])
 		gmanager.update();
 		//m.update();
 
-		_r.RenderSelectedModel(MENDA_MODEL);
-		_r.SetObjectMatrix(id, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ s1.getSquadPosition().x, s1.getSquadPosition().y, 1.1f }));
+		_r.RenderSelectedModel(FURRY_RACE);
+		//_r.SetObjectMatrix(id, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ s1.getSquadPosition().x, s1.getSquadPosition().y, 1.1f }));
 
 		if (ih.KeyPressed(SDL_SCANCODE_W)) {
 			md.y += 20;
