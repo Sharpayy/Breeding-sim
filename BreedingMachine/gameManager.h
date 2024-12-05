@@ -38,6 +38,7 @@ public:
 		//_r.RenderSelectedModel(MODEL_EVIL_HUMANS);
 		//_r.RenderSelectedModel(MODEL_BANDITS);
 		//_r.RenderSelectedModel(MODEL_ANIMALS);
+		//Test sln
 
 	}
 
