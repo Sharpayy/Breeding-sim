@@ -27,7 +27,14 @@
 #undef main
 
 // Test models ids
-#define FURRY_RACE			0
+#define MODEL_PLAYER 0
+#define MODEL_ORKS 1
+#define MODEL_HUMANS 2
+#define MODEL_NOMADS 3
+#define MODEL_EVIL_HUMANS 4
+#define MODEL_GOBLINS 5
+#define MODEL_BANDITS 6
+#define MODEL_ANIMALS 7
 
 //Tests includes
 #include "MovementManager.h"
@@ -305,16 +312,9 @@ int main(int argc, char* argv[])
 	int xx, yy;
 	xx = 16 * 18 + 4;
 	yy = -16 * 83 + 5;
-	Squad s1(10, { -2000, -2000 });
 
 	InputHandler ih;
-	gameManager gmanager(&_r);
-	gmanager.CreateNewFaction(0, "Data\\race_furry.png", &rect_mcd, "Furry");
-
-	uint64_t s0 = gmanager.CreateNewSquad(FURRY_RACE, vec2(0.0f));
-	gmanager.SetSquadPosition(s0, vec2(500.0f));
-
-
+	gameManager gmanager(&_r, rect_mcd);
 	//_r.newObject(FURRY_RACE, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 1.1f }));
 
 	while (1)
@@ -345,8 +345,7 @@ int main(int argc, char* argv[])
 		}
 		gmanager.update();
 		//m.update();
-
-		_r.RenderSelectedModel(FURRY_RACE);
+		// 
 		//_r.SetObjectMatrix(id, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ s1.getSquadPosition().x, s1.getSquadPosition().y, 1.1f }));
 
 		if (ih.KeyPressed(SDL_SCANCODE_W)) {
