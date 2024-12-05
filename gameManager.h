@@ -38,7 +38,7 @@ private:
 		int i, chuj = 0;
 		for (i = 0; i < 3; i++) {
 			//Squad{ , }
-			//squads.push_back(Squad{ chuj++, glm::vec2{(rand() % 4096) - 2048,  (rand() % 4096) - 2048 } });
+			//squads.push_back(Squad{ chuj++, });
 		}
 	}
 
