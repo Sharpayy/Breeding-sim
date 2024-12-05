@@ -16,8 +16,8 @@
 typedef uint32_t RENDER_OBJECT_ID;
 typedef uint32_t RENDER_MODEL_ID;
 
-#define LONG_GET_MODEL(A)	(*(RENDER_LONG_ID*)&A).ModelId
-#define LONG_GET_OBJECT(A)	(*(RENDER_LONG_ID*)&A).ObjectId
+#define LONG_GET_MODEL(A)	(*(rasticore::RENDER_LONG_ID*)&A).ModelId
+#define LONG_GET_OBJECT(A)	(*(rasticore::RENDER_LONG_ID*)&A).ObjectId
 
 #define RENDERER_SHADER_MAIN_TEXTURE_NAME	"TEXTURE_HANDLE"
 
@@ -483,5 +483,15 @@ namespace rasticore
 		void BindMVP();
 
 
+	};
+
+	class ModelCreationDetails
+	{
+	public:
+		rasticore::VertexBuffer vb;
+		rasticore::Program p;
+		rasticore::Texture2DBindless txb;
+		GLenum rm;
+		uint32_t v_cnt;
 	};
 }
