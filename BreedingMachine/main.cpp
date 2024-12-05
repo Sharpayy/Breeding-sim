@@ -27,12 +27,12 @@
 #undef main
 
 // Test models ids
-#define MODEL_PLAYER 0
-#define MODEL_ORKS 1
-#define MODEL_HUMANS 2
-#define MODEL_NOMADS 3
-#define MODEL_EVIL_HUMANS 4
-#define MODEL_GOBLINS 5
+#define MODEL_ORKS 0
+#define MODEL_HUMANS 1
+#define MODEL_NOMADS 2
+#define MODEL_EVIL_HUMANS 3
+#define MODEL_GOBLINS 4
+#define MODEL_PLAYER 5
 #define MODEL_BANDITS 6
 #define MODEL_ANIMALS 7
 

@@ -35,7 +35,7 @@ public:
 		r->RenderSelectedModel(MODEL_HUMANS);
 		r->RenderSelectedModel(MODEL_NOMADS);
 		r->RenderSelectedModel(MODEL_GOBLINS);
-		//_r.RenderSelectedModel(MODEL_EVIL_HUMANS);
+		r->RenderSelectedModel(MODEL_EVIL_HUMANS);
 		//_r.RenderSelectedModel(MODEL_BANDITS);
 		//_r.RenderSelectedModel(MODEL_ANIMALS);
 		//Test sln
@@ -101,12 +101,11 @@ private:
 		//gmanager.CreateNewFaction(5, "Data\\race_furry.png", &rect_mcd, "");
 
 
-		Squad* s0 = CreateNewSquad(MODEL_PLAYER, glm::vec2(0.0f));
-		SetSquadPosition(glm::vec2(500.0f), s0);
+		//Squad* s0 = CreateNewSquad(MODEL_PLAYER, glm::vec2(0.0f));
 
-		Squad* s1 = CreateNewSquad(MODEL_GOBLINS, glm::vec2(-2000.0f));
+		Squad* s1 = CreateNewSquad(MODEL_EVIL_HUMANS, glm::vec2(-2000.0f));
 
-		Squad* s2 = CreateNewSquad(MODEL_ORKS, glm::vec2(2000.0f));
+		//Squad* s2 = CreateNewSquad(MODEL_ORKS, glm::vec2(2000.0f));
 
 		movementManager.createSquadPath(Astar::point{ 1600,1600 }, s1);
 	}
