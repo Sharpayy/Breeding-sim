@@ -19,18 +19,20 @@ public:
 		buildingManager = BuildingManager{ buildingPath };
 
 		this->r = r_;
+		cameraOffset = CameraOffset{ 0, 0, 500.0f };
 		initGame(path);
 	}
 	
 	void update() {
+		inputHandler();
+		auto pos = getMousePosition();
+		std::cout << pos.x << " " << pos.y << "\n";
 		movementManager.update();
 
 		Astar::point p;
 		for (auto& squad : squads) {
 			SetSquadPosition(squad->getSquadPosition(), squad);
 		}
-		auto pos = getMousePosition();
-		std::cout << pos.x << " " << pos.y << "\n";
 
 		r->RenderSelectedModel(MODEL_PLAYER);
 		r->RenderSelectedModel(MODEL_ORKS);
@@ -81,24 +83,33 @@ public:
 	}
 
 	void inputHandler() {
-		/*if (inputManager.KeyPressed(SDL_SCANCODE_W)) {
-			md.y += 20;
+		inputManager.handleKeys();
+		if (inputManager.KeyPressed(SDL_SCANCODE_W)) {
+			cameraOffset.y += 20;
 		}
 		if (inputManager.KeyPressed(SDL_SCANCODE_S)) {
-			md.y -= 20;
+			cameraOffset.y -= 20;
 		}
 		if (inputManager.KeyPressed(SDL_SCANCODE_A)) {
-			md.x -= 20;
+			cameraOffset.x -= 20;
 		}
 		if (inputManager.KeyPressed(SDL_SCANCODE_D)) {
-			md.x += 20;
+			cameraOffset.x += 20;
 		}
 		if (inputManager.KeyPressed(SDL_SCANCODE_Q)) {
-			md.z -= 20.0f;
+			cameraOffset.z -= 20.0f;
 		}
 		if (inputManager.KeyPressed(SDL_SCANCODE_E)) {
-			md.z += 20.0f;
-		}*/
+			cameraOffset.z += 20.0f;
+		}
+	}
+
+	struct CameraOffset {
+		float x = 0, y = 0, z = 0;
+	};
+
+	CameraOffset getCameraOffset() {
+		return cameraOffset;
 	}
 
 private:
@@ -135,16 +146,20 @@ private:
 
 	glm::vec2 getMousePosition() {
 		int x, y;
+		float fx, fy;
 		SDL_GetMouseState(&x, &y);
-
-		//float scaleX = settings->ScaleX / (float)screenHalfWidth;
-		//float scaleY = settings->ScaleY / (float)screenHalfHeight;
+		//fx = x / 800.0f * cameraOffset.x * 2.0f;
+		//fy = y / 800.0f * cameraOffset.y * 2.0f;
 
 		int screenHalfWidth, screenHalfHeight;
 		screenHalfWidth = (int)movementManager.getMapSize() / 2.0f;
 		screenHalfHeight = screenHalfWidth;
+		
+		float scaleX = cameraOffset.x / (float)screenHalfWidth;
+		float scaleY = cameraOffset.y / (float)screenHalfHeight;
 
-		return glm::vec2{ x - screenHalfWidth, screenHalfWidth - y };
+		return glm::vec2{ (x - (float)screenHalfWidth) * scaleX + cameraOffset.x, (-1 * (y - (float)screenHalfHeight)) * scaleY + cameraOffset.y };
+		//return glm::vec2{ fx - cameraOffset.x, cameraOffset.y - fy };
 
 		//return glm::fvec2{ (x - (float)screenHalfWidth) * scaleX + settings->MoveX, (-1 * (y - (float)screenHalfHeight)) * scaleY + settings->MoveY };
 		//return glm::fvec2{ (x - (float)screenHalfWidth) + settings->MoveX, (-1 * (y - (float)screenHalfHeight)) + settings->MoveY };
@@ -160,4 +175,6 @@ private:
 	std::array<Faction, 8> factions;
 	std::vector<Squad*> squads;
 	InputHandler inputManager;
+
+	CameraOffset cameraOffset;
 };
