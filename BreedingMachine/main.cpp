@@ -315,6 +315,8 @@ int main(int argc, char* argv[])
 	yy = -16 * 83 + 5;
 
 
+
+
 	InputHandler ih;
 	gameManager gmanager(&_r, rect_mcd);
 	//_r.newObject(FURRY_RACE, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 1.1f }));
@@ -329,7 +331,6 @@ int main(int argc, char* argv[])
 		_r.setCameraMatrix(lookAt(vec3(md.x, md.y, 100.0f), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
 		_r.setProjectionMatrix(ortho(-md.z, md.z, -md.z, md.z, -1000.0f, 1000.0f));
 		_r.UpdateShaderData();
-
 
 
 

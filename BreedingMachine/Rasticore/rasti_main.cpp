@@ -80,7 +80,7 @@ rasticore::Ray rasticore::RsCalcMouseRay(rasticore::InShaderMVP_DATA* mvp, glm::
 	nds = inv_view * nds;
 
 	rasticore::Ray ray = rasticore::Ray(glm::vec3(nds.x, nds.y, nds.z), glm::vec3(inv_view[3][0], inv_view[3][1], inv_view[3][2]));
-	glm::normalize(ray.d);
+	ray.d = glm::normalize(ray.d);
 	return ray;
 }
 
