@@ -26,7 +26,6 @@ public:
 	void update() {
 		inputHandler();
 		auto pos = getMousePosition();
-		std::cout << pos.x << " " << pos.y << "\n";
 		movementManager.update();
 
 		Astar::point p;
@@ -112,6 +111,31 @@ public:
 		return cameraOffset;
 	}
 
+	glm::vec2 getMousePosition() {
+		int x, y;
+		SDL_GetMouseState(&x, &y);
+
+		glm::vec3 screen = glm::vec3(800.0f);
+
+		glm::vec4 nds;
+		nds.x = (2.0f * (float)x) / screen.x - 1.0f;
+		nds.y = (2.0f * (float)y) / screen.y - 1.0f;
+		nds.z = 1.0f;
+		nds.w = 1.0f;
+
+		nds.y *= -1.0f;
+
+		glm::mat4 inv_projection = glm::inverse(r->MVP.matProj);
+
+		nds = inv_projection * nds;
+
+		glm::mat4 inv_camera = glm::inverse(r->MVP.matCamera);
+
+		nds = inv_camera * nds;
+
+		return glm::vec2(nds.x, nds.y);
+	}
+
 private:
 	void initGame(std::filesystem::path path) {
 		//DO TOTALNEJ ZMIANY
@@ -142,28 +166,6 @@ private:
 		//Squad* s2 = CreateNewSquad(MODEL_ORKS, glm::vec2(2000.0f));
 
 		movementManager.createSquadPath(Astar::point{ 1600,1600 }, s1);
-	}
-
-	glm::vec2 getMousePosition() {
-		int x, y;
-		float fx, fy;
-		SDL_GetMouseState(&x, &y);
-		//fx = x / 800.0f * cameraOffset.x * 2.0f;
-		//fy = y / 800.0f * cameraOffset.y * 2.0f;
-
-		int screenHalfWidth, screenHalfHeight;
-		screenHalfWidth = (int)movementManager.getMapSize() / 2.0f;
-		screenHalfHeight = screenHalfWidth;
-		
-		float scaleX = cameraOffset.x / (float)screenHalfWidth;
-		float scaleY = cameraOffset.y / (float)screenHalfHeight;
-
-		return glm::vec2{ (x - (float)screenHalfWidth) * scaleX + cameraOffset.x, (-1 * (y - (float)screenHalfHeight)) * scaleY + cameraOffset.y };
-		//return glm::vec2{ fx - cameraOffset.x, cameraOffset.y - fy };
-
-		//return glm::fvec2{ (x - (float)screenHalfWidth) * scaleX + settings->MoveX, (-1 * (y - (float)screenHalfHeight)) * scaleY + settings->MoveY };
-		//return glm::fvec2{ (x - (float)screenHalfWidth) + settings->MoveX, (-1 * (y - (float)screenHalfHeight)) + settings->MoveY };
-
 	}
 
 	rasticore::RastiCoreRender* r;
