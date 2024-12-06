@@ -62,6 +62,41 @@ void rasticore::InitEmptyTimer(rasticore::PerformanceTimer* tm)
 	glGenQueries(1, &tm->id);
 }
 
+rasticore::Ray rasticore::RsCalcMouseRay(rasticore::InShaderMVP_DATA* mvp, glm::vec2 mouse, glm::vec2 screen)
+{
+	glm::vec4 nds;
+	nds.x = (2.0f * mouse.x) / screen.x - 1.0f;
+	nds.y = (2.0f * mouse.y) / screen.y - 1.0f;
+	nds.z = -1.0f;
+	nds.w = 1.0f;
+
+	glm::mat4 inv_projection = glm::inverse(mvp->matProj);
+
+	nds = inv_projection * nds;
+	nds = glm::vec4(nds.x, nds.y, -1.0f, 0.0f);
+
+	glm::mat4 inv_view = glm::inverse(mvp->matCamera);
+
+	nds = inv_view * nds;
+
+	rasticore::Ray ray = rasticore::Ray(glm::vec3(nds.x, nds.y, nds.z), glm::vec3(inv_view[3][0], inv_view[3][1], inv_view[3][2]));
+	glm::normalize(ray.d);
+	return ray;
+}
+
+uint8_t rasticore::RsCalcRayPlaneIntersection(rasticore::Ray ray, glm::vec3 n_plane, float d_plane, glm::vec3* r)
+{
+	float t = -((glm::dot(ray.o, n_plane) + d_plane) / glm::dot(ray.d, n_plane));
+
+	if (t >= 0)
+	{
+		*r = ray.o + ray.d * t;
+		return 1;
+	}
+
+	return 0;
+}
+
 void BoolSwap(bool* a, bool* b)
 {
 	bool t = *b;

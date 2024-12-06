@@ -3,6 +3,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstdint>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <stb_image.h>
 
@@ -24,6 +25,14 @@ namespace rasticore
 		void CopyImageBlock(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t* d);
 	};
 
+	class Ray
+	{
+	public:
+		glm::vec3 d;
+		glm::vec3 o;
+
+		Ray(glm::vec3 d, glm::vec3 o);
+	};
 
 }
 

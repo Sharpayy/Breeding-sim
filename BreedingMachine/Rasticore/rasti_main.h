@@ -8,6 +8,7 @@
 #include <ctime>
 #include "rasti_alloc.h"
 #include "rasti_adv.h"
+#include "rasti_utils.h"
 
 #define RENDERER_SHADER_MPV_DATA_LOCATION 1
 #define RENDERER_SHADER_MATRIX_SPACE_LOCATION 5
@@ -494,4 +495,8 @@ namespace rasticore
 		GLenum rm;
 		uint32_t v_cnt;
 	};
+
+	rasticore::Ray RsCalcMouseRay(rasticore::InShaderMVP_DATA* mvp, glm::vec2 mouse, glm::vec2 screen);
+
+	uint8_t RsCalcRayPlaneIntersection(rasticore::Ray ray, glm::vec3 n_plane, float d_plane, glm::vec3* r);
 }

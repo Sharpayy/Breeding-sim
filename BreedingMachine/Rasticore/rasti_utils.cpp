@@ -50,3 +50,9 @@ void rasticore::Image::CopyImageBlock(uint32_t x, uint32_t y, uint32_t w, uint32
 		off += channels * w;
 	}
 }
+
+rasticore::Ray::Ray(glm::vec3 d, glm::vec3 o)
+{
+	this->d = d;
+	this->o = o;
+}

@@ -289,7 +289,8 @@ int main(int argc, char* argv[])
 
 	_r.setCameraMatrix(lookAt(vec3(0.0f, 0.0f, 1000.0f), (vec3(0.0f, 0.0f, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
 	//_r.setProjectionMatrix(ortho(-1400.0f, 1400.0f, -1400.0f, 1400.0f, -5000.0f, 5000.0f));
-	_r.setProjectionMatrix(perspective(radians(90.0f), 1.0f, 1.0f, 5000.0f));
+	//_r.setProjectionMatrix(perspective(radians(90.0f), 1.0f, 1.0f, 5000.0f));
+	_r.setProjectionMatrix(ortho(-500.0f, 500.0f, -500.0f, 500.0f, -1000.0f, 1000.0f));
 	_r.UpdateShaderData();
 	
 	rasticore::Image mapImg = rasticore::Image("Rasticore\\mm.png", 4);
@@ -306,12 +307,13 @@ int main(int argc, char* argv[])
 
 	//TESTS
 	struct chuj {	
-		int x = 0, y = 0, z = 2000;
+		float x = 0, y = 0, z = 500.0f;
 	} md;
 
 	int xx, yy;
 	xx = 16 * 18 + 4;
 	yy = -16 * 83 + 5;
+
 
 	InputHandler ih;
 	gameManager gmanager(&_r, rect_mcd);
@@ -324,8 +326,11 @@ int main(int argc, char* argv[])
 		_program_n.use();
 		gm.rChunkVao.bind();
 
-		_r.setCameraMatrix(lookAt(vec3(md.x, md.y, md.z), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
+		_r.setCameraMatrix(lookAt(vec3(md.x, md.y, 100.0f), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
+		_r.setProjectionMatrix(ortho(-md.z, md.z, -md.z, md.z, -1000.0f, 1000.0f));
 		_r.UpdateShaderData();
+
+
 
 
 		glUniform1f(lShdrScaleX, gm.pChunkSizeX);
@@ -361,10 +366,10 @@ int main(int argc, char* argv[])
 			md.x += 20;
 		}
 		if (ih.KeyPressed(SDL_SCANCODE_Q)) {
-			md.z -= 20;
+			md.z -= 20.0f;
 		}
 		if (ih.KeyPressed(SDL_SCANCODE_E)) {
-			md.z += 20;
+			md.z += 20.0f;
 		}
 
 		_win.swap();
