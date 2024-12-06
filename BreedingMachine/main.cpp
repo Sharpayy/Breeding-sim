@@ -306,21 +306,15 @@ int main(int argc, char* argv[])
 	RS_BACKGROUND_CLEAR_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
 	//TESTS
-	struct chuj {	
-		float x = 0, y = 0, z = 500.0f;
-	} md;
 
 	int xx, yy;
 	xx = 16 * 18 + 4;
 	yy = -16 * 83 + 5;
 
 
-
-
-	InputHandler ih;
 	gameManager gmanager(&_r, rect_mcd);
 	//_r.newObject(FURRY_RACE, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 1.1f }));
-
+	gameManager::CameraOffset cameraOffset;
 	while (1)
 	{
 		RS_CLEAR_FRAMEBUFFER(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -328,9 +322,11 @@ int main(int argc, char* argv[])
 		_program_n.use();
 		gm.rChunkVao.bind();
 
-		_r.setCameraMatrix(lookAt(vec3(md.x, md.y, 100.0f), (vec3(md.x, md.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
-		_r.setProjectionMatrix(ortho(-md.z, md.z, -md.z, md.z, -1000.0f, 1000.0f));
+		cameraOffset = gmanager.getCameraOffset();
+		_r.setCameraMatrix(lookAt(vec3(cameraOffset.x, cameraOffset.y, 100.0f), (vec3(cameraOffset.x, cameraOffset.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
+		_r.setProjectionMatrix(ortho(-cameraOffset.z, cameraOffset.z, -cameraOffset.z, cameraOffset.z, -1000.0f, 1000.0f));
 		_r.UpdateShaderData();
+
 
 
 
@@ -353,29 +349,8 @@ int main(int argc, char* argv[])
 		//m.update();
 		// 
 		//_r.SetObjectMatrix(id, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ s1.getSquadPosition().x, s1.getSquadPosition().y, 1.1f }));
-
-		if (ih.KeyPressed(SDL_SCANCODE_W)) {
-			md.y += 20;
-		}
-		if (ih.KeyPressed(SDL_SCANCODE_S)) {
-			md.y -= 20;
-		}
-		if (ih.KeyPressed(SDL_SCANCODE_A)) {
-			md.x -= 20;
-		}
-		if (ih.KeyPressed(SDL_SCANCODE_D)) {
-			md.x += 20;
-		}
-		if (ih.KeyPressed(SDL_SCANCODE_Q)) {
-			md.z -= 20.0f;
-		}
-		if (ih.KeyPressed(SDL_SCANCODE_E)) {
-			md.z += 20.0f;
-		}
-
 		_win.swap();
 		//_win.handleEvents();
-		ih.handleKeys();
 		SDL_Delay(10);
 	}
 

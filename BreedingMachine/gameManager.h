@@ -19,10 +19,14 @@ public:
 		buildingManager = BuildingManager{ buildingPath };
 
 		this->r = r_;
+		cameraOffset = CameraOffset{ 0, 0, 500.0f };
 		initGame(path);
 	}
 	
 	void update() {
+		inputHandler();
+		auto pos = getMousePosition();
+		std::cout << pos.x << " " << pos.y << "\n";
 		movementManager.update();
 
 		Astar::point p;
@@ -78,6 +82,36 @@ public:
 		r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ pos.x, pos.y, 1.1f }), true);
 	}
 
+	void inputHandler() {
+		inputManager.handleKeys();
+		if (inputManager.KeyPressed(SDL_SCANCODE_W)) {
+			cameraOffset.y += 20;
+		}
+		if (inputManager.KeyPressed(SDL_SCANCODE_S)) {
+			cameraOffset.y -= 20;
+		}
+		if (inputManager.KeyPressed(SDL_SCANCODE_A)) {
+			cameraOffset.x -= 20;
+		}
+		if (inputManager.KeyPressed(SDL_SCANCODE_D)) {
+			cameraOffset.x += 20;
+		}
+		if (inputManager.KeyPressed(SDL_SCANCODE_Q)) {
+			cameraOffset.z -= 20.0f;
+		}
+		if (inputManager.KeyPressed(SDL_SCANCODE_E)) {
+			cameraOffset.z += 20.0f;
+		}
+	}
+
+	struct CameraOffset {
+		float x = 0, y = 0, z = 0;
+	};
+
+	CameraOffset getCameraOffset() {
+		return cameraOffset;
+	}
+
 private:
 	void initGame(std::filesystem::path path) {
 		//DO TOTALNEJ ZMIANY
@@ -104,10 +138,32 @@ private:
 		//Squad* s0 = CreateNewSquad(MODEL_PLAYER, glm::vec2(0.0f));
 
 		Squad* s1 = CreateNewSquad(MODEL_EVIL_HUMANS, glm::vec2(-2000.0f));
-
+		
 		//Squad* s2 = CreateNewSquad(MODEL_ORKS, glm::vec2(2000.0f));
 
 		movementManager.createSquadPath(Astar::point{ 1600,1600 }, s1);
+	}
+
+	glm::vec2 getMousePosition() {
+		int x, y;
+		float fx, fy;
+		SDL_GetMouseState(&x, &y);
+		//fx = x / 800.0f * cameraOffset.x * 2.0f;
+		//fy = y / 800.0f * cameraOffset.y * 2.0f;
+
+		int screenHalfWidth, screenHalfHeight;
+		screenHalfWidth = (int)movementManager.getMapSize() / 2.0f;
+		screenHalfHeight = screenHalfWidth;
+		
+		float scaleX = cameraOffset.x / (float)screenHalfWidth;
+		float scaleY = cameraOffset.y / (float)screenHalfHeight;
+
+		return glm::vec2{ (x - (float)screenHalfWidth) * scaleX + cameraOffset.x, (-1 * (y - (float)screenHalfHeight)) * scaleY + cameraOffset.y };
+		//return glm::vec2{ fx - cameraOffset.x, cameraOffset.y - fy };
+
+		//return glm::fvec2{ (x - (float)screenHalfWidth) * scaleX + settings->MoveX, (-1 * (y - (float)screenHalfHeight)) * scaleY + settings->MoveY };
+		//return glm::fvec2{ (x - (float)screenHalfWidth) + settings->MoveX, (-1 * (y - (float)screenHalfHeight)) + settings->MoveY };
+
 	}
 
 	rasticore::RastiCoreRender* r;
@@ -119,4 +175,6 @@ private:
 	std::array<Faction, 8> factions;
 	std::vector<Squad*> squads;
 	InputHandler inputManager;
+
+	CameraOffset cameraOffset;
 };
