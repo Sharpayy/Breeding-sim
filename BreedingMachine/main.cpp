@@ -315,8 +315,8 @@ int main(int argc, char* argv[])
 	yy = -16 * 83 + 5;
 
 
-	InputHandler ih;
 	gameManager gmanager(&_r, rect_mcd);
+	InputHandler ih;
 	//_r.newObject(FURRY_RACE, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 1.1f }));
 
 	while (1)

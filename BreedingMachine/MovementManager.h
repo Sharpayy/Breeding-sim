@@ -41,6 +41,14 @@ public:
 		SDL_Delay(10);
 	}
 
+	uint8_t getMapTileSize() {
+		return tileSize;
+	}
+
+	uint64_t getMapSize() {
+		return mapSize;
+	}
+
 private:
 	void moveSquads() {
 		Astar::point prevAP, nextAP;

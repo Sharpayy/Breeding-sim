@@ -29,6 +29,8 @@ public:
 		for (auto& squad : squads) {
 			SetSquadPosition(squad->getSquadPosition(), squad);
 		}
+		auto pos = getMousePosition();
+		std::cout << pos.x << " " << pos.y << "\n";
 
 		r->RenderSelectedModel(MODEL_PLAYER);
 		r->RenderSelectedModel(MODEL_ORKS);
@@ -78,6 +80,27 @@ public:
 		r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ pos.x, pos.y, 1.1f }), true);
 	}
 
+	void inputHandler() {
+		/*if (inputManager.KeyPressed(SDL_SCANCODE_W)) {
+			md.y += 20;
+		}
+		if (inputManager.KeyPressed(SDL_SCANCODE_S)) {
+			md.y -= 20;
+		}
+		if (inputManager.KeyPressed(SDL_SCANCODE_A)) {
+			md.x -= 20;
+		}
+		if (inputManager.KeyPressed(SDL_SCANCODE_D)) {
+			md.x += 20;
+		}
+		if (inputManager.KeyPressed(SDL_SCANCODE_Q)) {
+			md.z -= 20.0f;
+		}
+		if (inputManager.KeyPressed(SDL_SCANCODE_E)) {
+			md.z += 20.0f;
+		}*/
+	}
+
 private:
 	void initGame(std::filesystem::path path) {
 		//DO TOTALNEJ ZMIANY
@@ -104,10 +127,28 @@ private:
 		//Squad* s0 = CreateNewSquad(MODEL_PLAYER, glm::vec2(0.0f));
 
 		Squad* s1 = CreateNewSquad(MODEL_EVIL_HUMANS, glm::vec2(-2000.0f));
-
+		
 		//Squad* s2 = CreateNewSquad(MODEL_ORKS, glm::vec2(2000.0f));
 
 		movementManager.createSquadPath(Astar::point{ 1600,1600 }, s1);
+	}
+
+	glm::vec2 getMousePosition() {
+		int x, y;
+		SDL_GetMouseState(&x, &y);
+
+		//float scaleX = settings->ScaleX / (float)screenHalfWidth;
+		//float scaleY = settings->ScaleY / (float)screenHalfHeight;
+
+		int screenHalfWidth, screenHalfHeight;
+		screenHalfWidth = (int)movementManager.getMapSize() / 2.0f;
+		screenHalfHeight = screenHalfWidth;
+
+		return glm::vec2{ x - screenHalfWidth, screenHalfWidth - y };
+
+		//return glm::fvec2{ (x - (float)screenHalfWidth) * scaleX + settings->MoveX, (-1 * (y - (float)screenHalfHeight)) * scaleY + settings->MoveY };
+		//return glm::fvec2{ (x - (float)screenHalfWidth) + settings->MoveX, (-1 * (y - (float)screenHalfHeight)) + settings->MoveY };
+
 	}
 
 	rasticore::RastiCoreRender* r;
