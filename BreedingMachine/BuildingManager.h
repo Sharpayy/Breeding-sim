@@ -37,7 +37,7 @@ public:
 		for (auto& building : fBuildings) {
 			if (building.first == raceID) return building.second;
 		}
-		std::cout << "Building not found\n";
+		std::cout << "Buildings not found\n";
 		return std::vector<Building>{};
 	}
 

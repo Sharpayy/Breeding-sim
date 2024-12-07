@@ -327,7 +327,7 @@ int main(int argc, char* argv[])
 		_r.setProjectionMatrix(ortho(-cameraOffset.z, cameraOffset.z, -cameraOffset.z, cameraOffset.z, -1000.0f, 1000.0f));
 		_r.UpdateShaderData();
 
-		printf("%f %f\n", gmanager.getMousePosition().x, gmanager.getMousePosition().y);
+		//printf("%f %f\n", gmanager.getMousePosition().x, gmanager.getMousePosition().y);
 
 
 		glUniform1f(lShdrScaleX, gm.pChunkSizeX);

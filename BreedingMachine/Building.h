@@ -12,11 +12,11 @@ public:
 		std::cout << "chujowy budynek\n";
 	}
 	Building(glm::vec2 position) {
-		this->position;
+		this->position = position;
 	}
 
 	glm::vec2 getBuildingPosition() {
-
+		return position;
 	}
 
 private:

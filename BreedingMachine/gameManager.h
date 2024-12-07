@@ -4,34 +4,35 @@
 #include <array>
 #include "inputHandler.h"
 #include "BuildingManager.h"
-#include "Rasticore/rasti_main.h"
+#include "FactionManager.h"
 #include <glm/vec2.hpp>
 
 class gameManager {
 public:
 	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) {
 		this->rect_mcd = rect_mcd;
+		this->r = r_;
 		std::filesystem::path path = std::filesystem::current_path();
 		std::filesystem::path collisionPath = path, buildingPath = path;
 		collisionPath.append("Data\\collision.txt");
 		buildingPath.append("Data\\buildings.txt");
-		movementManager = MovementManager{ collisionPath, 4096, 16 };
+		movementManager = MovementManager{ collisionPath, 4096, 16, r_, rect_mcd };
 		buildingManager = BuildingManager{ buildingPath };
+		factionManager = FactionManager{r_, rect_mcd, 16};
 
-		this->r = r_;
 		cameraOffset = CameraOffset{ 0, 0, 500.0f };
 		initGame(path);
 	}
 	
 	void update() {
 		inputHandler();
-		auto pos = getMousePosition();
+		//auto pos = getMousePosition();
 		movementManager.update();
-
-		Astar::point p;
-		for (auto& squad : squads) {
-			SetSquadPosition(squad->getSquadPosition(), squad);
-		}
+		handleSquadLogic();
+		//Astar::point p;
+		//for (auto& squad : squads) {
+		//	SetSquadPosition(squad->getSquadPosition(), squad);
+		//}
 
 		r->RenderSelectedModel(MODEL_PLAYER);
 		r->RenderSelectedModel(MODEL_ORKS);
@@ -43,42 +44,6 @@ public:
 		//_r.RenderSelectedModel(MODEL_ANIMALS);
 		//Test sln
 
-	}
-
-	void CreateNewFaction(uint32_t faction_id, const char* filename, const char* faction_name)
-	{
-		rasticore::Image img = rasticore::Image(filename, 4);
-		rasticore::Texture2D tx{ img.data, (int)img.x_, (int)img.y_, GL_RGBA, GL_RGBA8 };
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		tx.genMipmap();
-		rasticore::Texture2DBindless txb{ tx };
-		txb.MakeResident();
-
-		r->newModel(faction_id, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, txb, 30);
-
-		factions[faction_id] = Faction(faction_name, buildingManager.getRaceBuildings(faction_id));
-	}
-
-	Squad* CreateNewSquad(uint32_t faction_id, glm::vec2 starting_pos)
-	{
-		rasticore::RENDER_LONG_ID unique_id;
-		r->newObject(faction_id, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ starting_pos.x, starting_pos.y, 1.1f }), (uint64_t*)&unique_id);
-
-		Squad* squad = new Squad(*(uint64_t*)&unique_id, starting_pos);
-		squads.push_back(squad);
-
-		return squad;
-	}
-
-	void SetSquadPosition(glm::vec2 pos, Squad* squad)
-	{
-		squad->setSquadPosition(pos);
-		uint64_t id = squad->getSquadID();
-		r->BindActiveModel(LONG_GET_MODEL(id));
-		r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ pos.x, pos.y, 1.1f }), true);
 	}
 
 	void inputHandler() {
@@ -100,6 +65,10 @@ public:
 		}
 		if (inputManager.KeyPressed(SDL_SCANCODE_E)) {
 			cameraOffset.z += 20.0f;
+		}
+		if (inputManager.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
+			auto pos = getMousePosition();
+			movementManager.createSquadPath({(int)pos.x, (int)pos.y }, player);
 		}
 	}
 
@@ -141,31 +110,86 @@ private:
 		//DO TOTALNEJ ZMIANY
 		path = path.append("Data\\buildings.txt");
 
-	/*	Faction orks = { "Orks",  buildingManager.getRaceBuildings(0) };
-		Faction humans = { "Humans", buildingManager.getRaceBuildings(1) };
-		Faction nomands = { "Nomads", buildingManager.getRaceBuildings(2) };
-		Faction evilHumans = { "EvilHumans",buildingManager.getRaceBuildings(3) };
-		Faction goblins = { "Dwards", buildingManager.getRaceBuildings(4) };
-		Faction animals = { "Animals" };
-		Faction bandits = { "Bandits" };*/
+		factionManager.CreateNewFaction(MODEL_ORKS, "Data\\ork.png", "Orks", buildingManager.getRaceBuildings(MODEL_ORKS));
+		factionManager.CreateNewFaction(MODEL_HUMANS, "Data\\human.png", "Humans", buildingManager.getRaceBuildings(MODEL_HUMANS));
+		factionManager.CreateNewFaction(MODEL_NOMADS, "Data\\mongo.png", "Nomads", buildingManager.getRaceBuildings(MODEL_NOMADS));
+		factionManager.CreateNewFaction(MODEL_EVIL_HUMANS, "Data\\evil_human.png", "EvilHumans", buildingManager.getRaceBuildings(MODEL_EVIL_HUMANS));
+		factionManager.CreateNewFaction(MODEL_GOBLINS, "Data\\goblin.png", "Goblin", buildingManager.getRaceBuildings(MODEL_GOBLINS));
+		factionManager.CreateNewFaction(MODEL_PLAYER, "Data\\player.png", "Player", buildingManager.getRaceBuildings(MODEL_PLAYER));
+		factionManager.CreateNewFaction(MODEL_BANDITS, "Data\\bandit.png", "Bandit", buildingManager.getRaceBuildings(MODEL_BANDITS));
+		factionManager.CreateNewFaction(MODEL_ANIMALS, "Data\\animal.png", "Animal", buildingManager.getRaceBuildings(MODEL_ANIMALS));
 
-		CreateNewFaction(0, "Data\\ork.png", "Orks");
-		CreateNewFaction(1, "Data\\human.png", "Humans");
-		CreateNewFaction(2, "Data\\mongo.png", "Nomads");
-		CreateNewFaction(3, "Data\\evil_human.png", "EvilHumans");
-		CreateNewFaction(4, "Data\\goblin.png", "Goblin");
-		CreateNewFaction(5, "Data\\player.png", "Player");
+		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);
+		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_NOMADS, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_ORKS, ALLY);
+		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_PLAYER, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_BANDITS, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_ANIMALS, ENEMY);
 
-		//gmanager.CreateNewFaction(5, "Data\\race_furry.png", &rect_mcd, "");
+
+		factionManager.setFactionsRelationships(MODEL_ORKS, MODEL_HUMANS, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_ORKS, MODEL_PLAYER, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_ORKS, MODEL_ANIMALS, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_ORKS, MODEL_EVIL_HUMANS, ALLY);
+		factionManager.setFactionsRelationships(MODEL_ORKS, MODEL_BANDITS, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_ORKS, MODEL_NOMADS, ENEMY);
 
 
-		//Squad* s0 = CreateNewSquad(MODEL_PLAYER, glm::vec2(0.0f));
+		factionManager.setFactionsRelationships(MODEL_EVIL_HUMANS, MODEL_PLAYER, NEUTRAL);
+		factionManager.setFactionsRelationships(MODEL_EVIL_HUMANS, MODEL_ANIMALS, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_EVIL_HUMANS, MODEL_HUMANS, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_EVIL_HUMANS, MODEL_BANDITS, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_EVIL_HUMANS, MODEL_NOMADS, NEUTRAL);
 
-		Squad* s1 = CreateNewSquad(MODEL_EVIL_HUMANS, glm::vec2(-2000.0f));
-		
-		//Squad* s2 = CreateNewSquad(MODEL_ORKS, glm::vec2(2000.0f));
 
-		movementManager.createSquadPath(Astar::point{ 1600,1600 }, s1);
+		factionManager.setFactionsRelationships(MODEL_ANIMALS, MODEL_PLAYER, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_ANIMALS, MODEL_HUMANS, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_ANIMALS, MODEL_NOMADS, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_ANIMALS, MODEL_BANDITS, ENEMY);
+
+
+		factionManager.setFactionsRelationships(MODEL_PLAYER, MODEL_NOMADS, NEUTRAL);
+		factionManager.setFactionsRelationships(MODEL_PLAYER, MODEL_HUMANS, NEUTRAL);
+		factionManager.setFactionsRelationships(MODEL_PLAYER, MODEL_BANDITS, ENEMY);
+
+
+		factionManager.setFactionsRelationships(MODEL_NOMADS, MODEL_BANDITS, ENEMY);
+		factionManager.setFactionsRelationships(MODEL_NOMADS, MODEL_HUMANS, ENEMY);
+
+
+		factionManager.setFactionsRelationships(MODEL_HUMANS, MODEL_BANDITS, ENEMY);
+
+		player = factionManager.CreateNewSquad(MODEL_PLAYER, glm::vec2(-1000.0f));
+
+		srand(time(NULL));
+		for (int i = 0; i < 100; i++) {
+			auto buildings = buildingManager.getRaceBuildings(i % 8);
+			if (i == MODEL_PLAYER || !buildings.size()) continue;
+			factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size()).getBuildingPosition());
+		}
+	}
+
+	float calculateSquadViewDistance(Squad* squad) {
+		//TO DO
+		return 16.0f * 16;
+	}
+
+	void handleSquadLogic() {
+		float distance = 0;
+		for (auto& squad : factionManager.getAllSquads()) {
+			distance = calculateSquadViewDistance(squad);
+
+			if (squad != player) {
+				if (factionManager.getFactionsRelationships(squad->getSquadFactionID(), player->getSquadFactionID()) == ENEMY) {
+					if (glm::distance(squad->getSquadPosition(), player->getSquadPosition()) <= distance) {
+						std::cout << squad->getSquadID() << "\n";
+					}
+				}
+			}
+			//BruteForce TODO
+			//factionManager.
+		}
 	}
 
 	rasticore::RastiCoreRender* r;
@@ -174,8 +198,8 @@ private:
 	Squad* player;
 	MovementManager movementManager;
 	BuildingManager buildingManager;
-	std::array<Faction, 8> factions;
-	std::vector<Squad*> squads;
+	FactionManager factionManager;
+	//std::vector<Squad*> squads;
 	InputHandler inputManager;
 
 	CameraOffset cameraOffset;

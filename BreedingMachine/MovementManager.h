@@ -6,15 +6,18 @@
 #include "Astar.h"
 #include "Squad.h"
 #include <unordered_map>
+#include "Rasticore/rasti_main.h"
+#include <algorithm>
 
 #define STANDARD_SPEED 2
 
 class MovementManager {
 public:
 	MovementManager() = default;
-	MovementManager(std::filesystem::path path, uint32_t mapSize, uint8_t tileSize) {
-		border = Astar::border{ -((int)mapSize / 2), ((int)mapSize / 2), (int)mapSize, (int)mapSize, tileSize };
-		this->movement = Astar{ &border };
+	MovementManager(std::filesystem::path path, uint32_t mapSize, uint8_t tileSize, rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) {
+		this->r = r_;
+		this->rect_mcd = rect_mcd;
+		this->movement = Astar{ new Astar::border{ -((int)mapSize / 2), ((int)mapSize / 2), (int)mapSize, (int)mapSize, tileSize } };
 		loadCollisionData(path);
 
 		this->mapSize = mapSize;
@@ -32,8 +35,21 @@ public:
 		position.y = (int)(position.y / tileSize) * tileSize;
 		e.x = (int)(e.x / tileSize) * tileSize;
 		e.y = (int)(e.y / tileSize) * tileSize;
-		auto path = movement.findPath(Astar::point{(int)position.x, (int)position.y}, e, tileSize);
-		squadsMovementData[squad->getSquadID()] = SquadMovementInfo{ squad, path };
+		if (glm::vec2{ e.x, e.y } == position) {
+			return;
+		}
+		if (squadsMovementData[squad->getSquadID()].path.size() >= 2) {
+			std::vector<Astar::point> merged;
+			merged.insert(merged.end(), squadsMovementData[squad->getSquadID()].path.begin(), squadsMovementData[squad->getSquadID()].path.begin() + 2);
+			auto path = movement.findPath(Astar::point{ (int)merged.back().x, (int)merged.back().y}, e, tileSize);
+			merged.insert(merged.end(), path.begin(), path.end());
+			squadsMovementData[squad->getSquadID()].path = merged;
+		}
+		else {
+			auto path = movement.findPath(Astar::point{ (int)position.x, (int)position.y }, e, tileSize);
+			if ((path.size() != 2))
+				squadsMovementData[squad->getSquadID()] = SquadMovementInfo{ squad, path, 0 };
+		}
 	}
 	
 	void update() {
@@ -59,16 +75,19 @@ private:
 			if (squadData.second.path.size() >= 2) {
 				prevAP = squadData.second.path.at(0);
 				nextAP = squadData.second.path.at(1);
-				prevPosition = glm::vec2{ prevAP.x, prevAP.y } + offset;
-				nextPosition = glm::vec2{ nextAP.x, nextAP.y } + offset;
-				float speed = calculateSquadMovementSpeed(*squadData.second.squad);
+				prevPosition = glm::vec2{ prevAP.x + offset, prevAP.y - offset };
+				nextPosition = glm::vec2{ nextAP.x + offset, nextAP.y - offset };
+				float speed = calculateSquadMovementSpeed(*squadData.second.squad, glm::distance(prevPosition,nextPosition));
 				currentPosition = lerp(prevPosition, nextPosition, squadData.second.dt);
 				if (currentPosition == nextPosition) {
 					squadData.second.path.erase(squadData.second.path.begin());
 					squadData.second.dt = 0;
 					continue;
 				}
+				//std::cout << currentPosition.x << " " << currentPosition.y << "\n";
 				squadData.second.squad->setSquadPosition(currentPosition);
+				r->BindActiveModel(LONG_GET_MODEL(squadData.first));
+				r->SetObjectMatrix(LONG_GET_OBJECT(squadData.first), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ currentPosition.x, currentPosition.y, 1.1f }), true);
 			}
 			else {
 				if (squadData.second.path.size()) {
@@ -119,11 +138,11 @@ private:
 	}
 
 	//time = current time;
-	float calculateSquadMovementSpeed(Squad& squad, float t = 1.0f) {
+	float calculateSquadMovementSpeed(Squad& squad, float dist, float t = 1.0f) {
 		float armySizeFactor = 1.0f - ((float)squad.getArmySize() / (float)SQUAD_MAX_SIZE);
-		float totalSpeed = t * armySizeFactor / ((float)tileSize / (float)STANDARD_SPEED);
+		float totalSpeed = t * armySizeFactor / (dist / (float)STANDARD_SPEED);
 		SquadMovementInfo& data = squadsMovementData[squad.getSquadID()];
-		data.dt += totalSpeed;
+		data.dt = glm::clamp(data.dt + totalSpeed, 0.0f, 1.0f);
 		return data.dt;
 	}
 
@@ -138,4 +157,7 @@ private:
 	Astar::border border;
 	Astar movement;
 	std::unordered_map<uint64_t, SquadMovementInfo> squadsMovementData;
+
+	rasticore::RastiCoreRender* r;
+	rasticore::ModelCreationDetails rect_mcd;
 };

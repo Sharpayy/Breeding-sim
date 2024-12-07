@@ -15,10 +15,11 @@ public:
 	Squad() {
 		std::cout << "CHUJOWY SQUAD error \n";
 	};
-	Squad(uint64_t squadID, glm::vec2 position) {
+	Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position) {
 		squadComp.entities[0] = Entity{};
 		this->squadID = squadID;
 		this->position = position;
+		this->factionID = factionID;
 	}
 
 	void setSquadPosition(glm::vec2 position) {
@@ -33,17 +34,23 @@ public:
 		return squadID;
 	}
 
+	uint8_t getSquadFactionID() {
+		return factionID;
+	}
+
 	uint8_t getArmySize() {
 		return squadComp.size;
 	}
 
+	float force = 10.0f;
+
 private:
 	glm::vec2 position;
-
 	struct SquadComp {
 		Entity entities[SQUAD_MAX_SIZE];
 		uint8_t size = 1;
 	} squadComp;
 
 	uint64_t squadID;
+	uint8_t factionID;
 };

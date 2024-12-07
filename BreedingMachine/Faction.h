@@ -12,49 +12,31 @@ public:
 	Faction() {
 
 	}
-	Faction(std::string factionName, std::vector<Building> buildings = {}) {
+	Faction(std::string factionName, uint8_t factionID, std::vector<Building> buildings = {}) {
 		this->factionName = factionName;
+		this->factionID_ = factionID;
 		this->factionBuildings = buildings;
 	}
 
-	void setAlly(uint64_t squadID) {
-		removeSquadByID(squadID);
-		data.push_back(squadData{ squadID, ALLY });
+	void setFactionRelationship(uint8_t factionID, uint8_t state) {
+		if(factionID_ != factionID)
+			data[factionID] = state;
 	}
 
-	void setEnemy(uint64_t squadID) {
-		removeSquadByID(squadID);
-		data.push_back(squadData{ squadID, ENEMY });
+	uint8_t getFactionRelationship(uint8_t factionID) {
+		if (factionID_ != factionID) 
+			return data[factionID];
 	}
 
-	void setNeutral(uint64_t squadID) {
-		removeSquadByID(squadID);
-	}
-
-	uint8_t getSquadAttitue(uint64_t squadId) {
-		for (auto squad : data) {
-			if (squad.id == squadId) return squad.type;
-		}
-		return NEUTRAL;
-	}
 
 	std::vector<Building> getFactionBuildings() const {
 		return factionBuildings;
 	}
 
 private:
-	bool removeSquadByID(uint64_t squadID) {
-		for (auto squad : data) {
-			if (squad.id == squadID) return true;
-		}
-		return false;
-	}
 
 	std::string factionName;
-	struct squadData {
-		uint64_t id;
-		uint8_t type;
-	};
-	std::vector<squadData> data;
+	uint8_t factionID_;
+	std::unordered_map<uint8_t, uint8_t> data;
 	std::vector<Building> factionBuildings;
 };
