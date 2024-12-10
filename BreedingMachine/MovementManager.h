@@ -31,24 +31,25 @@ public:
 
 	void createSquadPath(Astar::point e, Squad* squad) { //Entity& entity) {
 		auto position = squad->getSquadPosition();
-		position.x = (int)(position.x / tileSize) * tileSize;
-		position.y = (int)(position.y / tileSize) * tileSize;
-		e.x = (int)(e.x / tileSize) * tileSize;
-		e.y = (int)(e.y / tileSize) * tileSize;
-		if (glm::vec2{ e.x, e.y } == position) {
-			return;
-		}
+		float offset = tileSize / 2.0f;
+		position.x = ((int)((position.x - offset) / tileSize)) * tileSize;
+		position.y = ((int)((position.y - offset) / tileSize)) * tileSize;
+		e.x = ((int)((e.x - offset) / tileSize)) * tileSize;
+		e.y = ((int)((e.y - offset) / tileSize)) * tileSize;
+		if (glm::vec2{ e.x, e.y } == position) return;
 		if (squadsMovementData[squad->getSquadID()].path.size() >= 2) {
+			if (squadsMovementData[squad->getSquadID()].path.back() == e) return;
 			std::vector<Astar::point> merged;
 			merged.insert(merged.end(), squadsMovementData[squad->getSquadID()].path.begin(), squadsMovementData[squad->getSquadID()].path.begin() + 2);
 			auto path = movement.findPath(Astar::point{ (int)merged.back().x, (int)merged.back().y}, e, tileSize);
 			merged.insert(merged.end(), path.begin(), path.end());
+
+			merged.erase(std::unique(merged.begin(), merged.end()), merged.end());
 			squadsMovementData[squad->getSquadID()].path = merged;
 		}
 		else {
 			auto path = movement.findPath(Astar::point{ (int)position.x, (int)position.y }, e, tileSize);
-			if ((path.size() != 2))
-				squadsMovementData[squad->getSquadID()] = SquadMovementInfo{ squad, path, 0 };
+			squadsMovementData[squad->getSquadID()] = SquadMovementInfo{ squad, path, 0 };
 		}
 	}
 	
@@ -75,19 +76,19 @@ private:
 			if (squadData.second.path.size() >= 2) {
 				prevAP = squadData.second.path.at(0);
 				nextAP = squadData.second.path.at(1);
-				prevPosition = glm::vec2{ prevAP.x + offset, prevAP.y - offset };
-				nextPosition = glm::vec2{ nextAP.x + offset, nextAP.y - offset };
+				//prevPosition = glm::vec2{ prevAP.x + offset, prevAP.y - offset };
+				//nextPosition = glm::vec2{ nextAP.x + offset, nextAP.y - offset };
+				prevPosition = glm::vec2{ prevAP.x + offset, prevAP.y + offset };
+				nextPosition = glm::vec2{ nextAP.x + offset, nextAP.y + offset };
 				float speed = calculateSquadMovementSpeed(*squadData.second.squad, glm::distance(prevPosition,nextPosition));
 				currentPosition = lerp(prevPosition, nextPosition, squadData.second.dt);
+				squadData.second.squad->setSquadPosition(currentPosition);
 				if (currentPosition == nextPosition) {
 					squadData.second.path.erase(squadData.second.path.begin());
 					squadData.second.dt = 0;
 					continue;
 				}
 				//std::cout << currentPosition.x << " " << currentPosition.y << "\n";
-				squadData.second.squad->setSquadPosition(currentPosition);
-				r->BindActiveModel(LONG_GET_MODEL(squadData.first));
-				r->SetObjectMatrix(LONG_GET_OBJECT(squadData.first), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ currentPosition.x, currentPosition.y, 1.1f }), true);
 			}
 			else {
 				if (squadData.second.path.size()) {

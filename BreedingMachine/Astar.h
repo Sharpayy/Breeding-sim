@@ -13,6 +13,9 @@ public:
 		int x, y;
 
 		bool operator==(const point& other) const;
+
+		bool operator<(const point& other) const;
+
 	};
 
 	struct border {

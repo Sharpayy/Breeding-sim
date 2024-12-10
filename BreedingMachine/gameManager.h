@@ -70,6 +70,16 @@ public:
 			auto pos = getMousePosition();
 			movementManager.createSquadPath({(int)pos.x, (int)pos.y }, player);
 		}
+		if (inputManager.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
+			auto pos = getMousePosition();
+			pos.x = (int)(pos.x / 16) * 16;
+			pos.y = (int)(pos.y / 16) * 16;
+			player->setSquadPosition(pos);
+			uint64_t id = player->getSquadID();
+			r->BindActiveModel(LONG_GET_MODEL(id));
+			r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ player->getSquadPosition(), 1.1f}), true);
+
+		}
 	}
 
 	struct CameraOffset {
@@ -149,7 +159,7 @@ private:
 		factionManager.setFactionsRelationships(MODEL_ANIMALS, MODEL_BANDITS, ENEMY);
 
 
-		factionManager.setFactionsRelationships(MODEL_PLAYER, MODEL_NOMADS, NEUTRAL);
+		factionManager.setFactionsRelationships(MODEL_PLAYER, MODEL_NOMADS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_PLAYER, MODEL_HUMANS, NEUTRAL);
 		factionManager.setFactionsRelationships(MODEL_PLAYER, MODEL_BANDITS, ENEMY);
 
@@ -161,9 +171,10 @@ private:
 		factionManager.setFactionsRelationships(MODEL_HUMANS, MODEL_BANDITS, ENEMY);
 
 		player = factionManager.CreateNewSquad(MODEL_PLAYER, glm::vec2(-1000.0f));
+		player->force = 1.0f;
 
 		srand(time(NULL));
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 16; i++) {
 			auto buildings = buildingManager.getRaceBuildings(i % 8);
 			if (i == MODEL_PLAYER || !buildings.size()) continue;
 			factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size()).getBuildingPosition());
@@ -172,23 +183,63 @@ private:
 
 	float calculateSquadViewDistance(Squad* squad) {
 		//TO DO
-		return 16.0f * 16;
+		return 16.0f * 16 * 16;
 	}
 
 	void handleSquadLogic() {
 		float distance = 0;
+		uint64_t id;
 		for (auto& squad : factionManager.getAllSquads()) {
+			id = squad->getSquadID();
+			r->BindActiveModel(LONG_GET_MODEL(id));
+			r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ squad->getSquadPosition().x, squad->getSquadPosition().y, 1.1f }), true);
 			distance = calculateSquadViewDistance(squad);
 
 			if (squad != player) {
 				if (factionManager.getFactionsRelationships(squad->getSquadFactionID(), player->getSquadFactionID()) == ENEMY) {
 					if (glm::distance(squad->getSquadPosition(), player->getSquadPosition()) <= distance) {
-						std::cout << squad->getSquadID() << "\n";
+						if (squad->force < player->force) {
+							SquadRetreat(squad, player);
+						}
+						else {
+							SquadChase(squad, player);
+						}
 					}
 				}
 			}
 			//BruteForce TODO
 			//factionManager.
+		}
+	}
+
+	void SquadRetreat(Squad* s1, Squad* s2) {
+		glm::vec2 position1, position2;
+		position1 = getCorrectedSquadPosition(s1->getSquadPosition());
+		position2 = getCorrectedSquadPosition(s2->getSquadPosition());
+
+		glm::vec2 dirVec = glm::normalize(position2 - position1) * 16.0f * 2.0f; // 22.6274166f
+		glm::vec2 endPoint = position1 - dirVec;
+		movementManager.createSquadPath(Astar::point{ (int)endPoint.x, (int)endPoint.y }, s1);
+	}
+
+	glm::vec2 getCorrectedSquadPosition(glm::vec2 position) {
+		float offset, tileSize = movementManager.getMapTileSize() / 2.0f;
+		offset = tileSize / 2.0f;
+		position.x = ((int)(position.x - offset) / tileSize) * tileSize;
+		position.y = ((int)(position.y - offset) / tileSize) * tileSize;
+		return position;
+	}
+
+	void SquadChase(Squad* s1, Squad* s2) {
+		auto start = std::chrono::system_clock::now();
+		auto pos = getCorrectedSquadPosition(s2->getSquadPosition());
+		movementManager.createSquadPath(Astar::point{ (int)s2->getSquadPosition().x, (int)s2->getSquadPosition().y }, s1);
+
+		auto end = std::chrono::system_clock().now();
+		auto elapsedMil = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+		auto elapsedMic = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+		if (elapsedMil > 0) {
+			std::cout << "Time in miliseconds : " << elapsedMil << " Time in microseconds : " << elapsedMic << "\n";
 		}
 	}
 
