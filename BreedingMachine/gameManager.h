@@ -9,7 +9,7 @@
 
 class gameManager {
 public:
-	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) {
+	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) : instance(InputHandler::getInstance()) {
 		this->rect_mcd = rect_mcd;
 		this->r = r_;
 		std::filesystem::path path = std::filesystem::current_path();
@@ -19,7 +19,6 @@ public:
 		movementManager = MovementManager{ collisionPath, 4096, 16, r_, rect_mcd };
 		buildingManager = BuildingManager{ buildingPath };
 		factionManager = FactionManager{r_, rect_mcd, 16};
-
 		cameraOffset = CameraOffset{ 0, 0, 500.0f };
 		initGame(path);
 	}
@@ -47,30 +46,30 @@ public:
 	}
 
 	void inputHandler() {
-		inputManager.handleKeys();
-		if (inputManager.KeyPressed(SDL_SCANCODE_W)) {
+		instance.handleKeys();
+		if (instance.KeyPressed(SDL_SCANCODE_W)) {
 			cameraOffset.y += 20;
 		}
-		if (inputManager.KeyPressed(SDL_SCANCODE_S)) {
+		if (instance.KeyPressed(SDL_SCANCODE_S)) {
 			cameraOffset.y -= 20;
 		}
-		if (inputManager.KeyPressed(SDL_SCANCODE_A)) {
+		if (instance.KeyPressed(SDL_SCANCODE_A)) {
 			cameraOffset.x -= 20;
 		}
-		if (inputManager.KeyPressed(SDL_SCANCODE_D)) {
+		if (instance.KeyPressed(SDL_SCANCODE_D)) {
 			cameraOffset.x += 20;
 		}
-		if (inputManager.KeyPressed(SDL_SCANCODE_Q)) {
+		if (instance.KeyPressed(SDL_SCANCODE_Q)) {
 			cameraOffset.z -= 20.0f;
 		}
-		if (inputManager.KeyPressed(SDL_SCANCODE_E)) {
+		if (instance.KeyPressed(SDL_SCANCODE_E)) {
 			cameraOffset.z += 20.0f;
 		}
-		if (inputManager.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
+		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
 			auto pos = getMousePosition();
 			movementManager.createSquadPath({(int)pos.x, (int)pos.y }, player);
 		}
-		if (inputManager.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
+		if (instance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
 			auto pos = getMousePosition();
 			pos.x = (int)(pos.x / 16) * 16;
 			pos.y = (int)(pos.y / 16) * 16;
@@ -249,7 +248,7 @@ private:
 	BuildingManager buildingManager;
 	FactionManager factionManager;
 	//std::vector<Squad*> squads;
-	InputHandler inputManager;
-
 	CameraOffset cameraOffset;
+	InputHandler& instance;
+
 };
