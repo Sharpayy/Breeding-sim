@@ -318,17 +318,14 @@ int main(int argc, char* argv[])
 	GLTtext* text = gltCreateText();
 	gltSetText(text, "lubie placki");
 
-	auto gt0 = gui_resources->AddNewTexture("Data\\ork.png");
-
-	GComponentSlider slider = GComponentSlider(vec2(100.0f, 20.0f), glm::vec2(0.0f), "niggas", gt0, gt0);
-
-
-
 	RS_ENABLE_FRATURE(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	gameManager gmanager(&_r, rect_mcd);
 	//_r.newObject(FURRY_RACE, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 1.1f }));
+	GComponentSlider slider = GComponentSlider(vec2(100.0f, 20.0f), glm::vec2(0.0f), "niggas", _r.getModel(0)->std_texture2d.handle, _r.getModel(2)->std_texture2d.handle);
+
+
 	gameManager::CameraOffset cameraOffset;
 	float tick = 0;
 	while (1)

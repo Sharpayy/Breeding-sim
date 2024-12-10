@@ -1,4 +1,4 @@
-#version 430 core
+#version 450 core
 
 #extension GL_ARB_gpu_shader_int64: enable
 #extension GL_ARB_bindless_texture: enable
@@ -6,6 +6,12 @@
 layout (std430, binding = 11) buffer TS
 {
 	sampler2D textures[];
+};
+
+struct _sampler2D
+{
+	sampler2D sampler;
+	uint64_t Reserved;
 };
 
 layout (std140, binding = 12) uniform GUI_ELEMENT
@@ -19,7 +25,7 @@ layout (std140, binding = 12) uniform GUI_ELEMENT
 	float Reserved0;
 	float Reserved1;
 	
-	int store_index[];
+	_sampler2D store_index[8];
 };
 
 uniform mat4 projection_matrix;

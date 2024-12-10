@@ -17,7 +17,7 @@ GResourceStore::GResourceStore(uint32_t start_size)
 	textures_ssbo.bindBase(RESOURCE_STORE_BIND_LOCATION);
 }
 
-GTEXTUREID GResourceStore::AddNewTexture(const char* filename)
+uint64_t GResourceStore::AddNewTexture(const char* filename)
 {
 	rasticore::Image img = rasticore::Image(filename, 4);
 	rasticore::Texture2D tx{ img.data, (int)img.x_, (int)img.y_, GL_RGBA, GL_RGBA8 };
@@ -33,10 +33,10 @@ GTEXTUREID GResourceStore::AddNewTexture(const char* filename)
 	textures.push_back(GTEXTURECONTAINER{ tx, txb });
 	textures_ssbo.bind();
 	textures_ssbo.subdata(id * 8, 8, &txb.handle);
-	return id;
+	return txb.handle;
 }
 
-GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec2 pos, const char* text_, GTEXTUREID base, GTEXTUREID fill)
+GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t base, uint64_t fill)
 {
 	scale_x = scale.x;
 	scale_y = scale.y;
@@ -64,7 +64,7 @@ void GComponentSlider::Render(glm::mat4 pm)
 	data.d.val = value;
 
 	data.textures[0] = base_tex_id;
-	data.textures[1] = fill_tex_id;
+	data.textures[2] = fill_tex_id;
 
 	gui_prog_ubo->bind();
 	gui_prog_ubo->subdata(0, sizeof(GSHADERRENDERDATA_SLIDER), &data);
@@ -96,12 +96,15 @@ void gui_init()
 	_shdr_vt_n.shaderGetDebugInfo(debug_log, 2048);
 	puts(debug_log);
 
+
 #endif
 
 	gui_main_program = new rasticore::Program();
 	gui_main_program->programAddShader(_shdr_vt_n.id);
 	gui_main_program->programAddShader(_shdr_fg_n.id);
 	gui_main_program->programCompile();
+
+	//glGetProgramInfoLog(gui_main_program, )
 
 	gui_main_program->use();
 

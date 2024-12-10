@@ -44,7 +44,7 @@ public:
 	rasticore::ShaderStorageBufferObject textures_ssbo;
 
 	GResourceStore(uint32_t start_size);
-	GTEXTUREID AddNewTexture(const char* filename);
+	uint64_t AddNewTexture(const char* filename);
 
 };
 
@@ -64,7 +64,7 @@ typedef struct _GSHADERRENDERDATA
 typedef struct _GSHADERRENDERDATA_SLIDER
 {
 	GSHADERRENDERDATA d;
-	uint32_t textures[2];
+	uint64_t textures[3];
 
 } GSHADERRENDERDATA_SLIDER;
 
@@ -78,12 +78,12 @@ public:
 	float scale_x, scale_y;
 	float pos_x, pos_y;
 
-	GTEXTUREID base_tex_id;
-	GTEXTUREID fill_tex_id;
+	uint64_t base_tex_id;
+	uint64_t fill_tex_id;
 
 	float value;
 
-	GComponentSlider(glm::vec2 scale, glm::vec2 pos, const char* text_, GTEXTUREID base, GTEXTUREID fill);
+	GComponentSlider(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t base, uint64_t fill);
 	void SetText(const char* text_);
 	const char* GetText();
 
