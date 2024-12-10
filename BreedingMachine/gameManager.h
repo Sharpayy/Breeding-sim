@@ -191,8 +191,6 @@ private:
 		uint64_t id;
 		for (auto& squad : factionManager.getAllSquads()) {
 			id = squad->getSquadID();
-			r->BindActiveModel(LONG_GET_MODEL(id));
-			r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ squad->getSquadPosition().x, squad->getSquadPosition().y, 1.1f }), true);
 			distance = calculateSquadViewDistance(squad);
 
 			if (squad != player) {

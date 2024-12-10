@@ -70,6 +70,7 @@ private:
 	void moveSquads() {
 		Astar::point prevAP, nextAP;
 		glm::vec2 prevPosition, nextPosition, currentPosition;
+		uint64_t id;
 		float offset = tileSize / 2.0f;
 		std::vector<uint64_t> squadsPathToRemove;
 		for (auto& squadData : squadsMovementData) {
@@ -86,8 +87,10 @@ private:
 				if (currentPosition == nextPosition) {
 					squadData.second.path.erase(squadData.second.path.begin());
 					squadData.second.dt = 0;
-					continue;
 				}
+				id = squadData.second.squad->getSquadID();
+				r->BindActiveModel(LONG_GET_MODEL(id));
+				r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ squadData.second.squad->getSquadPosition().x, squadData.second.squad->getSquadPosition().y, 1.1f }), true);
 				//std::cout << currentPosition.x << " " << currentPosition.y << "\n";
 			}
 			else {
