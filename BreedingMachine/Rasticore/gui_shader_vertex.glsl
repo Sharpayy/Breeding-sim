@@ -25,7 +25,7 @@ layout (std140, binding = 12) uniform GUI_ELEMENT
 	float Reserved0;
 	float Reserved1;
 	
-	_sampler2D store_index[8];
+	_sampler2D store_index[4];
 };
 
 uniform mat4 projection_matrix;

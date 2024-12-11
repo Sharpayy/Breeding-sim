@@ -309,6 +309,8 @@ int main(int argc, char* argv[])
 	RS_ENABLE_FRATURE(GL_DEPTH_TEST);
 	RS_BACKGROUND_CLEAR_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
+	mat4 gui_projection_matrix = ortho(0.0f, 800.0f, 0.0f, 800.0f, -1000.0f, 1000.0f);
+
 	//TESTS
 
 	int xx, yy;
@@ -323,8 +325,8 @@ int main(int argc, char* argv[])
 
 	gameManager gmanager(&_r, rect_mcd);
 	//_r.newObject(FURRY_RACE, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 1.1f }));
-	GComponentSlider slider = GComponentSlider(vec2(100.0f, 20.0f), glm::vec2(0.0f), "niggas", _r.getModel(0)->std_texture2d.handle, _r.getModel(2)->std_texture2d.handle);
-
+	GComponentSlider slider = GComponentSlider(vec2(100.0f, 20.0f), glm::vec2(400.0f), "niggas", _r.getModel(0)->std_texture2d.handle, _r.getModel(2)->std_texture2d.handle);
+	GComponentButton button = GComponentButton(vec2(100.0f, 20.0f), glm::vec2(500.0f, 400.0f), "niggas", _r.getModel(0)->std_texture2d.handle);
 
 	gameManager::CameraOffset cameraOffset;
 	float tick = 0;
@@ -374,7 +376,17 @@ int main(int argc, char* argv[])
 
 		//gltEndDraw();
 
-		slider.Render(_r.MVP.matProjCamera);
+		int xx, yy;
+		auto zz = SDL_GetMouseState(&xx, &yy);
+
+		if (zz == SDL_BUTTON(1))
+			if (button.ClickCheck(xx, yy) == 1)
+				printf("chuj");
+
+		button.Render(gui_projection_matrix);
+		button.val = 0.6f;
+
+		slider.Render(gui_projection_matrix);
 		slider.value = (sin(tick * 0.1f) + 1.0f) * 0.5f;
 
 

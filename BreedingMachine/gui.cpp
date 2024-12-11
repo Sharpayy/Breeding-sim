@@ -77,6 +77,16 @@ void GComponentSlider::Render(glm::mat4 pm)
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
+int GComponentSlider::ClickCheck(float x, float y, void* window)
+{
+	return 0;
+}
+
+int GComponentSlider::GetType()
+{
+	return GUI_ELEMENT_SLIDER;
+}
+
 void gui_init()
 {
 	MAPPEDFILE shdr_src = rasticore::MapFile("Rasticore\\gui_shader_vertex.glsl");
@@ -142,4 +152,77 @@ void gui_init()
 	gui_prog_ubo = new rasticore::UniformBufferObject();
 	gui_prog_ubo->data(sizeof(GSHADERRENDERDATA) + 64, NULL, GL_DYNAMIC_DRAW);
 
+}
+
+void pfnBasicButtonCallback(GComponentButton* button, GWindow* window)
+{
+	
+}
+
+GComponentButton::GComponentButton(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t tex)
+{
+	scale_x = scale.x;
+	scale_y = scale.y;
+
+	text = gltCreateText();
+	gltSetText(text, text_);
+
+	pos_x = pos.x;
+	pos_y = pos.y;
+
+	texture = tex;
+	callback = (GComponentButton_Callback)pfnBasicButtonCallback;
+
+	val = 0.0f;
+}
+
+void GComponentButton::SetCallback(GComponentButton_Callback func)
+{
+	callback = func;
+}
+
+void GComponentButton::Render(glm::mat4 pm)
+{
+	gui_main_program->use();
+
+	GSHADERRENDERDATA_BUTTON data{};
+	data.d.gui_element = GUI_ELEMENT_BUTTON;
+	data.d.pos_ = glm::vec2(pos_x, pos_y);
+	data.d.scale_ = glm::vec2(scale_x, scale_y);
+	data.d.val = val;
+
+	data.textures[0] = texture;
+
+	gui_prog_ubo->bind();
+	gui_prog_ubo->subdata(0, sizeof(GSHADERRENDERDATA_BUTTON), &data);
+	gui_prog_ubo->bindBase(GUI_ELEMENT_BIND_LOCATION);
+
+	gui_square->bind();
+
+	glUniformMatrix4fv(gui_program_mat_loc, 1, GL_FALSE, (float*)&pm);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+}
+
+int GComponentButton::ClickCheck(float x, float y, void* window)
+{
+	float _min = -0.5f * scale_x + pos_x;
+	float _max =  0.5f * scale_x + pos_x;
+
+	if (x >= _min && x < _max)
+	{
+		_min = -0.5f * scale_y + pos_y;
+		_max =  0.5f * scale_y + pos_y;
+		if (y >= _min && y < _max)
+		{
+			return 1;
+			callback(this, window);
+		}
+	}
+	return 0;
+}
+
+int GComponentButton::GetType()
+{
+	return GUI_ELEMENT_BUTTON;
 }

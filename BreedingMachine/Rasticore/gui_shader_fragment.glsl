@@ -4,6 +4,7 @@
 #extension GL_ARB_bindless_texture: enable
 
 #define GUI_ELEMENT_SLIDER 1
+#define GUI_ELEMENT_BUTTON 2
 
 layout (std430, binding = 11) buffer TS
 {
@@ -27,7 +28,7 @@ layout (std140, binding = 12) uniform GUI_ELEMENT
 	float Reserved0;
 	float Reserved1;
 	
-	_sampler2D store_index[8];
+	_sampler2D store_index[4];
 };
 
 uniform mat4 projection_matrix;
@@ -41,21 +42,20 @@ void main()
 {
 	if (gui_element == GUI_ELEMENT_SLIDER)
 	{
-		vec4 ColorFill = vec4(0.0, 0.5, 0.9, 1.0);
-		vec4 ColorFull = vec4(0.2, 0.5, 0.1, 1.0);
-
-
 		if (fco > val)
 		{
-			//OutColor = ColorFill;
 			OutColor = texture(store_index[0].sampler, ouv);
 		}
 		else
 		{
-			//OutColor = ColorFull;
 			OutColor = texture(store_index[1].sampler, ouv);
 		}
 
+	}
+	else if (gui_element == GUI_ELEMENT_BUTTON)
+	{
+		vec4 c = texture(store_index[0].sampler, ouv);
+		OutColor = vec4(c.rgb * (1.0 - 0.5 * float(1.0 == step(0.5, val))), c.a);
 	}
 	else
 	{

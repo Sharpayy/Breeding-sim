@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <list>
 #include <string>
 #include <cstdlib>
 #include <GL/glew.h>
@@ -17,8 +18,11 @@
 
 #define GUI_ELEMRNT_UNDEFINIED		0
 #define GUI_ELEMENT_SLIDER			1
+#define GUI_ELEMENT_BUTTON			2
 
 #define GUI_SHADER_DEBUG_INFO
+
+typedef void(*GComponentButton_Callback)(void*, void*);
 
 extern rasticore::Program* gui_main_program;
 extern rasticore::VertexBuffer* gui_square;
@@ -64,13 +68,30 @@ typedef struct _GSHADERRENDERDATA
 typedef struct _GSHADERRENDERDATA_SLIDER
 {
 	GSHADERRENDERDATA d;
-	uint64_t textures[3];
+	uint64_t textures[4];
 
 } GSHADERRENDERDATA_SLIDER;
 
+typedef struct _GSHADERRENDERDATA_BUTTON
+{
+	GSHADERRENDERDATA d;
+	uint64_t textures[2];
+
+} GSHADERRENDERDATA_BUTTON;
+
 extern GResourceStore* gui_resources;
 
-class GComponentSlider
+class GComponent
+{
+public:
+	GComponent() {}
+
+	virtual void Render(glm::mat4 pm) = 0;
+	virtual int ClickCheck(float x, float y, void* window) = 0;
+	virtual int GetType() = 0;
+};
+
+class GComponentSlider : public GComponent
 {
 public:
 
@@ -89,13 +110,73 @@ public:
 
 	void SetPosition(glm::vec2 new_pos);
 
-	void Render(glm::mat4 pm);
+	virtual void Render(glm::mat4 pm);
+	virtual int ClickCheck(float x, float y, void* window = NULL);
+	virtual int GetType();
 
 };
+
+class GComponentButton : public GComponent
+{
+public:
+	GLTtext* text;
+
+	float scale_x, scale_y;
+	float pos_x, pos_y;
+
+	float val;
+
+	uint64_t texture;
+	GComponentButton_Callback callback;
+
+	GComponentButton(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t tex);
+	void SetCallback(GComponentButton_Callback func);
+
+	virtual void Render(glm::mat4 pm);
+	virtual int ClickCheck(float x, float y, void* window = NULL);
+	virtual int GetType();
+
+
+};
+
+#define GUI_WINDOW_ACTIVE		1
+#define GUI_WINDOW_TOP			2
+#define GUI_WINDOW_NO_CLICK		4
 
 class GWindow
 {
 public:
-	
+	std::list<GComponent> component_list;
+	std::list<GWindow>* window_list;
+
+	uint32_t window_flags;
+
+	glm::vec2 position;
+	glm::vec2 scale;
+
+	uint64_t texture;
+
+	GWindow(glm::vec2 pos, glm::vec2 scale, uint64_t tex);
+
+	void AddComponent(GComponent* comp);
+
 };
+
+class GWindowBuilder
+{
+private:
+	GWindow* win;
+
+public:
+	GWindowBuilder(glm::vec2 pos, glm::vec2 scale, uint64_t background);
+
+	void AddSliderComponent(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t image0, uint64_t image1);
+	void AddButtonComponent(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t image);
+	void AddImageComponent(glm::vec2 scale, glm::vec2 pos, uint64_t image);
+	void AddLabelComponent(glm::vec2 scale, glm::vec2 pos, const char* text_);
+
+	GWindow* BuildWindow();
+};
+
+void pfnBasicButtonCallback(GComponentButton* button, GWindow* window);
 
