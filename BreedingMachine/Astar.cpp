@@ -6,6 +6,10 @@ bool Astar::point::operator==(const point& other) const {
 	return x == other.x && y == other.y;
 }
 
+bool Astar::point::operator<(const point& other) const {
+	return (x < other.x) || (x == other.x && y < other.y);
+}
+
 bool Astar::compareQueueData::operator()(queueData const& p1, queueData const& p2) {
 	return p1.f > p2.f;
 }
@@ -25,7 +29,7 @@ void Astar::addBlockade(point p) {
 }
 
 std::vector<Astar::point> Astar::findPath(point s, point e, int offset) {
-	if (tileIsBlocked(s) || tileIsBlocked(e)) return {};
+	if (tileIsBlocked(s) || tileIsBlocked(e) || (s == e)) return {};
 	std::vector<point> result;
 
 	point c = s;

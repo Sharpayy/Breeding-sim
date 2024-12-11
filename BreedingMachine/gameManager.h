@@ -6,10 +6,11 @@
 #include "BuildingManager.h"
 #include "FactionManager.h"
 #include <glm/vec2.hpp>
+#include <glm/gtx/quaternion.hpp> 
 
 class gameManager {
 public:
-	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) {
+	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) : instance(InputHandler::getInstance()) {
 		this->rect_mcd = rect_mcd;
 		this->r = r_;
 		std::filesystem::path path = std::filesystem::current_path();
@@ -19,7 +20,6 @@ public:
 		movementManager = MovementManager{ collisionPath, 4096, 16, r_, rect_mcd };
 		buildingManager = BuildingManager{ buildingPath };
 		factionManager = FactionManager{r_, rect_mcd, 16};
-
 		cameraOffset = CameraOffset{ 0, 0, 500.0f };
 		initGame(path);
 	}
@@ -47,28 +47,38 @@ public:
 	}
 
 	void inputHandler() {
-		inputManager.handleKeys();
-		if (inputManager.KeyPressed(SDL_SCANCODE_W)) {
+		instance.handleKeys();
+		if (instance.KeyPressed(SDL_SCANCODE_W)) {
 			cameraOffset.y += 20;
 		}
-		if (inputManager.KeyPressed(SDL_SCANCODE_S)) {
+		if (instance.KeyPressed(SDL_SCANCODE_S)) {
 			cameraOffset.y -= 20;
 		}
-		if (inputManager.KeyPressed(SDL_SCANCODE_A)) {
+		if (instance.KeyPressed(SDL_SCANCODE_A)) {
 			cameraOffset.x -= 20;
 		}
-		if (inputManager.KeyPressed(SDL_SCANCODE_D)) {
+		if (instance.KeyPressed(SDL_SCANCODE_D)) {
 			cameraOffset.x += 20;
 		}
-		if (inputManager.KeyPressed(SDL_SCANCODE_Q)) {
+		if (instance.KeyPressed(SDL_SCANCODE_Q)) {
 			cameraOffset.z -= 20.0f;
 		}
-		if (inputManager.KeyPressed(SDL_SCANCODE_E)) {
+		if (instance.KeyPressed(SDL_SCANCODE_E)) {
 			cameraOffset.z += 20.0f;
 		}
-		if (inputManager.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
+		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
 			auto pos = getMousePosition();
 			movementManager.createSquadPath({(int)pos.x, (int)pos.y }, player);
+		}
+		if (instance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
+			auto pos = getMousePosition();
+			pos.x = (int)(pos.x / 16) * 16;
+			pos.y = (int)(pos.y / 16) * 16;
+			player->setSquadPosition(pos);
+			uint64_t id = player->getSquadID();
+			r->BindActiveModel(LONG_GET_MODEL(id));
+			r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ player->getSquadPosition(), 1.1f}), true);
+
 		}
 	}
 
@@ -149,7 +159,7 @@ private:
 		factionManager.setFactionsRelationships(MODEL_ANIMALS, MODEL_BANDITS, ENEMY);
 
 
-		factionManager.setFactionsRelationships(MODEL_PLAYER, MODEL_NOMADS, NEUTRAL);
+		factionManager.setFactionsRelationships(MODEL_PLAYER, MODEL_NOMADS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_PLAYER, MODEL_HUMANS, NEUTRAL);
 		factionManager.setFactionsRelationships(MODEL_PLAYER, MODEL_BANDITS, ENEMY);
 
@@ -161,9 +171,10 @@ private:
 		factionManager.setFactionsRelationships(MODEL_HUMANS, MODEL_BANDITS, ENEMY);
 
 		player = factionManager.CreateNewSquad(MODEL_PLAYER, glm::vec2(-1000.0f));
+		player->force = 100.0f;
 
 		srand(time(NULL));
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 16; i++) {
 			auto buildings = buildingManager.getRaceBuildings(i % 8);
 			if (i == MODEL_PLAYER || !buildings.size()) continue;
 			factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size()).getBuildingPosition());
@@ -177,19 +188,71 @@ private:
 
 	void handleSquadLogic() {
 		float distance = 0;
+		uint64_t id;
 		for (auto& squad : factionManager.getAllSquads()) {
+			id = squad->getSquadID();
 			distance = calculateSquadViewDistance(squad);
 
 			if (squad != player) {
 				if (factionManager.getFactionsRelationships(squad->getSquadFactionID(), player->getSquadFactionID()) == ENEMY) {
 					if (glm::distance(squad->getSquadPosition(), player->getSquadPosition()) <= distance) {
-						std::cout << squad->getSquadID() << "\n";
+						if (squad->force < player->force) {
+							SquadRetreat(squad, player);
+						}
+						else {
+							SquadChase(squad, player);
+						}
 					}
 				}
 			}
 			//BruteForce TODO
 			//factionManager.
 		}
+	}
+
+	void SquadRetreat(Squad* s1, Squad* s2) {
+		glm::vec2 position1, position2;
+		position1 = getCorrectedSquadPosition(s1->getSquadPosition());
+		position2 = getCorrectedSquadPosition(s2->getSquadPosition());
+
+		glm::vec2 dirVec = glm::normalize(position2 - position1) * 16.0f * 2.0f; // 22.6274166f
+		glm::vec2 endPoint = position1 - dirVec;
+		int pathFound = movementManager.createSquadPath(Astar::point{ (int)endPoint.x, (int)endPoint.y }, s1);
+		int angle = 30;
+		glm::mat2 rotationMatrix;
+		while (!pathFound) {
+			rotationMatrix = glm::mat2(
+				glm::cos(angle), -glm::sin(angle),
+				glm::sin(angle), glm::cos(angle)
+			);
+			dirVec = (dirVec * rotationMatrix);
+			endPoint = position1 + dirVec;
+			pathFound = movementManager.createSquadPath(Astar::point{ (int)endPoint.x, (int)endPoint.y }, s1);
+			
+			if (pathFound) return;
+
+			rotationMatrix = glm::mat2(
+				glm::cos(360 - angle), -glm::sin(360 - angle),
+				glm::sin(360 - angle), glm::cos(360 - angle)
+			);
+			dirVec = (dirVec * rotationMatrix);
+			endPoint = position1 + dirVec;
+			pathFound = movementManager.createSquadPath(Astar::point{ (int)endPoint.x, (int)endPoint.y }, s1);
+
+			angle += 30;
+		}
+	}
+
+	void SquadChase(Squad* s1, Squad* s2) {
+		movementManager.createSquadPath(Astar::point{ (int)s2->getSquadPosition().x, (int)s2->getSquadPosition().y }, s1);
+	}
+
+	glm::vec2 getCorrectedSquadPosition(glm::vec2 position) {
+		float offset, tileSize = movementManager.getMapTileSize() / 2.0f;
+		offset = tileSize / 2.0f;
+		position.x = ((int)(position.x - offset) / tileSize) * tileSize;
+		position.y = ((int)(position.y - offset) / tileSize) * tileSize;
+		return position;
 	}
 
 	rasticore::RastiCoreRender* r;
@@ -200,7 +263,7 @@ private:
 	BuildingManager buildingManager;
 	FactionManager factionManager;
 	//std::vector<Squad*> squads;
-	InputHandler inputManager;
-
 	CameraOffset cameraOffset;
+	InputHandler& instance;
+
 };
