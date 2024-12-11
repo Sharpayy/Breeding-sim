@@ -76,5 +76,3 @@ private:
         bool wasPressed[SDL_NUM_SCANCODES] = { false };
     } inputData;
 };
-
-

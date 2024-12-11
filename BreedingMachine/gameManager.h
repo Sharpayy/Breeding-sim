@@ -6,6 +6,7 @@
 #include "BuildingManager.h"
 #include "FactionManager.h"
 #include <glm/vec2.hpp>
+#include <glm/gtx/quaternion.hpp> 
 
 class gameManager {
 public:
@@ -170,7 +171,7 @@ private:
 		factionManager.setFactionsRelationships(MODEL_HUMANS, MODEL_BANDITS, ENEMY);
 
 		player = factionManager.CreateNewSquad(MODEL_PLAYER, glm::vec2(-1000.0f));
-		player->force = 1.0f;
+		player->force = 100.0f;
 
 		srand(time(NULL));
 		for (int i = 0; i < 16; i++) {
@@ -182,7 +183,7 @@ private:
 
 	float calculateSquadViewDistance(Squad* squad) {
 		//TO DO
-		return 16.0f * 16 * 16;
+		return 16.0f * 16;
 	}
 
 	void handleSquadLogic() {
@@ -216,7 +217,34 @@ private:
 
 		glm::vec2 dirVec = glm::normalize(position2 - position1) * 16.0f * 2.0f; // 22.6274166f
 		glm::vec2 endPoint = position1 - dirVec;
-		movementManager.createSquadPath(Astar::point{ (int)endPoint.x, (int)endPoint.y }, s1);
+		int pathFound = movementManager.createSquadPath(Astar::point{ (int)endPoint.x, (int)endPoint.y }, s1);
+		int angle = 30;
+		glm::mat2 rotationMatrix;
+		while (!pathFound) {
+			rotationMatrix = glm::mat2(
+				glm::cos(angle), -glm::sin(angle),
+				glm::sin(angle), glm::cos(angle)
+			);
+			dirVec = (dirVec * rotationMatrix);
+			endPoint = position1 + dirVec;
+			pathFound = movementManager.createSquadPath(Astar::point{ (int)endPoint.x, (int)endPoint.y }, s1);
+			
+			if (pathFound) return;
+
+			rotationMatrix = glm::mat2(
+				glm::cos(360 - angle), -glm::sin(360 - angle),
+				glm::sin(360 - angle), glm::cos(360 - angle)
+			);
+			dirVec = (dirVec * rotationMatrix);
+			endPoint = position1 + dirVec;
+			pathFound = movementManager.createSquadPath(Astar::point{ (int)endPoint.x, (int)endPoint.y }, s1);
+
+			angle += 30;
+		}
+	}
+
+	void SquadChase(Squad* s1, Squad* s2) {
+		movementManager.createSquadPath(Astar::point{ (int)s2->getSquadPosition().x, (int)s2->getSquadPosition().y }, s1);
 	}
 
 	glm::vec2 getCorrectedSquadPosition(glm::vec2 position) {
@@ -225,19 +253,6 @@ private:
 		position.x = ((int)(position.x - offset) / tileSize) * tileSize;
 		position.y = ((int)(position.y - offset) / tileSize) * tileSize;
 		return position;
-	}
-
-	void SquadChase(Squad* s1, Squad* s2) {
-		auto start = std::chrono::system_clock::now();
-		auto pos = getCorrectedSquadPosition(s2->getSquadPosition());
-		movementManager.createSquadPath(Astar::point{ (int)s2->getSquadPosition().x, (int)s2->getSquadPosition().y }, s1);
-
-		auto end = std::chrono::system_clock().now();
-		auto elapsedMil = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-		auto elapsedMic = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-		if (elapsedMil > 0) {
-			std::cout << "Time in miliseconds : " << elapsedMil << " Time in microseconds : " << elapsedMic << "\n";
-		}
 	}
 
 	rasticore::RastiCoreRender* r;

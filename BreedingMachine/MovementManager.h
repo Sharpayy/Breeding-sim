@@ -29,16 +29,16 @@ public:
 		//IMPL
 	}
 
-	void createSquadPath(Astar::point e, Squad* squad) { //Entity& entity) {
+	int createSquadPath(Astar::point e, Squad* squad) { //Entity& entity) {
 		auto position = squad->getSquadPosition();
 		float offset = tileSize / 2.0f;
 		position.x = ((int)((position.x - offset) / tileSize)) * tileSize;
 		position.y = ((int)((position.y - offset) / tileSize)) * tileSize;
 		e.x = ((int)((e.x - offset) / tileSize)) * tileSize;
 		e.y = ((int)((e.y - offset) / tileSize)) * tileSize;
-		if (glm::vec2{ e.x, e.y } == position) return;
+		if (glm::vec2{ e.x, e.y } == position) return true;
 		if (squadsMovementData[squad->getSquadID()].path.size() >= 2) {
-			if (squadsMovementData[squad->getSquadID()].path.back() == e) return;
+			if (squadsMovementData[squad->getSquadID()].path.back() == e) return true;
 			std::vector<Astar::point> merged;
 			merged.insert(merged.end(), squadsMovementData[squad->getSquadID()].path.begin(), squadsMovementData[squad->getSquadID()].path.begin() + 2);
 			auto path = movement.findPath(Astar::point{ (int)merged.back().x, (int)merged.back().y}, e, tileSize);
@@ -51,6 +51,7 @@ public:
 			auto path = movement.findPath(Astar::point{ (int)position.x, (int)position.y }, e, tileSize);
 			squadsMovementData[squad->getSquadID()] = SquadMovementInfo{ squad, path, 0 };
 		}
+		return squadsMovementData[squad->getSquadID()].path.size();
 	}
 	
 	void update() {
