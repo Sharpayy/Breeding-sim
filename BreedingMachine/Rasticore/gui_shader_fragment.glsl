@@ -5,6 +5,7 @@
 
 #define GUI_ELEMENT_SLIDER 1
 #define GUI_ELEMENT_BUTTON 2
+#define GUI_ELEMENT_WINDOW 3
 
 layout (std430, binding = 11) buffer TS
 {
@@ -56,6 +57,10 @@ void main()
 	{
 		vec4 c = texture(store_index[0].sampler, ouv);
 		OutColor = vec4(c.rgb * (1.0 - 0.5 * float(1.0 == step(0.5, val))), c.a);
+	}
+	else if (gui_element == GUI_ELEMENT_WINDOW)
+	{
+		OutColor = texture(store_index[0].sampler, ouv);
 	}
 	else
 	{

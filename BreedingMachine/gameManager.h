@@ -6,7 +6,7 @@
 #include "BuildingManager.h"
 #include "FactionManager.h"
 #include <glm/vec2.hpp>
-#include <glm/gtx/quaternion.hpp> 
+#include <glm/gtc/quaternion.hpp> 
 
 class gameManager {
 public:

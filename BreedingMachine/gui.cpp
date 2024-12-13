@@ -5,36 +5,6 @@ rasticore::VertexBuffer* gui_square;
 uint32_t gui_program_mat_loc;
 
 rasticore::UniformBufferObject* gui_prog_ubo;
-GResourceStore* gui_resources;
-
-GResourceStore::GResourceStore(uint32_t start_size)
-{
-	textures = std::vector<GTEXTURECONTAINER>();
-
-	textures_ssbo = rasticore::ShaderStorageBufferObject();
-	textures_ssbo.bind();
-	textures_ssbo.data(start_size * 8, NULL);
-	textures_ssbo.bindBase(RESOURCE_STORE_BIND_LOCATION);
-}
-
-uint64_t GResourceStore::AddNewTexture(const char* filename)
-{
-	rasticore::Image img = rasticore::Image(filename, 4);
-	rasticore::Texture2D tx{ img.data, (int)img.x_, (int)img.y_, GL_RGBA, GL_RGBA8 };
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	tx.genMipmap();
-	rasticore::Texture2DBindless txb{ tx };
-	txb.MakeResident();
-
-	GTEXTUREID id = textures.size();
-	textures.push_back(GTEXTURECONTAINER{ tx, txb });
-	textures_ssbo.bind();
-	textures_ssbo.subdata(id * 8, 8, &txb.handle);
-	return txb.handle;
-}
 
 GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t base, uint64_t fill)
 {
@@ -85,6 +55,12 @@ int GComponentSlider::ClickCheck(float x, float y, void* window)
 int GComponentSlider::GetType()
 {
 	return GUI_ELEMENT_SLIDER;
+}
+
+void GComponentSlider::SetOffset(float x, float y)
+{
+	pos_x += x;
+	pos_y += y;
 }
 
 void gui_init()
@@ -147,8 +123,6 @@ void gui_init()
 	gui_square->enableAttrib(1);
 	gui_square->enableAttrib(2);
 
-	gui_resources = new GResourceStore(500);
-
 	gui_prog_ubo = new rasticore::UniformBufferObject();
 	gui_prog_ubo->data(sizeof(GSHADERRENDERDATA) + 64, NULL, GL_DYNAMIC_DRAW);
 
@@ -156,7 +130,7 @@ void gui_init()
 
 void pfnBasicButtonCallback(GComponentButton* button, GWindow* window)
 {
-	
+	printf("chij");
 }
 
 GComponentButton::GComponentButton(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t tex)
@@ -215,14 +189,80 @@ int GComponentButton::ClickCheck(float x, float y, void* window)
 		_max =  0.5f * scale_y + pos_y;
 		if (y >= _min && y < _max)
 		{
-			return 1;
+			val = 1.0f;
 			callback(this, window);
+			return 1;
 		}
 	}
+	val = 0.0f;
 	return 0;
 }
 
 int GComponentButton::GetType()
 {
 	return GUI_ELEMENT_BUTTON;
+}
+
+void GComponentButton::SetOffset(float x, float y)
+{
+	pos_x += x;
+	pos_y += y;
+}
+
+GWindow::GWindow(glm::vec2 pos, glm::vec2 scale, uint64_t tex)
+{
+	position = pos;
+	this->scale = scale;
+	background = tex;
+
+	component_list = std::list<GComponent*>();
+
+	window_flags = 0;
+}
+
+void GWindow::AddComponent(GComponent* comp)
+{
+	comp->SetOffset(position.x, position.y);
+	component_list.push_back(comp);
+}
+
+void GWindow::Render(glm::mat4 pm)
+{
+	if (window_flags && GUI_WINDOW_ACTIVE != GUI_WINDOW_ACTIVE)
+		return;
+
+	gui_main_program->use();
+
+	GSHADERRENDERDATA_BUTTON data{};
+	data.d.gui_element = GUI_ELEMENT_WINDOW;
+	data.d.pos_ = position;
+	data.d.scale_ = scale;
+
+	data.textures[0] = background;
+
+	gui_prog_ubo->bind();
+	gui_prog_ubo->subdata(0, sizeof(GSHADERRENDERDATA_BUTTON), &data);
+	gui_prog_ubo->bindBase(GUI_ELEMENT_BIND_LOCATION);
+
+	gui_square->bind();
+
+	glUniformMatrix4fv(gui_program_mat_loc, 1, GL_FALSE, (float*)&pm);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+
+	for (auto& i : component_list)
+	{
+		i->Render(pm);
+	}
+}
+
+void GWindow::CollisionCheck(float x, float y)
+{
+	if (window_flags && GUI_WINDOW_NO_CLICK == GUI_WINDOW_NO_CLICK)
+		return;
+
+	for (auto& i : component_list)
+	{
+		i->ClickCheck(x, y, this);
+	}
 }

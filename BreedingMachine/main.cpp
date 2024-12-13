@@ -45,6 +45,20 @@
 #include "inputHandler.h"
 #include "gameManager.h"
 
+uint64_t LoadTextureFromFile(const char* file)
+{
+	rasticore::Image img = rasticore::Image(file, 4);
+	rasticore::Texture2D tx{ img.data, (int)img.x_, (int)img.y_, GL_RGBA, GL_RGBA8 };
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	tx.genMipmap();
+	rasticore::Texture2DBindless txb{ tx };
+	txb.MakeResident();
+	return txb.handle;
+}
+
 using namespace glm;
 
 class Camera
@@ -292,8 +306,6 @@ int main(int argc, char* argv[])
 	rect_mcd.vb = Square;
 
 	_r.setCameraMatrix(lookAt(vec3(0.0f, 0.0f, 1000.0f), (vec3(0.0f, 0.0f, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
-	//_r.setProjectionMatrix(ortho(-1400.0f, 1400.0f, -1400.0f, 1400.0f, -5000.0f, 5000.0f));
-	//_r.setProjectionMatrix(perspective(radians(90.0f), 1.0f, 1.0f, 5000.0f));
 	_r.setProjectionMatrix(ortho(-500.0f, 500.0f, -500.0f, 500.0f, -1000.0f, 1000.0f));
 	_r.UpdateShaderData();
 	
@@ -313,20 +325,21 @@ int main(int argc, char* argv[])
 
 	//TESTS
 
-	int xx, yy;
-	xx = 16 * 18 + 4;
-	yy = -16 * 83 + 5;
-
 	GLTtext* text = gltCreateText();
 	gltSetText(text, "lubie placki");
 
 	RS_ENABLE_FRATURE(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	
+
 	gameManager gmanager(&_r, rect_mcd);
-	//_r.newObject(FURRY_RACE, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 1.1f }));
-	GComponentSlider slider = GComponentSlider(vec2(100.0f, 20.0f), glm::vec2(400.0f), "niggas", _r.getModel(0)->std_texture2d.handle, _r.getModel(2)->std_texture2d.handle);
-	GComponentButton button = GComponentButton(vec2(100.0f, 20.0f), glm::vec2(500.0f, 400.0f), "niggas", _r.getModel(0)->std_texture2d.handle);
+	GComponentSlider slider = GComponentSlider(vec2(100.0f, 20.0f), glm::vec2(0.0f), "niggas", _r.getModel(0)->std_texture2d.handle, _r.getModel(2)->std_texture2d.handle);
+	GComponentButton button = GComponentButton(vec2(100.0f, 20.0f), glm::vec2(100.0f, 0.0f), "niggas", _r.getModel(0)->std_texture2d.handle);
+
+	GWindow* gwin = new GWindow(vec2(300.0f), vec2(200.0f), LoadTextureFromFile("Data\\gui.png"));
+	gwin->AddComponent(&slider);
+	gwin->AddComponent(&button);
 
 	gameManager::CameraOffset cameraOffset;
 	float tick = 0;
@@ -335,18 +348,18 @@ int main(int argc, char* argv[])
 		tick += 1.0f;
 		RS_CLEAR_FRAMEBUFFER(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		_program_n.use();
-		gm.rChunkVao.bind();
-
 		cameraOffset = gmanager.getCameraOffset();
 		_r.setCameraMatrix(lookAt(vec3(cameraOffset.x, cameraOffset.y, 100.0f), (vec3(cameraOffset.x, cameraOffset.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
 		_r.setProjectionMatrix(ortho(-cameraOffset.z, cameraOffset.z, -cameraOffset.z, cameraOffset.z, -1000.0f, 1000.0f));
 		_r.UpdateShaderData();
 
 		//printf("%f %f\n", gmanager.getMousePosition().x, gmanager.getMousePosition().y);
+		int xx, yy;
+		auto zz = SDL_GetMouseState(&xx, &yy);
 
 
-
+		_program_n.use();
+		gm.rChunkVao.bind();
 		glUniform1f(lShdrScaleX, gm.pChunkSizeX);
 		glUniform1f(lShdrScaleY, gm.pChunkSizeY);
 		for (int y = 0; y < gm.blk; y++)
@@ -363,6 +376,9 @@ int main(int argc, char* argv[])
 			}
 		}
 		gmanager.update();
+
+		gwin->Render(gui_projection_matrix);
+		gwin->CollisionCheck(xx, yy);
 		
 		//gltBeginDraw();
 		//gltColor(1.0f, 0.5f, 0.2f, 1.0f);
@@ -376,17 +392,10 @@ int main(int argc, char* argv[])
 
 		//gltEndDraw();
 
-		int xx, yy;
-		auto zz = SDL_GetMouseState(&xx, &yy);
 
-		if (zz == SDL_BUTTON(1))
-			if (button.ClickCheck(xx, yy) == 1)
-				printf("chuj");
+		//button.Render(gui_projection_matrix)
 
-		button.Render(gui_projection_matrix);
-		button.val = 0.6f;
-
-		slider.Render(gui_projection_matrix);
+		//slider.Render(gui_projection_matrix);
 		slider.value = (sin(tick * 0.1f) + 1.0f) * 0.5f;
 
 
