@@ -3,6 +3,10 @@
 #extension GL_ARB_gpu_shader_int64: enable
 #extension GL_ARB_bindless_texture: enable
 
+#define GUI_ELEMENT_SLIDER 1
+#define GUI_ELEMENT_BUTTON 2
+#define GUI_ELEMENT_WINDOW 3
+
 layout (std430, binding = 11) buffer TS
 {
 	sampler2D textures[];
@@ -25,7 +29,7 @@ layout (std140, binding = 12) uniform GUI_ELEMENT
 	float Reserved0;
 	float Reserved1;
 	
-	_sampler2D store_index[8];
+	_sampler2D store_index[4];
 };
 
 uniform mat4 projection_matrix;
@@ -40,7 +44,10 @@ layout (location = 2) in float fc;
 
 void main()
 {
-	vec3 p = vec3(pos.x * scale_.x + pos_.x, pos.y * scale_.y + pos_.y, pos.z+5.0);
+	
+	float z_comp = 5.0 - 2.0 * float(gui_element == GUI_ELEMENT_WINDOW);
+
+	vec3 p = vec3(pos.x * scale_.x + pos_.x, pos.y * scale_.y + pos_.y, pos.z + z_comp);
 	gl_Position = projection_matrix * vec4(p, 1.0);
 	ouv = uv;
 	npos = p;
