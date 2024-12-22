@@ -7,6 +7,8 @@
 #include "FactionManager.h"
 #include <glm/vec2.hpp>
 #include <glm/gtx/quaternion.hpp> 
+#include <random>
+#include "timer.h"
 
 #define THRESHOLD 10.0f
 
