@@ -334,8 +334,8 @@ int main(int argc, char* argv[])
 	
 
 	gameManager gmanager(&_r, rect_mcd);
-	GComponentSlider slider = GComponentSlider(vec2(100.0f, 20.0f), glm::vec2(0.0f), "niggas", _r.getModel(0)->std_texture2d.handle, _r.getModel(2)->std_texture2d.handle);
-	GComponentButton button = GComponentButton(vec2(100.0f, 20.0f), glm::vec2(100.0f, 0.0f), "niggas", _r.getModel(0)->std_texture2d.handle);
+	GComponentSlider slider = GComponentSlider(vec2(100.0f, 20.0f), glm::vec2(-50.0f), "niggas", _r.getModel(0)->std_texture2d.handle, _r.getModel(2)->std_texture2d.handle);
+	GComponentButton button = GComponentButton(vec2(100.0f, 20.0f), glm::vec2(50.0f, -50.0f), "niggas", _r.getModel(0)->std_texture2d.handle);
 
 	GWindow* gwin = new GWindow(vec2(300.0f), vec2(200.0f), LoadTextureFromFile("Data\\gui.png"));
 	gwin->AddComponent(&slider);
@@ -357,7 +357,7 @@ int main(int argc, char* argv[])
 		int xx, yy;
 		auto zz = SDL_GetMouseState(&xx, &yy);
 
-
+		
 		_program_n.use();
 		gm.rChunkVao.bind();
 		glUniform1f(lShdrScaleX, gm.pChunkSizeX);

@@ -15,7 +15,7 @@ layout (std430, binding = 11) buffer TS
 struct _sampler2D
 {
 	sampler2D sampler;
-	uint64_t Reserved;
+	vec2 Reserved;
 };
 
 layout (std140, binding = 12) uniform GUI_ELEMENT
