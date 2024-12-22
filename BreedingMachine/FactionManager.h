@@ -50,6 +50,7 @@ public:
 	}
 
 	uint8_t getFactionsRelationships(uint8_t factionID_f, uint8_t factionID_s) {
+		if (factionID_f == factionID_s) return ALLY;
 		return factions[factionID_f].faction.getFactionRelationship(factionID_s);
 	}
 

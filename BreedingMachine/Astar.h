@@ -19,7 +19,7 @@ public:
 	};
 
 	struct border {
-		int x, y, width, height, offset;
+		int x, y, width, height;
 
 	};
 
