@@ -6,7 +6,11 @@
 #include "BuildingManager.h"
 #include "FactionManager.h"
 #include <glm/vec2.hpp>
-#include <glm/gtc/quaternion.hpp> 
+#include <glm/gtx/quaternion.hpp> 
+#include <random>
+#include "timer.h"
+
+#define THRESHOLD 10.0f
 
 class gameManager {
 public:
@@ -22,6 +26,9 @@ public:
 		factionManager = FactionManager{r_, rect_mcd, 16};
 		cameraOffset = CameraOffset{ 0, 0, 500.0f };
 		initGame(path);
+
+		std::random_device rd;
+		gen = std::mt19937{ rd() };
 	}
 	
 	void update() {
@@ -68,7 +75,15 @@ public:
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
 			auto pos = getMousePosition();
+			auto start = std::chrono::system_clock::now();
+
 			movementManager.createSquadPath({(int)pos.x, (int)pos.y }, player);
+
+			auto end = std::chrono::system_clock().now();
+			auto elapsedMil = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+			auto elapsedMic = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+			std::cout << "Time in miliseconds : " << elapsedMil << " Time in microseconds : " << elapsedMic << "\n";
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
 			auto pos = getMousePosition();
@@ -171,13 +186,17 @@ private:
 		factionManager.setFactionsRelationships(MODEL_HUMANS, MODEL_BANDITS, ENEMY);
 
 		player = factionManager.CreateNewSquad(MODEL_PLAYER, glm::vec2(-1000.0f));
-		player->force = 100.0f;
+		player->force = 1.0f;
 
+		Squad* squad;
 		srand(time(NULL));
-		for (int i = 0; i < 16; i++) {
+		player->setSquadState(STAND);
+		for (int i = 0; i < 24; i++) {
 			auto buildings = buildingManager.getRaceBuildings(i % 8);
 			if (i == MODEL_PLAYER || !buildings.size()) continue;
-			factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size()).getBuildingPosition());
+			squad = factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size()).getBuildingPosition());
+			timer.startMeasure(squad->getSquadID(), 0);
+			squad->force = getRandomNumber(10, 100);
 		}
 	}
 
@@ -188,25 +207,17 @@ private:
 
 	void handleSquadLogic() {
 		float distance = 0;
+		float threashold = 10;
 		uint64_t id;
-		for (auto& squad : factionManager.getAllSquads()) {
-			id = squad->getSquadID();
-			distance = calculateSquadViewDistance(squad);
-
-			if (squad != player) {
-				if (factionManager.getFactionsRelationships(squad->getSquadFactionID(), player->getSquadFactionID()) == ENEMY) {
-					if (glm::distance(squad->getSquadPosition(), player->getSquadPosition()) <= distance) {
-						if (squad->force < player->force) {
-							SquadRetreat(squad, player);
-						}
-						else {
-							SquadChase(squad, player);
-						}
-					}
+		for (auto& squadF : factionManager.getAllSquads()) {
+			if (squadF == player) continue;
+			id = squadF->getSquadID();
+			for (auto& squadS : factionManager.getAllSquads()) {
+				if (squadF != squadS) {
+					handleSquadState(squadF, squadS);
+					handleSquadStateLogic(squadF);
 				}
 			}
-			//BruteForce TODO
-			//factionManager.
 		}
 	}
 
@@ -215,15 +226,16 @@ private:
 		position1 = getCorrectedSquadPosition(s1->getSquadPosition());
 		position2 = getCorrectedSquadPosition(s2->getSquadPosition());
 
-		glm::vec2 dirVec = glm::normalize(position2 - position1) * 16.0f * 2.0f; // 22.6274166f
+		glm::vec2 dirVec = glm::normalize(position2 - position1) * 16.0f * 6.0f; // 22.6274166f
 		glm::vec2 endPoint = position1 - dirVec;
 		int pathFound = movementManager.createSquadPath(Astar::point{ (int)endPoint.x, (int)endPoint.y }, s1);
 		int angle = 30;
 		glm::mat2 rotationMatrix;
-		while (!pathFound) {
+		while (!pathFound && angle <= 180) {
+			//if (angle >= 180) return;
 			rotationMatrix = glm::mat2(
-				glm::cos(angle), -glm::sin(angle),
-				glm::sin(angle), glm::cos(angle)
+				glm::cos(360 - angle), -glm::sin(360 - angle),
+				glm::sin(360 - angle), glm::cos(360 - angle)
 			);
 			dirVec = (dirVec * rotationMatrix);
 			endPoint = position1 + dirVec;
@@ -232,19 +244,95 @@ private:
 			if (pathFound) return;
 
 			rotationMatrix = glm::mat2(
-				glm::cos(360 - angle), -glm::sin(360 - angle),
-				glm::sin(360 - angle), glm::cos(360 - angle)
+				glm::cos(angle), -glm::sin(angle),
+				glm::sin(angle), glm::cos(angle)
 			);
 			dirVec = (dirVec * rotationMatrix);
 			endPoint = position1 + dirVec;
 			pathFound = movementManager.createSquadPath(Astar::point{ (int)endPoint.x, (int)endPoint.y }, s1);
 
-			angle += 30;
+			angle += 20;
 		}
 	}
 
 	void SquadChase(Squad* s1, Squad* s2) {
 		movementManager.createSquadPath(Astar::point{ (int)s2->getSquadPosition().x, (int)s2->getSquadPosition().y }, s1);
+	}
+
+	void SquadPatrol(Squad* squad) {
+		auto buildings = buildingManager.getRaceBuildings(squad->getSquadFactionID());
+		int buildingAmount = buildings.size();
+		if (buildingAmount) {
+			if (!movementManager.SquadHasPath(squad)) { 
+				glm::vec2 randomBuildingPosition = buildings.at(getRandomNumber(0, buildingAmount - 1)).getBuildingPosition();
+				movementManager.createSquadPath(Astar::point{ (int)randomBuildingPosition.x, (int)randomBuildingPosition.y }, squad);
+			}
+		}
+		//IF BUILDINGS NOT FOUND ACT LIKE NORMAL WANDER STATE
+		else {
+			squad->setSquadState(WANDER);
+			timer.startMeasure(squad->getSquadID(), getRandomNumber(20, 50));
+		}
+	}
+
+	void SquadStand(Squad* squad) {
+
+	}
+
+	void SquadWander(Squad* squad, int distance) {
+		while (!movementManager.SquadHasPath(squad)) {
+			glm::vec2 squadPosition, newPosition;
+			squadPosition = squad->getSquadPosition();
+			int angle = getRandomNumber(0, 360);
+			glm::mat2 rotationMatrix = glm::mat2(
+				glm::cos(angle), -glm::sin(angle),
+				glm::sin(angle), glm::cos(angle)
+			);
+			newPosition = squadPosition + (rotationMatrix * glm::vec2(getRandomNumber(0, distance), getRandomNumber(0, distance)));
+			movementManager.createSquadPath(Astar::point{ (int)newPosition.x, (int)newPosition.y }, squad);
+		}
+	}
+
+	void handleSquadState(Squad* squadF, Squad* squadS) {
+		float distance = calculateSquadViewDistance(squadF);
+		if (factionManager.getFactionsRelationships(squadS->getSquadFactionID(), squadF->getSquadFactionID()) == ENEMY) {
+			if (glm::distance(squadF->getSquadPosition(), squadS->getSquadPosition()) <= distance) {
+				if (abs(squadF->force - squadS->force) <= THRESHOLD) {
+					//if(calculateChance(80)) 
+					squadF->setSquadState(CHASE);
+					stateH[squadF->getSquadID()] = squadS;
+				}
+				else {
+					squadF->setSquadState(RETREAT);
+					stateH[squadF->getSquadID()] = squadS;
+				}
+				//if (stateH.find(squadF->getSquadID()) != stateH.end()) stateH.erase(squadF->getSquadID());
+				timer.resetTimer(squadF->getSquadID());
+				return;
+			}
+		}
+		if (!timer.hasTimeElapsed(squadS->getSquadID())) return;
+			
+		//Default options
+		int state = getRandomNumber(0,2);
+		switch (state)
+		{
+		case STAND:
+			squadF->setSquadState(STAND);
+			timer.startMeasure(squadF->getSquadID(), getRandomNumber(5, 10));
+			break;
+		case PATROL:
+			squadF->setSquadState(PATROL);
+			timer.startMeasure(squadF->getSquadID(), getRandomNumber(30, 60));
+			break;
+		case WANDER:
+			squadF->setSquadState(WANDER);
+			timer.startMeasure(squadF->getSquadID(), getRandomNumber(20, 50));
+			break;
+		default:
+			break;
+		}
+		
 	}
 
 	glm::vec2 getCorrectedSquadPosition(glm::vec2 position) {
@@ -255,6 +343,42 @@ private:
 		return position;
 	}
 
+	void handleSquadStateLogic(Squad* squadF) {
+		switch (squadF->getSquadState()) {
+		case PATROL:
+			SquadPatrol(squadF);
+			break;
+		case STAND:
+			SquadStand(squadF);
+			break;
+		case WANDER:
+			SquadWander(squadF, 16 * 32);
+			break;
+		case RETREAT:
+			SquadRetreat(squadF, stateH[squadF->getSquadID()]);
+			break;
+		case CHASE:
+			SquadChase(squadF, stateH[squadF->getSquadID()]);
+			break;
+		}
+	}
+
+	bool calculateChance(int chance) {
+		chance = glm::clamp(chance, 0, 100);
+		return (std::uniform_int_distribution(0, chance)(gen) == 0);
+	}
+
+	int getSquadDrawnState(int amountOfStates) {
+		auto val = std::uniform_int_distribution(0, amountOfStates - 1)(gen);
+		return val;
+	}
+
+	int getRandomNumber(int min, int max) {
+		auto val = std::uniform_int_distribution(min, max)(gen);
+		return val;
+	}
+
+private:
 	rasticore::RastiCoreRender* r;
 	rasticore::ModelCreationDetails rect_mcd;
 
@@ -266,4 +390,8 @@ private:
 	CameraOffset cameraOffset;
 	InputHandler& instance;
 
+	std::unordered_map<uint64_t, Squad*> stateH;
+	//
+	Timer timer;
+	std::mt19937 gen;
 };

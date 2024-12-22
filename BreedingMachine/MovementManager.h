@@ -17,7 +17,7 @@ public:
 	MovementManager(std::filesystem::path path, uint32_t mapSize, uint8_t tileSize, rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) {
 		this->r = r_;
 		this->rect_mcd = rect_mcd;
-		this->movement = Astar{ new Astar::border{ -((int)mapSize / 2), ((int)mapSize / 2), (int)mapSize, (int)mapSize, tileSize } };
+		this->movement = Astar{ new Astar::border{ -((int)mapSize / 2), ((int)mapSize / 2), (int)mapSize, (int)mapSize} };
 		loadCollisionData(path);
 
 		this->mapSize = mapSize;
@@ -51,6 +51,10 @@ public:
 			auto path = movement.findPath(Astar::point{ (int)position.x, (int)position.y }, e, tileSize);
 			squadsMovementData[squad->getSquadID()] = SquadMovementInfo{ squad, path, 0 };
 		}
+		return squadsMovementData[squad->getSquadID()].path.size();
+	}
+
+	bool SquadHasPath(Squad* squad) {
 		return squadsMovementData[squad->getSquadID()].path.size();
 	}
 	
@@ -159,7 +163,6 @@ private:
 	
 	uint8_t tileSize;
 	uint32_t mapSize;
-	Astar::border border;
 	Astar movement;
 	std::unordered_map<uint64_t, SquadMovementInfo> squadsMovementData;
 
