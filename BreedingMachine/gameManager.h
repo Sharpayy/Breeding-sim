@@ -74,7 +74,7 @@ public:
 			cameraOffset.z += 20.0f;
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
-			auto pos = getMousePosition();
+			auto pos = getCorrectedMousePosition();
 			auto start = std::chrono::system_clock::now();
 
 			movementManager.createSquadPath({(int)pos.x, (int)pos.y }, player);
@@ -86,7 +86,7 @@ public:
 			std::cout << "Time in miliseconds : " << elapsedMil << " Time in microseconds : " << elapsedMic << "\n";
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
-			auto pos = getMousePosition();
+			auto pos = getCorrectedMousePosition();
 			pos.x = (int)(pos.x / 16) * 16;
 			pos.y = (int)(pos.y / 16) * 16;
 			player->setSquadPosition(pos);
@@ -108,12 +108,16 @@ public:
 	glm::vec2 getMousePosition() {
 		int x, y;
 		SDL_GetMouseState(&x, &y);
+		return glm::vec2{ x,y };
+	}
 
+	glm::vec2 getCorrectedMousePosition() {
+		glm::vec2 mousePos = getMousePosition();
 		glm::vec3 screen = glm::vec3(800.0f);
 
 		glm::vec4 nds;
-		nds.x = (2.0f * (float)x) / screen.x - 1.0f;
-		nds.y = (2.0f * (float)y) / screen.y - 1.0f;
+		nds.x = (2.0f * (float)mousePos.x) / screen.x - 1.0f;
+		nds.y = (2.0f * (float)mousePos.y) / screen.y - 1.0f;
 		nds.z = 1.0f;
 		nds.w = 1.0f;
 
@@ -191,7 +195,7 @@ private:
 		Squad* squad;
 		srand(time(NULL));
 		player->setSquadState(STAND);
-		for (int i = 0; i < 24; i++) {
+		for (int i = 0; i < 32; i++) {
 			auto buildings = buildingManager.getRaceBuildings(i % 8);
 			if (i == MODEL_PLAYER || !buildings.size()) continue;
 			squad = factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size()).getBuildingPosition());
@@ -221,10 +225,10 @@ private:
 		}
 	}
 
-	void SquadRetreat(Squad* s1, Squad* s2) {
+	void SquadRetreat(Squad* s1, glm::vec2 end) {
 		glm::vec2 position1, position2;
 		position1 = getCorrectedSquadPosition(s1->getSquadPosition());
-		position2 = getCorrectedSquadPosition(s2->getSquadPosition());
+		position2 = getCorrectedSquadPosition(end);
 
 		glm::vec2 dirVec = glm::normalize(position2 - position1) * 16.0f * 6.0f; // 22.6274166f
 		glm::vec2 endPoint = position1 - dirVec;
@@ -255,8 +259,8 @@ private:
 		}
 	}
 
-	void SquadChase(Squad* s1, Squad* s2) {
-		movementManager.createSquadPath(Astar::point{ (int)s2->getSquadPosition().x, (int)s2->getSquadPosition().y }, s1);
+	void SquadChase(Squad* s1, glm::vec2 end) {
+		movementManager.createSquadPath(Astar::point{ (int)end.x, (int)end.y }, s1);
 	}
 
 	void SquadPatrol(Squad* squad) {
@@ -288,7 +292,7 @@ private:
 				glm::cos(angle), -glm::sin(angle),
 				glm::sin(angle), glm::cos(angle)
 			);
-			newPosition = squadPosition + (rotationMatrix * glm::vec2(getRandomNumber(0, distance), getRandomNumber(0, distance)));
+			newPosition = squadPosition + (rotationMatrix * glm::vec2(getRandomNumber(32, distance)));
 			movementManager.createSquadPath(Astar::point{ (int)newPosition.x, (int)newPosition.y }, squad);
 		}
 	}
@@ -297,14 +301,15 @@ private:
 		float distance = calculateSquadViewDistance(squadF);
 		if (factionManager.getFactionsRelationships(squadS->getSquadFactionID(), squadF->getSquadFactionID()) == ENEMY) {
 			if (glm::distance(squadF->getSquadPosition(), squadS->getSquadPosition()) <= distance) {
-				if (abs(squadF->force - squadS->force) <= THRESHOLD) {
+				//if (abs(squadF->force - squadS->force) >= THRESHOLD) {
+				if(squadF->force >= squadS->force) {
 					//if(calculateChance(80)) 
 					squadF->setSquadState(CHASE);
-					stateH[squadF->getSquadID()] = squadS;
+					stateH[squadF->getSquadID()] = squadS->getSquadPosition();
 				}
 				else {
 					squadF->setSquadState(RETREAT);
-					stateH[squadF->getSquadID()] = squadS;
+					stateH[squadF->getSquadID()] = squadS->getSquadPosition();
 				}
 				//if (stateH.find(squadF->getSquadID()) != stateH.end()) stateH.erase(squadF->getSquadID());
 				timer.resetTimer(squadF->getSquadID());
@@ -390,7 +395,7 @@ private:
 	CameraOffset cameraOffset;
 	InputHandler& instance;
 
-	std::unordered_map<uint64_t, Squad*> stateH;
+	std::unordered_map<uint64_t, glm::vec2> stateH;
 	//
 	Timer timer;
 	std::mt19937 gen;
