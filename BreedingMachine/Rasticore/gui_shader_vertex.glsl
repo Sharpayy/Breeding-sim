@@ -6,6 +6,7 @@
 #define GUI_ELEMENT_SLIDER 1
 #define GUI_ELEMENT_BUTTON 2
 #define GUI_ELEMENT_WINDOW 3
+#define GUI_ELEMENT_IMAGE  4
 
 layout (std430, binding = 11) buffer TS
 {
@@ -14,8 +15,8 @@ layout (std430, binding = 11) buffer TS
 
 struct _sampler2D
 {
-    sampler2D sampler;
-    vec2 Reserved;
+	sampler2D sampler;
+	uint64_t Reserved;
 };
 
 layout (std140, binding = 12) uniform GUI_ELEMENT
@@ -26,7 +27,7 @@ layout (std140, binding = 12) uniform GUI_ELEMENT
 
 	float val;
 
-	float Reserved0;
+	float z;
 	float Reserved1;
 	
 	_sampler2D store_index[4];

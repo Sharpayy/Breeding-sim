@@ -17,13 +17,6 @@ in vec2 uv;
 
 void main()
 {
-
-	vec4 color = texture(TEXTURE_HANDLE, uv);
-
-
-	vec4 renderColor = color;
-
-	FragColor = renderColor;
-	//FragColor = vec4(uv, 0.0, 1.0);
+    FragColor = texture(TEXTURE_HANDLE, uv);
 }
 
