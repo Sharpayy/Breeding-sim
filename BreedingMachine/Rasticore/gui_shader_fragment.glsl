@@ -6,6 +6,7 @@
 #define GUI_ELEMENT_SLIDER 1
 #define GUI_ELEMENT_BUTTON 2
 #define GUI_ELEMENT_WINDOW 3
+#define GUI_ELEMENT_IMAGE  4
 
 layout (std430, binding = 11) buffer TS
 {
@@ -26,7 +27,7 @@ layout (std140, binding = 12) uniform GUI_ELEMENT
 
 	float val;
 
-	float Reserved0;
+	float z;
 	float Reserved1;
 	
 	_sampler2D store_index[4];
@@ -51,7 +52,6 @@ void main()
 		{
 			OutColor = texture(store_index[1].sampler, ouv);
 		}
-
 	}
 	else if (gui_element == GUI_ELEMENT_BUTTON)
 	{
@@ -62,10 +62,13 @@ void main()
 	{
 		OutColor = texture(store_index[0].sampler, ouv);
 	}
+	else if (gui_element == GUI_ELEMENT_IMAGE)
+	{
+		OutColor = texture(store_index[0].sampler, ouv);
+	}
 	else
 	{
 		OutColor = vec4(1.0, 0.66, 0.8, 1.0);
-
 	}
 }
 

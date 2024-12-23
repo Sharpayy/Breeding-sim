@@ -20,6 +20,7 @@
 #define GUI_ELEMENT_SLIDER			1
 #define GUI_ELEMENT_BUTTON			2
 #define GUI_ELEMENT_WINDOW			3
+#define GUI_ELEMENT_IMAGE			4
 
 #define GUI_SHADER_DEBUG_INFO
 
@@ -41,7 +42,7 @@ typedef struct _GSHADERRENDERDATA
 
 	float val;
 
-	float Reserved0;
+	float z;
 	float Reserved1;
 
 } GSHADERRENDERDATA;
@@ -63,13 +64,14 @@ typedef struct _GSHADERRENDERDATA_BUTTON
 class GComponent
 {
 public:
+	glm::vec3 pos;
 	GComponent() {}
 
 	virtual void Render(glm::mat4 pm) = 0;
 	virtual int ClickCheck(float x, float y, void* window) = 0;
 	virtual int GetType() = 0;
 
-	virtual void SetOffset(float x, float y) = 0;
+	virtual void SetOffset(glm::vec3 of) = 0;
 };
 
 class GComponentSlider : public GComponent
@@ -78,23 +80,22 @@ public:
 
 	GLTtext* text;
 	float scale_x, scale_y;
-	float pos_x, pos_y;
 
 	uint64_t base_tex_id;
 	uint64_t fill_tex_id;
 
 	float value;
 
-	GComponentSlider(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t base, uint64_t fill);
+	GComponentSlider(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t base, uint64_t fill);
 	void SetText(const char* text_);
 	const char* GetText();
 
-	void SetPosition(glm::vec2 new_pos);
+	void SetPosition(glm::vec3 new_pos);
 
 	virtual void Render(glm::mat4 pm);
 	virtual int ClickCheck(float x, float y, void* window = NULL);
 	virtual int GetType();
-	virtual void SetOffset(float x, float y);
+	virtual void SetOffset(glm::vec3 of);
 
 };
 
@@ -104,24 +105,39 @@ public:
 	GLTtext* text;
 
 	float scale_x, scale_y;
-	float pos_x, pos_y;
 
 	float val;
 
 	uint64_t texture;
 	GComponentButton_Callback callback;
 
-	GComponentButton(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t tex);
+	GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t tex);
 	void SetCallback(GComponentButton_Callback func);
 
 	virtual void Render(glm::mat4 pm);
 	virtual int ClickCheck(float x, float y, void* window = NULL);
 	virtual int GetType();
-	virtual void SetOffset(float x, float y);
+	virtual void SetOffset(glm::vec3 of);
 
 
 };
 
+class GComponentImage : public GComponent
+{
+public:
+	float scale_x, scale_y;
+	glm::vec3 pos;
+
+	uint64_t texture;
+
+	GComponentImage(glm::vec2 scale, glm::vec3 pos, uint64_t tex);
+
+	virtual void Render(glm::mat4 pm);
+	virtual int ClickCheck(float x, float y, void* window = NULL);
+	virtual int GetType();
+	virtual void SetOffset(glm::vec3 of);
+
+};
 #define GUI_WINDOW_ACTIVE		1
 #define GUI_WINDOW_TOP			2
 #define GUI_WINDOW_NO_CLICK		4
@@ -136,6 +152,7 @@ private:
 public:
 	glm::vec2 position;
 	glm::vec2 scale;
+	float z;
 
 	uint64_t background;
 
@@ -145,6 +162,7 @@ public:
 	void Render(glm::mat4 pm);
 
 	void CollisionCheck(float x, float y);
+	void UpdateZComp();
 
 };
 

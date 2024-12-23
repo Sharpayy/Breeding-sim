@@ -6,14 +6,31 @@
 #include "BuildingManager.h"
 #include "FactionManager.h"
 #include <glm/vec2.hpp>
-#include <glm/gtx/quaternion.hpp> 
+#include <glm/gtc/quaternion.hpp> 
 #include <random>
 #include "timer.h"
+
+
+uint64_t LoadTextureFromFile(const char* file)
+{
+	rasticore::Image img = rasticore::Image(file, 4);
+	rasticore::Texture2D tx{ img.data, (int)img.x_, (int)img.y_, GL_RGBA, GL_RGBA8 };
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	tx.genMipmap();
+	rasticore::Texture2DBindless txb{ tx };
+	txb.MakeResident();
+	return txb.handle;
+}
 
 #define THRESHOLD 10.0f
 
 class gameManager {
 public:
+	Inventory inv;
+
 	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) : instance(InputHandler::getInstance()) {
 		this->rect_mcd = rect_mcd;
 		this->r = r_;
@@ -74,19 +91,16 @@ public:
 			cameraOffset.z += 20.0f;
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
-			auto pos = getMousePosition();
-			auto start = std::chrono::system_clock::now();
-
-			movementManager.createSquadPath({(int)pos.x, (int)pos.y }, player);
-
-			auto end = std::chrono::system_clock().now();
-			auto elapsedMil = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-			auto elapsedMic = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-
-			std::cout << "Time in miliseconds : " << elapsedMil << " Time in microseconds : " << elapsedMic << "\n";
+			
+			auto mp = getMousePosition();
+			mp.y = 800 - mp.y;
+			Slot* slot = inv.getSlot(mp);
+			
+			if (slot != nullptr)
+				printf("%d\n", slot->getItem()->i);
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
-			auto pos = getMousePosition();
+			auto pos = getCorrectedMousePosition();
 			pos.x = (int)(pos.x / 16) * 16;
 			pos.y = (int)(pos.y / 16) * 16;
 			player->setSquadPosition(pos);
@@ -97,27 +111,23 @@ public:
 		}
 	}
 
-	struct CameraOffset {
-		float x = 0, y = 0, z = 0;
-	};
-
-	CameraOffset getCameraOffset() {
-		return cameraOffset;
-	}
-
 	glm::vec2 getMousePosition() {
 		int x, y;
 		SDL_GetMouseState(&x, &y);
+		return glm::vec2{ x,y };
+	}
 
+	glm::vec2 getCorrectedMousePosition() {
+		glm::vec2 mousePos = getMousePosition();
 		glm::vec3 screen = glm::vec3(800.0f);
 
 		glm::vec4 nds;
-		nds.x = (2.0f * (float)x) / screen.x - 1.0f;
-		nds.y = (2.0f * (float)y) / screen.y - 1.0f;
+		nds.x = (2.0f * (float)mousePos.x) / screen.x - 1.0f;
+		nds.y = (2.0f * (float)mousePos.y) / screen.y - 1.0f;
 		nds.z = 1.0f;
 		nds.w = 1.0f;
 
-		nds.y *= -1.0f;
+		nds.y = -1.0f;
 
 		glm::mat4 inv_projection = glm::inverse(r->MVP.matProj);
 
@@ -128,6 +138,14 @@ public:
 		nds = inv_camera * nds;
 
 		return glm::vec2(nds.x, nds.y);
+	}
+
+	struct CameraOffset {
+		float x = 0, y = 0, z = 0;
+	};
+
+	CameraOffset getCameraOffset() {
+		return cameraOffset;
 	}
 
 private:
@@ -143,6 +161,18 @@ private:
 		factionManager.CreateNewFaction(MODEL_PLAYER, "Data\\player.png", "Player", buildingManager.getRaceBuildings(MODEL_PLAYER));
 		factionManager.CreateNewFaction(MODEL_BANDITS, "Data\\bandit.png", "Bandit", buildingManager.getRaceBuildings(MODEL_BANDITS));
 		factionManager.CreateNewFaction(MODEL_ANIMALS, "Data\\animal.png", "Furry", buildingManager.getRaceBuildings(MODEL_ANIMALS));
+
+		inv = Inventory();
+		inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
+		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
+		inv.ActivateWindow("main_player_eq");
+
+		for (int i = 0; i < 8; i++)
+		{
+			Item* it = new Item();
+			it->i = i + 1;
+			Slot* s = inv.AddSlotToWindow("main_player_eq", Slot(it, glm::vec2(150 + 55 * i, 600 - 20), 50, 50), r->getModel(0)->std_texture2d.handle);
+		}
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);

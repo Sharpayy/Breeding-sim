@@ -17,6 +17,7 @@
 #include "Rasticore/objload.h"
 
 #include "gui.h"
+#include "inventory.h"
 
 #include "Rasticore/MapRenderer.cpp"
 
@@ -44,20 +45,6 @@
 #include "MovementManager.h"
 #include "inputHandler.h"
 #include "gameManager.h"
-
-uint64_t LoadTextureFromFile(const char* file)
-{
-	rasticore::Image img = rasticore::Image(file, 4);
-	rasticore::Texture2D tx{ img.data, (int)img.x_, (int)img.y_, GL_RGBA, GL_RGBA8 };
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	tx.genMipmap();
-	rasticore::Texture2DBindless txb{ tx };
-	txb.MakeResident();
-	return txb.handle;
-}
 
 using namespace glm;
 
@@ -331,15 +318,8 @@ int main(int argc, char* argv[])
 	RS_ENABLE_FRATURE(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	
 
 	gameManager gmanager(&_r, rect_mcd);
-	GComponentSlider slider = GComponentSlider(vec2(100.0f, 20.0f), glm::vec2(-50.0f), "niggas", _r.getModel(0)->std_texture2d.handle, _r.getModel(2)->std_texture2d.handle);
-	GComponentButton button = GComponentButton(vec2(100.0f, 20.0f), glm::vec2(50.0f, -50.0f), "niggas", _r.getModel(0)->std_texture2d.handle);
-
-	GWindow* gwin = new GWindow(vec2(300.0f), vec2(200.0f), LoadTextureFromFile("Data\\gui.png"));
-	gwin->AddComponent(&slider);
-	gwin->AddComponent(&button);
 
 	gameManager::CameraOffset cameraOffset;
 	float tick = 0;
@@ -356,7 +336,6 @@ int main(int argc, char* argv[])
 		//printf("%f %f\n", gmanager.getMousePosition().x, gmanager.getMousePosition().y);
 		int xx, yy;
 		auto zz = SDL_GetMouseState(&xx, &yy);
-
 		
 		_program_n.use();
 		gm.rChunkVao.bind();
@@ -376,9 +355,10 @@ int main(int argc, char* argv[])
 			}
 		}
 		gmanager.update();
+		gmanager.inv.Render(gui_projection_matrix);
+		
 
-		gwin->Render(gui_projection_matrix);
-		gwin->CollisionCheck(xx, yy);
+		//gwin->CollisionCheck(xx, yy);
 		
 		//gltBeginDraw();
 		//gltColor(1.0f, 0.5f, 0.2f, 1.0f);
@@ -396,7 +376,7 @@ int main(int argc, char* argv[])
 		//button.Render(gui_projection_matrix)
 
 		//slider.Render(gui_projection_matrix);
-		slider.value = (sin(tick * 0.1f) + 1.0f) * 0.5f;
+
 
 
 		_win.swap();

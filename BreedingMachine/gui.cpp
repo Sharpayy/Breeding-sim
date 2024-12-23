@@ -6,7 +6,7 @@ uint32_t gui_program_mat_loc;
 
 rasticore::UniformBufferObject* gui_prog_ubo;
 
-GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t base, uint64_t fill)
+GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t base, uint64_t fill)
 {
 	scale_x = scale.x;
 	scale_y = scale.y;
@@ -14,8 +14,7 @@ GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec2 pos, const char* t
 	text = gltCreateText();
 	gltSetText(text, text_);
 
-	pos_x = pos.x;
-	pos_y = pos.y;
+	this->pos = pos;
 
 	base_tex_id = base;
 	fill_tex_id = fill;
@@ -29,9 +28,10 @@ void GComponentSlider::Render(glm::mat4 pm)
 
 	GSHADERRENDERDATA_SLIDER data{};
 	data.d.gui_element = GUI_ELEMENT_SLIDER;
-	data.d.pos_ = glm::vec2(pos_x, pos_y);
+	data.d.pos_ = glm::vec2(pos.x, pos.y);
 	data.d.scale_ = glm::vec2(scale_x, scale_y);
 	data.d.val = value;
+	data.d.z = pos.z;
 
 	data.textures[0] = base_tex_id;
 	data.textures[2] = fill_tex_id;
@@ -57,10 +57,9 @@ int GComponentSlider::GetType()
 	return GUI_ELEMENT_SLIDER;
 }
 
-void GComponentSlider::SetOffset(float x, float y)
+void GComponentSlider::SetOffset(glm::vec3 of)
 {
-	pos_x += x;
-	pos_y += y;
+	pos += of;
 }
 
 void gui_init()
@@ -96,13 +95,22 @@ void gui_init()
 
 	gui_program_mat_loc = glGetUniformLocation(gui_main_program->id, "projection_matrix");
 
-	float plane_vtx[] = {
-		-0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f,
-		-0.5f, 0.5f, 1.0f, 0.0f, 1.0f,  0.0f,
-		0.5, -0.5f, 1.0f, 1.0f, 0.0f,   1.0f,
+	//float plane_vtx[] = {
+	//	-0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f,
+	//	-0.5f, 0.5f, 1.0f, 0.0f, 1.0f,  0.0f,
+	//	0.5, -0.5f, 1.0f, 1.0f, 0.0f,   1.0f,
 
-		0.5, 0.5f, 1.0f, 1.0f, 1.0f,	1.0f
+	//	0.5, 0.5f, 1.0f, 1.0f, 1.0f,	1.0f
+	//};
+
+		float plane_vtx[] = {
+		0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 1.0f, 0.0f, 1.0f,  0.0f,
+		1.0, 0.0f, 1.0f, 1.0f, 0.0f,   1.0f,
+
+		1.0, 1.0f, 1.0f, 1.0f, 1.0f,	1.0f
 	};
+
 
 	uint32_t chuj[] = {
 		0,1,2,1,2,3
@@ -133,7 +141,7 @@ void pfnBasicButtonCallback(GComponentButton* button, GWindow* window)
 	printf("chij");
 }
 
-GComponentButton::GComponentButton(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t tex)
+GComponentButton::GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t tex)
 {
 	scale_x = scale.x;
 	scale_y = scale.y;
@@ -141,8 +149,7 @@ GComponentButton::GComponentButton(glm::vec2 scale, glm::vec2 pos, const char* t
 	text = gltCreateText();
 	gltSetText(text, text_);
 
-	pos_x = pos.x;
-	pos_y = pos.y;
+	this->pos = pos;
 
 	texture = tex;
 	callback = (GComponentButton_Callback)pfnBasicButtonCallback;
@@ -161,9 +168,10 @@ void GComponentButton::Render(glm::mat4 pm)
 
 	GSHADERRENDERDATA_BUTTON data{};
 	data.d.gui_element = GUI_ELEMENT_BUTTON;
-	data.d.pos_ = glm::vec2(pos_x, pos_y);
+	data.d.pos_ = glm::vec2(pos.x, pos.y);
 	data.d.scale_ = glm::vec2(scale_x, scale_y);
 	data.d.val = val;
+	data.d.z = pos.z;
 
 	data.textures[0] = texture;
 
@@ -180,13 +188,13 @@ void GComponentButton::Render(glm::mat4 pm)
 
 int GComponentButton::ClickCheck(float x, float y, void* window)
 {
-	float _min = -0.5f * scale_x + pos_x;
-	float _max =  0.5f * scale_x + pos_x;
+	float _min = -0.5f * scale_x + pos.x;
+	float _max =  0.5f * scale_x + pos.x;
 
 	if (x >= _min && x < _max)
 	{
-		_min = -0.5f * scale_y + pos_y;
-		_max =  0.5f * scale_y + pos_y;
+		_min = -0.5f * scale_y + pos.y;
+		_max =  0.5f * scale_y + pos.y;
 		if (y >= _min && y < _max)
 		{
 			val = 1.0f;
@@ -203,10 +211,9 @@ int GComponentButton::GetType()
 	return GUI_ELEMENT_BUTTON;
 }
 
-void GComponentButton::SetOffset(float x, float y)
+void GComponentButton::SetOffset(glm::vec3 of)
 {
-	pos_x += x;
-	pos_y += y;
+	pos += of;
 }
 
 GWindow::GWindow(glm::vec2 pos, glm::vec2 scale, uint64_t tex)
@@ -214,6 +221,7 @@ GWindow::GWindow(glm::vec2 pos, glm::vec2 scale, uint64_t tex)
 	position = pos;
 	this->scale = scale;
 	background = tex;
+	z = 2.0f;
 
 	component_list = std::list<GComponent*>();
 
@@ -222,7 +230,7 @@ GWindow::GWindow(glm::vec2 pos, glm::vec2 scale, uint64_t tex)
 
 void GWindow::AddComponent(GComponent* comp)
 {
-	comp->SetOffset(position.x, position.y);
+	//comp->SetOffset(glm::vec3(position.x, position.y, 0.0f));
 	component_list.push_back(comp);
 }
 
@@ -237,6 +245,7 @@ void GWindow::Render(glm::mat4 pm)
 	data.d.gui_element = GUI_ELEMENT_WINDOW;
 	data.d.pos_ = position;
 	data.d.scale_ = scale;
+	data.d.z = 2.0f;
 
 	data.textures[0] = background;
 
@@ -265,4 +274,71 @@ void GWindow::CollisionCheck(float x, float y)
 	{
 		i->ClickCheck(x, y, this);
 	}
+}
+
+void GWindow::UpdateZComp()
+{
+	for (auto& i : component_list)
+	{
+		i->pos.z = z + 0.1f;
+	}
+}
+
+GComponentImage::GComponentImage(glm::vec2 scale, glm::vec3 pos, uint64_t tex)
+{
+	scale_x = scale.x;
+	scale_y = scale.y;
+
+	this->pos = pos;
+	texture = tex;
+}
+
+void GComponentImage::Render(glm::mat4 pm)
+{
+	gui_main_program->use();
+
+	GSHADERRENDERDATA_BUTTON data{};
+	data.d.gui_element = GUI_ELEMENT_IMAGE;
+	data.d.pos_ = glm::vec2(pos.x, pos.y);
+	data.d.scale_ = glm::vec2(scale_x, scale_y);
+	data.d.z = pos.z;
+
+	data.textures[0] = texture;
+
+	gui_prog_ubo->bind();
+	gui_prog_ubo->subdata(0, sizeof(GSHADERRENDERDATA_BUTTON), &data);
+	gui_prog_ubo->bindBase(GUI_ELEMENT_BIND_LOCATION);
+
+	gui_square->bind();
+
+	glUniformMatrix4fv(gui_program_mat_loc, 1, GL_FALSE, (float*)&pm);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+}
+
+int GComponentImage::ClickCheck(float x, float y, void* window)
+{
+	float _min = -0.5f * scale_x + pos.x;
+	float _max = 0.5f * scale_x + pos.x;
+
+	if (x >= _min && x < _max)
+	{
+		_min = -0.5f * scale_y + pos.y;
+		_max = 0.5f * scale_y + pos.y;
+		if (y >= _min && y < _max)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int GComponentImage::GetType()
+{
+	return GUI_ELEMENT_IMAGE;
+}
+
+void GComponentImage::SetOffset(glm::vec3 of)
+{
+	pos += of;
 }
