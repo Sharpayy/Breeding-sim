@@ -29,8 +29,13 @@ typedef void(*GComponentButton_Callback)(void*, void*);
 extern rasticore::Program* gui_main_program;
 extern rasticore::VertexBuffer* gui_square;
 extern uint32_t gui_program_mat_loc;
-
 extern rasticore::UniformBufferObject* gui_prog_ubo;
+
+#ifdef ENABLE_GROOMING
+extern uint32_t gui_tex_0_loc;
+extern uint32_t gui_tex_1_loc;
+#endif
+
 
 void gui_init();
 

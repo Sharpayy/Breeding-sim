@@ -8,11 +8,6 @@
 #define GUI_ELEMENT_WINDOW 3
 #define GUI_ELEMENT_IMAGE  4
 
-layout (std430, binding = 11) buffer TS
-{
-	sampler2D textures[];
-};
-
 struct _sampler2D
 {
 	sampler2D sampler;
@@ -48,7 +43,7 @@ void main()
 	
 	float z_comp = 5.0 - 2.0 * float(gui_element == GUI_ELEMENT_WINDOW);
 
-	vec3 p = vec3(pos.x * scale_.x + pos_.x, pos.y * scale_.y + pos_.y, pos.z + z_comp);
+	vec3 p = vec3(pos.x * scale_.x + pos_.x, pos.y * scale_.y + pos_.y, pos.z + z);
 	gl_Position = projection_matrix * vec4(p, 1.0);
 	ouv = uv;
 	npos = p;
