@@ -309,7 +309,7 @@ int main(int argc, char* argv[])
 	RS_ENABLE_FRATURE(GL_DEPTH_TEST);
 	RS_BACKGROUND_CLEAR_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
-	mat4 gui_projection_matrix = ortho(0.0f, 800.0f, 0.0f, 800.0f, -1000.0f, 1000.0f);
+	mat4 gui_projection_matrix = ortho(0.0f, 800.0f, 800.0f, 0.0f, -1000.0f, 1000.0f);
 
 	//TESTS
 
