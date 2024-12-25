@@ -24,7 +24,7 @@ class Item {
 public:
 	struct ObjectStatistic {};
 public:
-	Item(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic objStats = {}, uint32_t price = 0) {
+	Item(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic* objStats = nullptr, uint32_t price = 0) {
 		this->itemName = itemtName;
 		this->object = newItem;
 		this->objType = objeType;
@@ -65,7 +65,7 @@ protected:
 	void* object;
 	uint32_t price;
 	uint8_t objType;
-	ObjectStatistic objStat;
+	ObjectStatistic* objStat;
 };
 
 class Armor : public Item {
