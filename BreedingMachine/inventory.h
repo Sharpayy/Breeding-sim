@@ -142,7 +142,7 @@ class Slot {
 public:
 	Slot() = default;
 	Slot(Item* object, glm::vec2 position, int width, int height, uint8_t type = EVERY_ITEM) {
-		assert(object->getObjectType() & type);
+		if(object) assert(object->getObjectType() & type);
 		this->object = object;
 		this->slotDim = { position, width, height };
 		this->type = type;
@@ -267,10 +267,16 @@ public:
 	}
 
 	void AddWindow(std::string windowName, ObjectDim dim, uint8_t height, uint64_t tex) {
-		Window* win = new Window{ windowName, dim, height, {} };
+		Window* win = new Window{ windowName, dim, height, {}, new GWindow{ dim.position, glm::vec2{ dim.width, dim.height }, tex } };
 		windowSlots[0].push_back(win);
-		win->win = new GWindow{ dim.position, glm::vec2{ dim.width, dim.height }, tex };
 		sortVec(0);
+	}
+
+	GWindow* getGWindow(std::string windowName) {
+		Window* win = windowExist(windowName, 0);
+		if (!win) win = windowExist(windowName, 1);
+		if (!win) return nullptr;
+		return win->win;
 	}
 
 	std::vector<Window*> getActiveWindows() {
@@ -305,38 +311,59 @@ public:
 	}
 
 	Slot* getSlot(glm::vec2 position) {
+		//uint8_t windowsAmount = windowSlots.at(true).size();
+		//if (windowsAmount >= 2) {
+		//	uint8_t height = 0;
+		//	Slot* potentialSlot = nullptr;
+		//	int i = 0;
+		//	for (auto& window : windowSlots.at(true)) {
+		//		if (potentialSlot) break;
+		//		i++;
+		//		if (pointInRect(position, window->dim)) {
+		//			for (auto& slot : window->slots) {
+		//				if (pointInRect(position, slot->getDim())) {
+		//					height = i - 1;
+		//					potentialSlot = slot;
+		//					break;
+		//				}
+		//			}
+		//		}
+		//	}
+		//	for (int x = 0; x < i - 1; x++) {
+		//		if (pointInRect(position, windowSlots.at(true).at(x)->dim)) return nullptr;
+		//	}
+		//	return potentialSlot;
+		//}
+		//else {
+		//	Window* frontWindow = windowSlots.at(true).front();
+		//	if (pointInRect(position, frontWindow->dim)) {
+		//		for (auto& slot : frontWindow->slots) {
+		//			if (pointInRect(position, slot->getDim())) return slot;
+		//		}
+		//	}
+		//}
+		//return nullptr;
 		uint8_t windowsAmount = windowSlots.at(true).size();
-		if (windowsAmount >= 2) {
-			uint8_t height = 0;
-			Slot* potentialSlot = nullptr;
-			int i = 0;
-			for (auto& window : windowSlots.at(true)) {
-				if (potentialSlot) break;
-				i++;
-				if (pointInRect(position, window->dim)) {
-					for (auto& slot : window->slots) {
-						if (pointInRect(position, slot->getDim())) {
-							height = i - 1;
-							potentialSlot = slot;
-							break;
-						}
+		uint8_t height = 0;
+		Slot* potentialSlot = nullptr;
+		int i = 0;
+		for (auto& window : windowSlots.at(true)) {
+			if (potentialSlot) break;
+			i++;
+			if (pointInRect(position, window->dim)) {
+				for (auto& slot : window->slots) {
+					if (pointInRect(position, slot->getDim())) {
+						height = i - 1;
+						potentialSlot = slot;
+						break;
 					}
 				}
 			}
-			for (int x = 0; x < i - 1; x++) {
-				if (pointInRect(position, windowSlots.at(true).at(x)->dim)) return nullptr;
-			}
-			return potentialSlot;
 		}
-		else {
-			Window* frontWindow = windowSlots.at(true).front();
-			if (pointInRect(position, frontWindow->dim)) {
-				for (auto& slot : frontWindow->slots) {
-					if (pointInRect(position, slot->getDim())) return slot;
-				}
-			}
+		for (int x = 0; x < i - 1; x++) {
+			if (pointInRect(position, windowSlots.at(true).at(x)->dim)) potentialSlot = nullptr;
 		}
-		return nullptr;
+		return potentialSlot;
 	}
 
 private:
