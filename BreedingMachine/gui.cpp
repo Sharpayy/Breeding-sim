@@ -238,6 +238,7 @@ void GComponentButton::SetOffset(glm::vec3 of)
 
 GWindow::GWindow(glm::vec2 pos, glm::vec2 scale, uint64_t tex)
 {
+	this->position = glm::vec2(pos.x, 800.0f - scale.y - pos.y);
 	position = pos;
 	this->scale = scale;
 	background = tex;

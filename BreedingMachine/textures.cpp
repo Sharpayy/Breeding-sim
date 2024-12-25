@@ -1,5 +1,7 @@
 #include "textures.h"
 
+std::unordered_map<const char*, TEXTURE_CONTAINER> texture_store;
+
 void texture_store_init()
 {
 	texture_store = std::unordered_map<const char*, TEXTURE_CONTAINER>();
