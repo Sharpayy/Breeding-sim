@@ -9,7 +9,7 @@
 #include <glm/gtc/quaternion.hpp> 
 #include <random>
 #include "timer.h"
-#define ENABLE_GROOMING
+
 
 uint64_t LoadTextureFromFile(const char* file)
 {
@@ -183,15 +183,11 @@ private:
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		//inv.ActivateWindow("main_player_eq");
 		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
-		initPrimaryInv();
-		//initItems();
 
-		//for (int i = 0; i < 8; i++)
-		//{
-		//	Item* it = new Item();
-		//	it->i = i + 1;
-		//	Slot* s = inv.AddSlotToWindow("main_player_eq", Slot(it, glm::vec2(150 + 55 * i, 600 - 20), 50, 50), r->getModel(0)->std_texture2d.handle);
-		//}
+		for (int i = 0; i < 8; i++)
+		{
+			Slot* s = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(150 + 55 * i, 600 - 20), 50, 50), r->getModel(0)->std_texture2d.handle);
+		}
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);
