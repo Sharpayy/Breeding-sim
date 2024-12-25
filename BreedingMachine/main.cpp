@@ -245,6 +245,22 @@ int main(int argc, char* argv[])
 	rasticore::Shader<GL_VERTEX_SHADER> mendashader = rasticore::Shader<GL_VERTEX_SHADER>((char*)menda.data);
 	rasticore::UnmapFile(menda);
 
+	_t_shader_file = rasticore::MapFile("Rasticore\\fight_map_fragment.glsl");
+	rasticore::Shader<GL_FRAGMENT_SHADER> fightMapFrag = rasticore::Shader<GL_FRAGMENT_SHADER>((char*)_t_shader_file.data);
+	rasticore::UnmapFile(_t_shader_file);
+
+	rasticore::Program fightMapProgram = rasticore::Program();
+	fightMapProgram.programAddShader(_shdr_vt_n.id);
+	fightMapProgram.programAddShader(fightMapFrag.id);
+	fightMapProgram.programCompile();
+
+	char dd[1024];
+	int dda = fightMapProgram.programGetDebugInfo(dd, 1024);
+
+	if (dda == 0)
+		puts(dd);
+
+	fightMapProgram.use();
 
 	rasticore::Program _program_n = rasticore::Program();
 	_program_n.programAddShader(_shdr_vt_n.id);
@@ -306,6 +322,14 @@ int main(int argc, char* argv[])
 	uint32_t lShdrMoveX = glGetUniformLocation(_program_n.id, "gMovex");
 	uint32_t lShdrMoveY = glGetUniformLocation(_program_n.id, "gMovey");
 
+	fightMapProgram.use();
+	uint32_t fightScaleX = glGetUniformLocation(fightMapProgram.id, "gScalex");
+	uint32_t fightScaleY = glGetUniformLocation(fightMapProgram.id, "gScaley");
+	uint32_t fightMoveX = glGetUniformLocation(fightMapProgram.id, "gMovex");
+	uint32_t fightMoveY = glGetUniformLocation(fightMapProgram.id, "gMovey");
+	uint32_t fightMouse = glGetUniformLocation(fightMapProgram.id, "MouseCoord");
+	uint32_t fightMapDim = glGetUniformLocation(fightMapProgram.id, "MapDimensions");
+
 	RS_ENABLE_FRATURE(GL_DEPTH_TEST);
 	RS_BACKGROUND_CLEAR_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
@@ -336,22 +360,46 @@ int main(int argc, char* argv[])
 		_r.UpdateShaderData();
 
 		
-		_program_n.use();
-		gm.rChunkVao.bind();
-		glUniform1f(lShdrScaleX, gm.pChunkSizeX);
-		glUniform1f(lShdrScaleY, gm.pChunkSizeY);
-		for (int y = 0; y < gm.blk; y++)
+		if (gmanager.getGameType() == GAMETYPE_BIGMAP)
 		{
-			for (int x = 0; x < gm.blk; x++)
+			_program_n.use();
+			gm.rChunkVao.bind();
+			glUniform1f(lShdrScaleX, gm.pChunkSizeX);
+			glUniform1f(lShdrScaleY, gm.pChunkSizeY);
+			for (int y = 0; y < gm.blk; y++)
 			{
+				for (int x = 0; x < gm.blk; x++)
+				{
 
-				glUniform1f(lShdrMoveX, (int)gm.pChunkSizeX * x - ((int)gm.pMapSizeX / 2));
-				glUniform1f(lShdrMoveY, (int)gm.pChunkSizeY * y - ((int)gm.pMapSizeY / 2));
+					glUniform1f(lShdrMoveX, (int)gm.pChunkSizeX * x - ((int)gm.pMapSizeX / 2));
+					glUniform1f(lShdrMoveY, (int)gm.pChunkSizeY * y - ((int)gm.pMapSizeY / 2));
 
-				glUniformHandleui64ARB(1, gm.aChunkArray[gm.blk * y + x].txb.handle);
+					glUniformHandleui64ARB(1, gm.aChunkArray[gm.blk * y + x].txb.handle);
 
-				glDrawArrays(GL_TRIANGLES, 0, 6);
+					glDrawArrays(GL_TRIANGLES, 0, 6);
+				}
 			}
+		}
+
+		if (gmanager.getGameType() == GAMETYPE_FIGHT)
+		{
+			fightMapProgram.use();
+			gm.rChunkVao.bind();
+
+			glUniform1f(fightScaleX, 1024.0f);
+			glUniform1f(fightScaleY, 1024.0f);
+
+			glUniform1f(fightMoveX, 0.0f);
+			glUniform1f(fightMoveY, 0.0f);
+
+			glUniform2f(fightMapDim, 1024.0f, 1024.0f);
+			vec2 mp = gmanager.getCorrectedMousePosition();
+			glUniform2f(fightMouse, mp.x, mp.y);
+
+			glUniformHandleui64ARB(1, LoadTextureFromFile("Rasticore\\mm.png"));
+
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+
 		}
 		gmanager.update();
 		gmanager.inv.Render(gui_projection_matrix);

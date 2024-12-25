@@ -9,8 +9,11 @@
 #include <glm/gtc/quaternion.hpp> 
 #include <random>
 #include "timer.h"
-#include "TextureLoader.h"
+#include "textures.h"
 #define THRESHOLD 10.0f
+
+#define GAMETYPE_BIGMAP		1
+#define GAMETYPE_FIGHT		2
 
 class gameManager {
 public:
@@ -28,6 +31,7 @@ public:
 		factionManager = FactionManager{r_, rect_mcd, 16};
 		cameraOffset = CameraOffset{ 0, 0, 500.0f };
 		initGame(path);
+		game_type = GAMETYPE_BIGMAP;
 
 		std::random_device rd;
 		gen = std::mt19937{ rd() };
@@ -36,23 +40,36 @@ public:
 	void update() {
 		inputHandler();
 		//auto pos = getMousePosition();
-		movementManager.update();
-		handleSquadLogic();
 		//Astar::point p;
 		//for (auto& squad : squads) {
 		//	SetSquadPosition(squad->getSquadPosition(), squad);
 		//}
 
-		r->RenderSelectedModel(MODEL_PLAYER);
-		r->RenderSelectedModel(MODEL_ORKS);
-		r->RenderSelectedModel(MODEL_HUMANS);
-		r->RenderSelectedModel(MODEL_NOMADS);
-		r->RenderSelectedModel(MODEL_GOBLINS);
-		r->RenderSelectedModel(MODEL_EVIL_HUMANS);
-		//_r.RenderSelectedModel(MODEL_BANDITS);
-		//_r.RenderSelectedModel(MODEL_ANIMALS);
+		if (game_type == GAMETYPE_BIGMAP)
+		{
+			movementManager.update();
+			handleSquadLogic();
+			r->RenderSelectedModel(MODEL_PLAYER);
+			r->RenderSelectedModel(MODEL_ORKS);
+			r->RenderSelectedModel(MODEL_HUMANS);
+			r->RenderSelectedModel(MODEL_NOMADS);
+			r->RenderSelectedModel(MODEL_GOBLINS);
+			r->RenderSelectedModel(MODEL_EVIL_HUMANS);
+			//_r.RenderSelectedModel(MODEL_BANDITS);
+			//_r.RenderSelectedModel(MODEL_ANIMALS);
+		}
 		//Test sln
 
+	}
+
+	uint32_t getGameType()
+	{
+		return game_type;
+	}
+
+	void setGameType(uint32_t g)
+	{
+		game_type = g;
 	}
 
 	void inputHandler() {
@@ -75,13 +92,18 @@ public:
 		if (instance.KeyPressed(SDL_SCANCODE_E)) {
 			cameraOffset.z += 20.0f;
 		}
+		if (instance.KeyPressed(SDL_SCANCODE_R))
+		{
+			game_type = (!(game_type - 1) + 1);
+			SDL_Delay(100);
+		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
 			
 			auto mp = getMousePosition();
 			Slot* slot = inv.getSlot(mp);
 
 			Armor item = Armor();
-			item.SetAsset(ItemAsset{ LoadTextureFromFile("Data\\item.png") });
+			item.SetAsset(ItemAsset{ LoadTextureFromFile("Data\\EquipmentIconsC2.png") });
 			
 			if (slot != nullptr)
 			{
@@ -188,6 +210,7 @@ private:
 		inv.AddWindow("inventory", ObjectDim{ {100.0f, 100.0f}, 300, 300 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("inventory");
 		inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(150.0f, 150.0f), 50.0f, 50.0f), LoadTextureFromFile("Data\\item_frame.png"));
+		inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(200.0f, 150.0f), 50.0f, 50.0f), LoadTextureFromFile("Data\\item_frame.png"));
 		//gwin->AddComponent(new GComponentSlider(glm::vec2(200, 20), glm::vec3(100, 100, 2.5f), nullptr, LoadTextureFromFile("Data\\gui.png"), LoadTextureFromFile("Data\\angy.png")));
 		inv.ActivateWindow("inventory");
 	}
@@ -195,6 +218,7 @@ private:
 	void initGame(std::filesystem::path path) {
 		//DO TOTALNEJ ZMIANY
 		path = path.append("Data\\buildings.txt");
+		initItems();
 
 		factionManager.CreateNewFaction(MODEL_ORKS, "Data\\ork.png", "Orks", buildingManager.getRaceBuildings(MODEL_ORKS));
 		factionManager.CreateNewFaction(MODEL_HUMANS, "Data\\human.png", "Humans", buildingManager.getRaceBuildings(MODEL_HUMANS));
@@ -465,4 +489,6 @@ private:
 	//
 	Timer timer;
 	std::mt19937 gen;
+
+	uint32_t game_type;
 };
