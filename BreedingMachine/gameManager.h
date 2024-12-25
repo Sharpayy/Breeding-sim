@@ -9,21 +9,7 @@
 #include <glm/gtc/quaternion.hpp> 
 #include <random>
 #include "timer.h"
-
-
-uint64_t LoadTextureFromFile(const char* file)
-{
-	rasticore::Image img = rasticore::Image(file, 4);
-	rasticore::Texture2D tx{ img.data, (int)img.x_, (int)img.y_, GL_RGBA, GL_RGBA8 };
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	tx.genMipmap();
-	rasticore::Texture2DBindless txb{ tx };
-	txb.MakeResident();
-	return txb.handle;
-}
+#include "textures.h"
 
 #define THRESHOLD 10.0f
 
@@ -166,16 +152,14 @@ private:
 		factionManager.CreateNewFaction(MODEL_ANIMALS, "Data\\animal.png", "Furry", buildingManager.getRaceBuildings(MODEL_ANIMALS));
 
 		inv = Inventory();
-		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
-		//inv.ActivateWindow("main_player_eq");
-		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
+		inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
+		inv.ActivateWindow("main_player_eq");
+		Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
 
-		//for (int i = 0; i < 8; i++)
-		//{
-		//	Item* it = new Item();
-		//	it->i = i + 1;
-		//	Slot* s = inv.AddSlotToWindow("main_player_eq", Slot(it, glm::vec2(150 + 55 * i, 600 - 20), 50, 50), r->getModel(0)->std_texture2d.handle);
-		//}
+		for (int i = 0; i < 8; i++)
+		{
+			Slot* s = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(150 + 55 * i, 600 - 20), 50, 50), r->getModel(0)->std_texture2d.handle);
+		}
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);
