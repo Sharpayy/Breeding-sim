@@ -319,6 +319,7 @@ int main(int argc, char* argv[])
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
+
 	gameManager gmanager(&_r, rect_mcd);
 
 	gameManager::CameraOffset cameraOffset;

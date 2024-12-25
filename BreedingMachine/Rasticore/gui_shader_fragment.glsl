@@ -8,16 +8,16 @@
 #define GUI_ELEMENT_WINDOW 3
 #define GUI_ELEMENT_IMAGE  4
 
-layout (std430, binding = 11) buffer TS
-{
-	sampler2D textures[];
-};
-
 struct _sampler2D
 {
 	sampler2D sampler;
 	vec2 Reserved;
 };
+
+#ifdef ENABLE_GROOMING
+layout(bindless_sampler) uniform sampler2D tex_0;
+layout(bindless_sampler) uniform sampler2D tex_1;
+#endif
 
 layout (std140, binding = 12) uniform GUI_ELEMENT
 {
@@ -42,29 +42,37 @@ in float fco;
 
 void main()
 {
+#ifndef ENABLE_GROOMING
+	sampler2D texture_0 = store_index[0].sampler;
+	sampler2D texture_1 = store_index[1].sampler;
+#else
+	sampler2D texture_0 = tex_0;
+	sampler2D texture_1 = tex_1;
+#endif
+
 	if (gui_element == GUI_ELEMENT_SLIDER)
 	{
 		if (fco > val)
 		{
-			OutColor = texture(store_index[0].sampler, ouv);
+			OutColor = texture(texture_0, ouv);
 		}
 		else
 		{
-			OutColor = texture(store_index[1].sampler, ouv);
+			OutColor = texture(texture_1, ouv);
 		}
 	}
 	else if (gui_element == GUI_ELEMENT_BUTTON)
 	{
-		vec4 c = texture(store_index[0].sampler, ouv);
+		vec4 c = texture(texture_0, ouv);
 		OutColor = vec4(c.rgb * (1.0 - 0.5 * float(1.0 == step(0.5, val))), c.a);
 	}
 	else if (gui_element == GUI_ELEMENT_WINDOW)
 	{
-		OutColor = texture(store_index[0].sampler, ouv);
+		OutColor = texture(texture_0, ouv);
 	}
 	else if (gui_element == GUI_ELEMENT_IMAGE)
 	{
-		OutColor = texture(store_index[0].sampler, ouv);
+		OutColor = texture(texture_0, ouv);
 	}
 	else
 	{

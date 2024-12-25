@@ -3,8 +3,12 @@
 rasticore::Program* gui_main_program;
 rasticore::VertexBuffer* gui_square;
 uint32_t gui_program_mat_loc;
-
 rasticore::UniformBufferObject* gui_prog_ubo;
+
+#ifdef ENABLE_GROOMING
+uint32_t gui_tex_0_loc;
+uint32_t gui_tex_1_loc;
+#endif
 
 GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t base, uint64_t fill)
 {
@@ -33,8 +37,13 @@ void GComponentSlider::Render(glm::mat4 pm)
 	data.d.val = value;
 	data.d.z = pos.z;
 
+#ifndef ENABLE_GROOMING
 	data.textures[0] = base_tex_id;
 	data.textures[2] = fill_tex_id;
+#else
+	glUniformHandleui64ARB(gui_tex_0_loc, base_tex_id);
+	glUniformHandleui64ARB(gui_tex_1_loc, fill_tex_id);
+#endif
 
 	gui_prog_ubo->bind();
 	gui_prog_ubo->subdata(0, sizeof(GSHADERRENDERDATA_SLIDER), &data);
@@ -94,6 +103,11 @@ void gui_init()
 	gui_main_program->use();
 
 	gui_program_mat_loc = glGetUniformLocation(gui_main_program->id, "projection_matrix");
+
+#ifdef ENABLE_GROOMING
+	gui_tex_0_loc = glGetUniformLocation(gui_main_program->id, "tex_0");
+	gui_tex_1_loc = glGetUniformLocation(gui_main_program->id, "tex_1");
+#endif
 
 	//float plane_vtx[] = {
 	//	-0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f,
@@ -173,7 +187,12 @@ void GComponentButton::Render(glm::mat4 pm)
 	data.d.val = val;
 	data.d.z = pos.z;
 
+#ifndef ENABLE_GROOMING
 	data.textures[0] = texture;
+#else
+	glUniformHandleui64ARB(gui_tex_0_loc, texture);
+#endif
+
 
 	gui_prog_ubo->bind();
 	gui_prog_ubo->subdata(0, sizeof(GSHADERRENDERDATA_BUTTON), &data);
@@ -247,7 +266,11 @@ void GWindow::Render(glm::mat4 pm)
 	data.d.scale_ = scale;
 	data.d.z = 2.0f;
 
+#ifndef ENABLE_GROOMING
 	data.textures[0] = background;
+#else
+	glUniformHandleui64ARB(gui_tex_0_loc, background);
+#endif
 
 	gui_prog_ubo->bind();
 	gui_prog_ubo->subdata(0, sizeof(GSHADERRENDERDATA_BUTTON), &data);
@@ -303,7 +326,11 @@ void GComponentImage::Render(glm::mat4 pm)
 	data.d.scale_ = glm::vec2(scale_x, scale_y);
 	data.d.z = pos.z;
 
+#ifndef ENABLE_GROOMING
 	data.textures[0] = texture;
+#else
+	glUniformHandleui64ARB(gui_tex_0_loc, texture);
+#endif
 
 	gui_prog_ubo->bind();
 	gui_prog_ubo->subdata(0, sizeof(GSHADERRENDERDATA_BUTTON), &data);
