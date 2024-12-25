@@ -142,7 +142,7 @@ class Slot {
 public:
 	Slot() = default;
 	Slot(Item* object, glm::vec2 position, int width, int height, uint8_t type = EVERY_ITEM) {
-		assert(object->getObjectType() & type);
+		if (object) assert(object->getObjectType() & type);
 		this->object = object;
 		this->slotDim = { position, width, height };
 		this->type = type;
