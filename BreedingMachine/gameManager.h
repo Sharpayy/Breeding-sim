@@ -9,7 +9,7 @@
 #include <glm/gtc/quaternion.hpp> 
 #include <random>
 #include "timer.h"
-
+#define ENABLE_GROOMING
 
 uint64_t LoadTextureFromFile(const char* file)
 {
@@ -152,6 +152,20 @@ public:
 	}
 
 private:
+	void initItems() {
+		Weapon::ObjectStatistic w1_stats = { 3 };
+		Weapon w1 = {"bastard sword", 0, MELEE, &w1_stats, 3 };
+		Slot s = { &w1, glm::vec2{3.0f,3.0f}, 20, 20, ARMOR };
+		inv.AddSlotToWindow("main_player_eq", s, 0);
+	}
+
+	void initPrimaryInv() {
+		inv.AddWindow("inventory", ObjectDim{ {100.0f, 100.0f}, 300, 300 }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = inv.getGWindow("inventory");
+		gwin->AddComponent(new GComponentSlider(glm::vec2(200, 20), glm::vec3(100, 800 - 20 -100, 2.5f), nullptr, LoadTextureFromFile("Data\\button.png"), LoadTextureFromFile("Data\\angy.png")));
+		inv.ActivateWindow("inventory");
+	}
+
 	void initGame(std::filesystem::path path) {
 		//DO TOTALNEJ ZMIANY
 		path = path.append("Data\\buildings.txt");
@@ -169,6 +183,8 @@ private:
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		//inv.ActivateWindow("main_player_eq");
 		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
+		initPrimaryInv();
+		//initItems();
 
 		//for (int i = 0; i < 8; i++)
 		//{
