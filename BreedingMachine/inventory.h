@@ -82,9 +82,7 @@ protected:
 	void* object;
 	uint32_t price;
 	uint8_t objType;
-	ObjectStatistic objStat;
-
-	ItemAsset asset;
+	ObjectStatistic* objStat;
 };
 
 class Armor : public Item {
