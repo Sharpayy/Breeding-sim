@@ -9,7 +9,7 @@
 
 #include "Rasticore/rasti_main.h"
 #include "Rasticore/rasti_utils.h"
-
+#define ENABLE_GROOMING
 #define GLT_IMPLEMENTATION
 #include "gltext.h"
 

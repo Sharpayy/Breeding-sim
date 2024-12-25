@@ -18,7 +18,7 @@ GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec3 pos, const char* t
 	text = gltCreateText();
 	gltSetText(text, text_);
 
-	this->pos = pos;
+	this->pos = glm::vec3(pos.x, 800.0f - scale_y - pos.y, pos.z);
 
 	base_tex_id = base;
 	fill_tex_id = fill;
@@ -163,6 +163,7 @@ GComponentButton::GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* t
 	text = gltCreateText();
 	gltSetText(text, text_);
 
+	this->pos = glm::vec3(pos.x, 800.0f - scale_y - pos.y, pos.z);
 	this->pos = pos;
 
 	texture = tex;
@@ -237,6 +238,7 @@ void GComponentButton::SetOffset(glm::vec3 of)
 
 GWindow::GWindow(glm::vec2 pos, glm::vec2 scale, uint64_t tex)
 {
+	this->position = glm::vec2(pos.x, 800.0f - scale.y - pos.y);
 	position = pos;
 	this->scale = scale;
 	background = tex;
@@ -312,6 +314,7 @@ GComponentImage::GComponentImage(glm::vec2 scale, glm::vec3 pos, uint64_t tex)
 	scale_x = scale.x;
 	scale_y = scale.y;
 
+	this->pos = glm::vec3(pos.x, 800.0f - scale_y - pos.y, pos.z);
 	this->pos = pos;
 	texture = tex;
 }

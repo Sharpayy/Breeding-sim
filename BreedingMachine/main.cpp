@@ -18,6 +18,7 @@
 
 #include "gui.h"
 #include "inventory.h"
+#include "textures.h"
 
 #include "Rasticore/MapRenderer.cpp"
 

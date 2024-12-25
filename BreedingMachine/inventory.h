@@ -344,26 +344,37 @@ public:
 		//}
 		//return nullptr;
 		uint8_t windowsAmount = windowSlots.at(true).size();
-		uint8_t height = 0;
-		Slot* potentialSlot = nullptr;
-		int i = 0;
-		for (auto& window : windowSlots.at(true)) {
-			if (potentialSlot) break;
-			i++;
-			if (pointInRect(position, window->dim)) {
-				for (auto& slot : window->slots) {
-					if (pointInRect(position, slot->getDim())) {
-						height = i - 1;
-						potentialSlot = slot;
-						break;
+		if (windowsAmount >= 2) {
+			uint8_t height = 0;
+			Slot* potentialSlot = nullptr;
+			int i = 0;
+			for (auto& window : windowSlots.at(true)) {
+				if (potentialSlot) break;
+				i++;
+				if (pointInRect(position, window->dim)) {
+					for (auto& slot : window->slots) {
+						if (pointInRect(position, slot->getDim())) {
+							height = i - 1;
+							potentialSlot = slot;
+							break;
+						}
 					}
 				}
 			}
+			for (int x = 0; x < i - 1; x++) {
+				if (pointInRect(position, windowSlots.at(true).at(x)->dim)) return nullptr;
+			}
+			return potentialSlot;
 		}
-		for (int x = 0; x < i - 1; x++) {
-			if (pointInRect(position, windowSlots.at(true).at(x)->dim)) potentialSlot = nullptr;
+		else {
+			Window* frontWindow = windowSlots.at(true).front();
+			if (pointInRect(position, frontWindow->dim)) {
+				for (auto& slot : frontWindow->slots) {
+					if (pointInRect(position, slot->getDim())) return slot;
+				}
+			}
 		}
-		return potentialSlot;
+		return nullptr;
 	}
 
 private:
