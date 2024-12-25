@@ -9,8 +9,7 @@
 #include <glm/gtc/quaternion.hpp> 
 #include <random>
 #include "timer.h"
-#include "textures.h"
-
+#include "TextureLoader.h"
 #define THRESHOLD 10.0f
 
 class gameManager {
@@ -140,13 +139,11 @@ public:
 private:
 	void initItems() {
 		Weapon::ObjectStatistic w1_stats = { 3 };
-		Weapon w1 = {"bastard sword", 0, MELEE, &w1_stats, 3 };
-		Slot s = { &w1, glm::vec2{3.0f,3.0f}, 20, 20, ARMOR };
-		inv.AddSlotToWindow("main_player_eq", s, 0);
+		Weapon w1 = {"bastard sword", (void*) LoadTextureFromFile("","EquipmentIconsC2"), MELEE, &w1_stats, 3};
 	}
 
 	void initPrimaryInv() {
-		inv.AddWindow("inventory", ObjectDim{ {100.0f, 100.0f}, 300, 300 }, 2, LoadTextureFromFile("Data\\gui.png"));
+		inv.AddWindow("inventory", ObjectDim{ {100.0f, 700.0f}, 300, 300 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("inventory");
 		gwin->AddComponent(new GComponentSlider(glm::vec2(200, 20), glm::vec3(100, 100, 2.5f), nullptr, LoadTextureFromFile("Data\\button.png"), LoadTextureFromFile("Data\\angy.png")));
 		inv.ActivateWindow("inventory");
