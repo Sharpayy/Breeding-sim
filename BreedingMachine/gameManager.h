@@ -146,7 +146,7 @@ private:
 	}
 
 	void initPrimaryInv() {
-		inv.AddWindow("inventory", ObjectDim{ {100.0f, 100.0f}, 300, 300 }, 2, LoadTextureFromFile("Data\\gui.png"));
+		inv.AddWindow("inventory", ObjectDim{ {0.0f, 0.0f}, 300, 300 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("inventory");
 		gwin->AddComponent(new GComponentSlider(glm::vec2(200, 20), glm::vec3(100, 100, 2.5f), nullptr, LoadTextureFromFile("Data\\button.png"), LoadTextureFromFile("Data\\angy.png")));
 		inv.ActivateWindow("inventory");
