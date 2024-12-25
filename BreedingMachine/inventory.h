@@ -19,17 +19,34 @@
 #define MISC		(1 << 6)
 #define EVERY_ITEM	(ARMOR | WEAPON | MISC)
 
+typedef struct _ItemAsset
+{
+	uint64_t itemTexture;
+} ItemAsset;
 
 class Item {
 public:
 	struct ObjectStatistic {};
 public:
-	Item(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic objStats = {}, uint32_t price = 0) {
+	Item(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic objStats = {}, uint32_t price = 0, ItemAsset* itemAsset = 0) {
 		this->itemName = itemtName;
 		this->object = newItem;
 		this->objType = objeType;
 		this->objStat = objStats;
 		this->price = price;
+
+		if (itemAsset != 0)
+			this->asset = *itemAsset;
+	}
+
+	void SetAsset(ItemAsset asset)
+	{
+		this->asset = asset;
+	}
+
+	uint64_t GetItemTexture()
+	{
+		return asset.itemTexture;
 	}
 
 	void* getObject() {
@@ -66,6 +83,8 @@ protected:
 	uint32_t price;
 	uint8_t objType;
 	ObjectStatistic objStat;
+
+	ItemAsset asset;
 };
 
 class Armor : public Item {
@@ -88,7 +107,7 @@ public:
 		this->objStat = objStats;
 	}
 
-	ObjectStatistic* getObjectStatistic() override {
+	virtual ObjectStatistic* getObjectStatistic(){
 		return objStat;
 	}
 
@@ -116,7 +135,7 @@ public:
 		this->objStat = objStat;
 	}
 
-	ObjectStatistic* getObjectStatistic() override {
+	virtual ObjectStatistic* getObjectStatistic(){
 		return objStat;
 	}
 
@@ -168,6 +187,20 @@ public:
 	bool changeItem(Item* object) {
 		if (!(object->getObjectType() & type)) return false;
 		this->object = object;
+
+		if (object == nullptr)
+		{
+			((GComponentImage*)item_comp)->texture = 0;
+			return true;
+		}
+
+		uint64_t tx = this->object->GetItemTexture();
+
+		if (tx == -1)
+			((GComponentImage*)item_comp)->texture = 0;
+		else
+			((GComponentImage*)item_comp)->texture = tx;
+		
 		return true;
 	}
 
@@ -176,12 +209,14 @@ public:
 			&& point.y >= slotDim.position.y && point.y <= slotDim.position.y + slotDim.height);
 	}
 
+	GComponentImage* slot_comp;
+	GComponentImage* item_comp;
+	GWindow* parent_win;
+
 private:
 	Item* object;
 	ObjectDim slotDim;
 	uint8_t type;
-
-	GComponentImage* comp;
 };
 
 class Inventory {
@@ -297,8 +332,12 @@ public:
 		ObjectDim slotDim = slot.getDim();
 		if (!win->dim.isRectInRect(slotDim)) return nullptr;
 		Slot* nslot = new Slot{ slot.getItem(), slotDim.position, slotDim.width, slotDim.height, slot.getSlotType() };
+		nslot->item_comp = new GComponentImage(glm::vec2(slot.getDim().width, slot.getDim().height), glm::vec3(slot.getDim().position.x, slot.getDim().position.y, win->win->z + 0.1f), 0);
+		nslot->slot_comp = new GComponentImage(glm::vec2(slot.getDim().width, slot.getDim().height), glm::vec3(slot.getDim().position.x, slot.getDim().position.y, win->win->z + 0.2f), tex);
 		win->slots.push_back(nslot);
-		win->win->AddComponent(new GComponentImage(glm::vec2(slot.getDim().width, slot.getDim().height), glm::vec3(slot.getDim().position.x, slot.getDim().position.y, win->win->z + 0.1f), tex));
+		nslot->parent_win = win->win;
+		win->win->AddComponent(nslot->item_comp);
+		win->win->AddComponent(nslot->slot_comp);
 		return nslot;
 	}
 

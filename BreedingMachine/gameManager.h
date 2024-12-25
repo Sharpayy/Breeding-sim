@@ -79,11 +79,19 @@ public:
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
 			
 			auto mp = getMousePosition();
-			mp.y = 800 - mp.y;
 			Slot* slot = inv.getSlot(mp);
+
+			Armor item = Armor();
+			item.SetAsset(ItemAsset{ LoadTextureFromFile("Data\\item.png") });
 			
 			if (slot != nullptr)
-				printf("%d\n", slot->getItem()->getItemName());
+			{
+				printf("%p\n", slot->getItem());
+				if (slot->getItem() == nullptr)
+				{
+					slot->changeItem(&item);
+				}
+			}
 
 			auto pos = getCorrectedMousePosition();
 			movementManager.createSquadPath(Astar::point{ (int)pos.x, (int)pos.y }, player);
@@ -148,7 +156,8 @@ private:
 	void initPrimaryInv() {
 		inv.AddWindow("inventory", ObjectDim{ {0.0f, 0.0f}, 300, 300 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("inventory");
-		gwin->AddComponent(new GComponentSlider(glm::vec2(200, 20), glm::vec3(100, 100, 2.5f), nullptr, LoadTextureFromFile("Data\\button.png"), LoadTextureFromFile("Data\\angy.png")));
+		inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(150.0f, 150.0f), 50.0f, 50.0f), LoadTextureFromFile("Data\\item_frame.png"));
+		//gwin->AddComponent(new GComponentSlider(glm::vec2(200, 20), glm::vec3(100, 100, 2.5f), nullptr, LoadTextureFromFile("Data\\gui.png"), LoadTextureFromFile("Data\\angy.png")));
 		inv.ActivateWindow("inventory");
 	}
 
@@ -170,11 +179,6 @@ private:
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		//inv.ActivateWindow("main_player_eq");
 		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
-
-		for (int i = 0; i < 8; i++)
-		{
-			Slot* s = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(150 + 55 * i, 600 - 20), 50, 50), r->getModel(0)->std_texture2d.handle);
-		}
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);

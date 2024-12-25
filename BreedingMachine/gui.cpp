@@ -17,8 +17,7 @@ GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec3 pos, const char* t
 
 	text = gltCreateText();
 	gltSetText(text, text_);
-
-	this->pos = glm::vec3(pos.x, 800.0f - scale_y - pos.y, pos.z);
+	this->pos = pos;
 
 	base_tex_id = base;
 	fill_tex_id = fill;
@@ -319,6 +318,9 @@ GComponentImage::GComponentImage(glm::vec2 scale, glm::vec3 pos, uint64_t tex)
 
 void GComponentImage::Render(glm::mat4 pm)
 {
+	if (texture == 0)
+		return;
+
 	gui_main_program->use();
 
 	GSHADERRENDERDATA_BUTTON data{};

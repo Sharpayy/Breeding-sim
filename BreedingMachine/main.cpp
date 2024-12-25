@@ -335,9 +335,6 @@ int main(int argc, char* argv[])
 		_r.setProjectionMatrix(ortho(-cameraOffset.z, cameraOffset.z, -cameraOffset.z, cameraOffset.z, -1000.0f, 1000.0f));
 		_r.UpdateShaderData();
 
-		//printf("%f %f\n", gmanager.getMousePosition().x, gmanager.getMousePosition().y);
-		int xx, yy;
-		auto zz = SDL_GetMouseState(&xx, &yy);
 		
 		_program_n.use();
 		gm.rChunkVao.bind();
