@@ -1,14 +1,127 @@
 #pragma once
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
 #include <unordered_map>
 #include <vector>
 #include <string>
 #include <algorithm>
-#include "gui.h"
+#include <string.h>
+#include <cassert>
+
+#define UNDEFINE	0
+#define HELMET		(1 << 0)
+#define CHESTPLATE  (1 << 1)
+#define LEGS		(1 << 2)
+#define BOOTS		(1 << 3)
+#define ARMOR		(HELMET | CHESTPLATE | LEGS | BOOTS)
+#define MELEE		(1 << 4)
+#define RANGED		(1 << 5)
+#define WEAPON		(MELEE | RANGED)
+#define MISC		(1 << 6)
+#define EVERY_ITEM	(ARMOR | WEAPON | MISC)
+
 
 class Item {
 public:
-	int i = 0;
+	struct ObjectStatistic {};
+public:
+	Item(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic objStats = {}, uint32_t price = 0) {
+		this->itemName = itemtName;
+		this->object = newItem;
+		this->objType = objeType;
+		this->objStat = objStats;
+		this->price = price;
+	}
+
+	Item* getObject() {
+		return (Item*)object;
+	}
+
+	const std::string getItemName() {
+		return itemName;
+	}
+
+	void getItemName(std::string itemName) {
+		this->itemName = itemName;
+	}
+
+	uint8_t getObjectType() {
+		return objType;
+	}
+
+	void setItemStats(ObjectStatistic* objStats) {};
+
+	virtual ObjectStatistic* getObjectStatistic() = 0;
+
+	void setItemPrice(uint32_t price) {
+		this->price = price;
+	}
+
+	Item* getItemPrice() {
+		return (Item*)object;
+	}
+
+protected:
+	std::string itemName;
+	void* object;
+	uint32_t price;
+	uint8_t objType;
+	ObjectStatistic objStat;
+};
+
+class Armor : public Item {
+public:
+	struct ObjectStatistic : public Item::ObjectStatistic {
+		uint8_t armor;
+		ObjectStatistic(uint8_t armor = 0) { this->armor = armor; };
+	};
+public:
+	Armor(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objType = ARMOR, ObjectStatistic* objStats = {}, uint32_t price = 0) {
+		assert(objType & ARMOR);
+		this->itemName = itemtName;
+		this->object = newItem;
+		this->objType = objType;
+		this->objStat = objStats;
+		this->price = price;
+	}
+
+	void setItemStats(ObjectStatistic* objStats) {
+		this->objStat = objStats;
+	}
+
+	ObjectStatistic* getObjectStatistic() override {
+		return objStat;
+	}
+
+private:
+	ObjectStatistic* objStat;
+};
+
+class Weapon : public Item {
+public:
+	struct ObjectStatistic : public Item::ObjectStatistic {
+		uint8_t damage;
+		ObjectStatistic(uint8_t damage = 0) { this->damage = damage; };
+	};
+public:
+	Weapon(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objType = WEAPON, ObjectStatistic* objStat = {}, uint32_t price = 0) {
+		assert(objType & WEAPON);
+		this->itemName = itemtName;
+		this->object = newItem;
+		this->objType = objType;
+		this->objStat = objStat;
+		this->price = price;
+	}
+
+	void setItemStats(ObjectStatistic* objStat) {
+		this->objStat = objStat;
+	}
+
+	ObjectStatistic* getObjectStatistic() override {
+		return objStat;
+	}
+
+private:
+	ObjectStatistic* objStat;
 };
 
 struct ObjectDim {
@@ -28,13 +141,19 @@ struct ObjectDim {
 class Slot {
 public:
 	Slot() = default;
-	Slot(Item* item, glm::vec2 position, int width, int height) {
-		this->item = item;
+	Slot(Item* object, glm::vec2 position, int width, int height, uint8_t type = EVERY_ITEM) {
+		assert(object->getObjectType() & type);
+		this->object = object;
 		this->slotDim = { position, width, height };
+		this->type = type;
 	}
 
 	Item* getItem() {
-		return item;
+		return object;
+	}
+
+	uint8_t getSlotType() {
+		return type;
 	}
 
 	ObjectDim getDim() {
@@ -46,8 +165,10 @@ public:
 		this->slotDim.position -= position;
 	}
 
-	void changeItem(Item* item) {
-		this->item = item;
+	bool changeItem(Item* object) {
+		if (!(object->getObjectType() & type)) return false;
+		this->object = object;
+		return true;
 	}
 
 	bool pointInRect(glm::vec2 point) {
@@ -56,18 +177,11 @@ public:
 	}
 
 private:
-	Item* item;
+	Item* object;
 	ObjectDim slotDim;
+	uint8_t type;
 
 	GComponentImage* comp;
-};
-
-struct Window {
-	std::string name;
-	ObjectDim dim;
-	uint8_t height;
-	std::vector<Slot*> slots;
-	GWindow* win;
 };
 
 class Inventory {
@@ -76,6 +190,14 @@ public:
 		windowSlots[0] = {};
 		windowSlots[1] = {};
 	}
+
+	struct Window {
+		std::string name;
+		ObjectDim dim;
+		uint8_t height;
+		std::vector<Slot*> slots;
+		GWindow* win;
+	};
 
 	void Render(glm::mat4 pm)
 	{
@@ -86,10 +208,6 @@ public:
 		{
 			i->win->Render(pm);
 		}
-	}
-
-	std::vector<Window*> getActiveWindows() {
-		return windowSlots.at(1);
 	}
 
 	bool setWindowHeight(std::string windowName, uint8_t height) {
@@ -149,40 +267,71 @@ public:
 	}
 
 	void AddWindow(std::string windowName, ObjectDim dim, uint8_t height, uint64_t tex) {
-		Window* win = new Window{ windowName, dim, height, {}, new GWindow(dim.position, glm::vec2(dim.width, dim.height), tex)};
+		Window* win = new Window{ windowName, dim, height, {} };
 		windowSlots[0].push_back(win);
+		win->win = new GWindow{ dim.position, glm::vec2{ dim.width, dim.height }, tex };
 		sortVec(0);
+	}
+
+	std::vector<Window*> getActiveWindows() {
+		return windowSlots.at(1);
 	}
 
 	std::vector<Slot*> getAllSlotsFromWindow(std::string windowName) {
 		Window* win = windowExist(windowName, 0);
 		if (!win) win = windowExist(windowName, 1);
-		if (!win) return {};
+		else if (!win) return {};
 		return win->slots;
 	}
 
-	Slot* AddSlotToWindow(std::string windowName, Slot slot, uint64_t tex = 0) {
+	Slot* AddSlotToWindow(std::string windowName, Slot slot, uint64_t tex) {
 		Window* win = windowExist(windowName, 0);
 		if (!win) win = windowExist(windowName, 1);
 		if (!win) return nullptr;
 		ObjectDim slotDim = slot.getDim();
 		if (!win->dim.isRectInRect(slotDim)) return nullptr;
-		Slot* nslot = new Slot{ slot.getItem(), slotDim.position, slotDim.width, slotDim.height };
+		Slot* nslot = new Slot{ slot.getItem(), slotDim.position, slotDim.width, slotDim.height, slot.getSlotType() };
 		win->slots.push_back(nslot);
 		win->win->AddComponent(new GComponentImage(glm::vec2(slot.getDim().width, slot.getDim().height), glm::vec3(slot.getDim().position.x, slot.getDim().position.y, win->win->z + 0.1f), tex));
 		return nslot;
 	}
 
-	void swapItems(Slot* slot1, Slot* slot2) {
+	bool swapItems(Slot* slot1, Slot* slot2) {
+		if (!(slot1->getSlotType() & slot2->getSlotType())) return false;
 		Item* itemTemp = slot1->getItem();
 		slot1->changeItem(slot2->getItem());
 		slot2->changeItem(itemTemp);
+		return true;
 	}
 
 	Slot* getSlot(glm::vec2 position) {
-		for (auto& window : windowSlots.at(true)) {
-			if (pointInRect(position, window->dim)) {
-				for (auto& slot : window->slots) {
+		uint8_t windowsAmount = windowSlots.at(true).size();
+		if (windowsAmount >= 2) {
+			uint8_t height = 0;
+			Slot* potentialSlot = nullptr;
+			int i = 0;
+			for (auto& window : windowSlots.at(true)) {
+				if (potentialSlot) break;
+				i++;
+				if (pointInRect(position, window->dim)) {
+					for (auto& slot : window->slots) {
+						if (pointInRect(position, slot->getDim())) {
+							height = i - 1;
+							potentialSlot = slot;
+							break;
+						}
+					}
+				}
+			}
+			for (int x = 0; x < i - 1; x++) {
+				if (pointInRect(position, windowSlots.at(true).at(x)->dim)) return nullptr;
+			}
+			return potentialSlot;
+		}
+		else {
+			Window* frontWindow = windowSlots.at(true).front();
+			if (pointInRect(position, frontWindow->dim)) {
+				for (auto& slot : frontWindow->slots) {
 					if (pointInRect(position, slot->getDim())) return slot;
 				}
 			}
@@ -191,7 +340,6 @@ public:
 	}
 
 private:
-
 	bool pointInRect(glm::vec2 position, ObjectDim dim) {
 		return position.x >= dim.position.x && position.x <= dim.position.x + dim.width
 			&& position.y >= dim.position.y && position.y <= dim.position.y + dim.height;

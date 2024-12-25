@@ -39,7 +39,7 @@ public:
 		rasticore::Texture2DBindless txb{ tx };
 		txb.MakeResident();
 
-		r->newModel(faction_id, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, txb, 30);
+		r->newModel(faction_id, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, txb, 10);
 
 		factions[faction_id] = { Faction(faction_name, faction_id, factionBuildings), {} };
 	}

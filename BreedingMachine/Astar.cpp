@@ -74,8 +74,8 @@ float Astar::EuclideanDistance(point s, point e) {
 
 bool Astar::tileIsBlocked(point p) {
 	if (b) {;
-		if (!(p.x >= b->x && p.x <= b->x + b->width
-			&& p.y >= -b->y && p.y <= -b->y + b->height)) {
+		if (!(p.x >= b->x && p.x < b->x + b->width
+			&& p.y > -b->y && p.y <= -b->y + b->height)) {
 			return true;
 		}
 	}

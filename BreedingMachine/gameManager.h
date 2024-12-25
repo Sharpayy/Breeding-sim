@@ -97,7 +97,10 @@ public:
 			Slot* slot = inv.getSlot(mp);
 			
 			if (slot != nullptr)
-				printf("%d\n", slot->getItem()->i);
+				printf("%d\n", slot->getItem()->getItemName());
+
+			auto pos = getCorrectedMousePosition();
+			movementManager.createSquadPath(Astar::point{ (int)pos.x, (int)pos.y }, player);
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
 			auto pos = getCorrectedMousePosition();
@@ -127,7 +130,7 @@ public:
 		nds.z = 1.0f;
 		nds.w = 1.0f;
 
-		nds.y = -1.0f;
+		nds.y *= -1.0f;
 
 		glm::mat4 inv_projection = glm::inverse(r->MVP.matProj);
 
@@ -163,16 +166,16 @@ private:
 		factionManager.CreateNewFaction(MODEL_ANIMALS, "Data\\animal.png", "Furry", buildingManager.getRaceBuildings(MODEL_ANIMALS));
 
 		inv = Inventory();
-		inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
+		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
+		//inv.ActivateWindow("main_player_eq");
 		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
-		inv.ActivateWindow("main_player_eq");
 
-		for (int i = 0; i < 8; i++)
-		{
-			Item* it = new Item();
-			it->i = i + 1;
-			Slot* s = inv.AddSlotToWindow("main_player_eq", Slot(it, glm::vec2(150 + 55 * i, 600 - 20), 50, 50), r->getModel(0)->std_texture2d.handle);
-		}
+		//for (int i = 0; i < 8; i++)
+		//{
+		//	Item* it = new Item();
+		//	it->i = i + 1;
+		//	Slot* s = inv.AddSlotToWindow("main_player_eq", Slot(it, glm::vec2(150 + 55 * i, 600 - 20), 50, 50), r->getModel(0)->std_texture2d.handle);
+		//}
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);
@@ -221,13 +224,16 @@ private:
 		Squad* squad;
 		srand(time(NULL));
 		player->setSquadState(STAND);
+		int amount = 0;
 		for (int i = 0; i < 32; i++) {
 			auto buildings = buildingManager.getRaceBuildings(i % 8);
 			if (i == MODEL_PLAYER || !buildings.size()) continue;
 			squad = factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size()).getBuildingPosition());
+			if (squad) amount++;
 			timer.startMeasure(squad->getSquadID(), 0);
 			squad->force = getRandomNumber(10, 100);
 		}
+		std::cout << "Amount of squads: " << amount << "\n";
 	}
 
 	float calculateSquadViewDistance(Squad* squad) {
