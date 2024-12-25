@@ -32,8 +32,8 @@ public:
 		this->price = price;
 	}
 
-	Item* getObject() {
-		return (Item*)object;
+	void* getObject() {
+		return object;
 	}
 
 	const std::string getItemName() {
