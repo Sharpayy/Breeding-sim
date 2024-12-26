@@ -329,6 +329,7 @@ int main(int argc, char* argv[])
 	uint32_t fightMoveY = glGetUniformLocation(fightMapProgram.id, "gMovey");
 	uint32_t fightMouse = glGetUniformLocation(fightMapProgram.id, "MouseCoord");
 	uint32_t fightMapDim = glGetUniformLocation(fightMapProgram.id, "MapDimensions");
+	uint32_t fightMapTil = glGetUniformLocation(fightMapProgram.id, "MapTiles");
 
 	RS_ENABLE_FRATURE(GL_DEPTH_TEST);
 	RS_BACKGROUND_CLEAR_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
@@ -370,7 +371,6 @@ int main(int argc, char* argv[])
 			{
 				for (int x = 0; x < gm.blk; x++)
 				{
-
 					glUniform1f(lShdrMoveX, (int)gm.pChunkSizeX * x - ((int)gm.pMapSizeX / 2));
 					glUniform1f(lShdrMoveY, (int)gm.pChunkSizeY * y - ((int)gm.pMapSizeY / 2));
 
@@ -392,6 +392,8 @@ int main(int argc, char* argv[])
 			glUniform1f(fightMoveX, 0.0f);
 			glUniform1f(fightMoveY, 0.0f);
 
+			glUniform2f(fightMapTil, 30.0f, 30.0f);
+
 			glUniform2f(fightMapDim, 1024.0f, 1024.0f);
 			vec2 mp = gmanager.getCorrectedMousePosition();
 			glUniform2f(fightMouse, mp.x, mp.y);
@@ -399,6 +401,13 @@ int main(int argc, char* argv[])
 			glUniformHandleui64ARB(1, LoadTextureFromFile("Rasticore\\mm.png"));
 
 			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+			glm::mat4 m = glm::mat4(1.0f);
+			m = glm::translate(m, glm::vec3(512.0f, 512.0f, 5.0f));
+			m = glm::rotate(m, tick, glm::vec3(0, 0, 1));
+
+			_r.BindActiveModel(9);
+			_r.SetObjectMatrix(0, m, true);
 
 		}
 		gmanager.update();
@@ -425,7 +434,7 @@ int main(int argc, char* argv[])
 		//slider.Render(gui_projection_matrix);
 
 
-
+		tick += 0.001f;
 		_win.swap();
 		//_win.handleEvents();
 		SDL_Delay(10);

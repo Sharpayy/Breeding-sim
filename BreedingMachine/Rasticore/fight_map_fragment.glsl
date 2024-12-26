@@ -11,6 +11,7 @@ out vec4 fragColor;
 
 uniform vec2 MouseCoord;
 uniform vec2 MapDimensions;
+uniform vec2 MapTiles;
 
 void main()
 {
@@ -19,8 +20,8 @@ void main()
     
     //vec2 uv = gl_FragCoord.xy/MapDimensions.xy;
     
-    float tx = 30.0;
-    float ty = 30.0;
+    float tx = MapTiles.x;//30.0;
+    float ty = MapTiles.y;//30.0;
 
     vec2 b_px = vec2(1.0);
     vec2 bd = vec2(b_px.x / (MapDimensions.x / tx), b_px.y / (MapDimensions.y / ty));
@@ -28,7 +29,6 @@ void main()
     vec2 t_id = floor(uv * vec2(tx, ty));
     vec2 t_uv = fract(uv * vec2(tx, ty));
     
-    //vec2 mt_id = floor((MouseCoord.xy/MapDimensions.xy) * vec2(tx, ty));
     vec2 mt_id = floor((MouseCoord.xy/MapDimensions.xy) * vec2(tx, ty));
 
     vec2 unit_position = mt_id;

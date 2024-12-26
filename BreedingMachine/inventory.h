@@ -185,14 +185,15 @@ public:
 	}
 
 	bool changeItem(Item* object) {
-		if (!(object->getObjectType() & type)) return false;
-		this->object = object;
-
 		if (object == nullptr)
 		{
 			((GComponentImage*)item_comp)->texture = 0;
-			return true;
+			this->object = object;
+			return false;
 		}
+
+		if (!(object->getObjectType() & type)) return false;
+		this->object = object;
 
 		uint64_t tx = this->object->GetItemTexture();
 

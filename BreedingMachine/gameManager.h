@@ -58,6 +58,11 @@ public:
 			//_r.RenderSelectedModel(MODEL_BANDITS);
 			//_r.RenderSelectedModel(MODEL_ANIMALS);
 		}
+
+		if (game_type == GAMETYPE_FIGHT)
+		{
+			r->RenderSelectedModel(9);
+		}
 		//Test sln
 
 	}
@@ -111,6 +116,10 @@ public:
 				if (slot->getItem() == nullptr)
 				{
 					slot->changeItem(&item);
+				}
+				else
+				{
+					slot->changeItem(nullptr);
 				}
 			}
 
@@ -228,6 +237,14 @@ private:
 		factionManager.CreateNewFaction(MODEL_PLAYER, "Data\\player.png", "Player", buildingManager.getRaceBuildings(MODEL_PLAYER));
 		factionManager.CreateNewFaction(MODEL_BANDITS, "Data\\bandit.png", "Bandit", buildingManager.getRaceBuildings(MODEL_BANDITS));
 		factionManager.CreateNewFaction(MODEL_ANIMALS, "Data\\animal.png", "Furry", buildingManager.getRaceBuildings(MODEL_ANIMALS));
+
+		LoadTextureFromFile("Data\\EquipmentIconsC6.png", "tt");
+		r->newModel(9, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, GetTextureFullInfo("tt")->txb, 20);
+
+		glm::mat4 m = glm::mat4(1.0f);
+		m = glm::translate(m, glm::vec3(512.0f, 512.0f, 5.0f));
+		m = glm::scale(m, glm::vec3(1.0f, 1.0f, 1.0f));
+		r->newObject(9, m);
 
 		inv = Inventory();
 		initPrimaryInv();

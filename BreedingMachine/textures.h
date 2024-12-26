@@ -13,4 +13,6 @@ extern std::unordered_map<const char*, TEXTURE_CONTAINER> texture_store;
 
 void texture_store_init();
 
+TEXTURE_CONTAINER* GetTextureFullInfo(const char* name);
+
 uint64_t LoadTextureFromFile(const char* file, const char* tag = 0);

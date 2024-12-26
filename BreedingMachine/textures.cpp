@@ -7,6 +7,14 @@ void texture_store_init()
 	texture_store = std::unordered_map<const char*, TEXTURE_CONTAINER>();
 }
 
+TEXTURE_CONTAINER* GetTextureFullInfo(const char* name)
+{
+	auto f = texture_store.find(name);
+	if (f != texture_store.end())
+		return &f->second;
+	return nullptr;
+}
+
 uint64_t LoadTextureFromFile(const char* file, const char* tag)
 {
 	if (tag != 0)
