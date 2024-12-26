@@ -9,7 +9,7 @@
 #include <glm/gtc/quaternion.hpp> 
 #include <random>
 #include "timer.h"
-#include "textures.h"
+#include "TextureLoader.h"
 
 #define THRESHOLD 10.0f
 
@@ -141,8 +141,15 @@ private:
 	void initItems() {
 		Weapon::ObjectStatistic w1_stats = { 3 };
 		Weapon w1 = {"bastard sword", 0, MELEE, &w1_stats, 3 };
-		Slot s = { &w1, glm::vec2{3.0f,3.0f}, 20, 20, ARMOR };
-		inv.AddSlotToWindow("main_player_eq", s, 0);
+		ItemLoader itemLoader;
+		itemLoader.loadItem(w1);
+		auto item = itemLoader.getItem<Weapon>("bastard sword");
+		auto weaponStat = item->getObjectStatistic();
+		//weaponStat->armor;
+		auto zz = 1;
+
+		//Slot s = { &w1, glm::vec2{3.0f,3.0f}, 20, 20, ARMOR };
+		//inv.AddSlotToWindow("main_player_eq", s, 0);
 	}
 
 	void initPrimaryInv() {
@@ -165,7 +172,10 @@ private:
 		factionManager.CreateNewFaction(MODEL_BANDITS, "Data\\bandit.png", "Bandit", buildingManager.getRaceBuildings(MODEL_BANDITS));
 		factionManager.CreateNewFaction(MODEL_ANIMALS, "Data\\animal.png", "Furry", buildingManager.getRaceBuildings(MODEL_ANIMALS));
 
+		loadMultipleTextures();
+
 		inv = Inventory();
+		initItems();
 		initPrimaryInv();
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		//inv.ActivateWindow("main_player_eq");

@@ -22,9 +22,11 @@
 
 class Item {
 public:
-	struct ObjectStatistic {};
+	struct ObjectStatistic {
+		virtual ~ObjectStatistic() = default;
+	};
 public:
-	Item(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic objStats = {}, uint32_t price = 0) {
+	Item(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic* objStats = {}, uint32_t price = 0) {
 		this->itemName = itemtName;
 		this->object = newItem;
 		this->objType = objeType;
@@ -50,14 +52,16 @@ public:
 
 	void setItemStats(ObjectStatistic* objStats) {};
 
-	virtual ObjectStatistic* getObjectStatistic() = 0;
+	virtual ObjectStatistic* getObjectStatistic() { 
+		return objStat; 
+	};
 
 	void setItemPrice(uint32_t price) {
 		this->price = price;
 	}
 
-	Item* getItemPrice() {
-		return (Item*)object;
+	uint32_t getItemPrice() {
+		return price;
 	}
 
 protected:
@@ -65,7 +69,7 @@ protected:
 	void* object;
 	uint32_t price;
 	uint8_t objType;
-	ObjectStatistic objStat;
+	ObjectStatistic* objStat;
 };
 
 class Armor : public Item {
@@ -89,7 +93,7 @@ public:
 	}
 
 	ObjectStatistic* getObjectStatistic() override {
-		return objStat;
+		return static_cast<ObjectStatistic*>(objStat); // Return specific Armor ObjectStatistic type
 	}
 
 private:
@@ -117,11 +121,60 @@ public:
 	}
 
 	ObjectStatistic* getObjectStatistic() override {
-		return objStat;
+		return static_cast<ObjectStatistic*>(objStat); // Return specific Armor ObjectStatistic type
 	}
 
 private:
 	ObjectStatistic* objStat;
+};
+
+class ItemLoader {
+public:
+	ItemLoader() = default;
+
+	void loadItem(Item& item) {
+		switch (item.getObjectType()) {
+		case ARMOR:
+			itemMap[item.getItemName()] = new Armor{ item.getItemName(), item.getObject(), item.getObjectType(), (Armor::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			break;
+		case WEAPON:
+			itemMap[item.getItemName()] = new Weapon{ item.getItemName(), item.getObject(), item.getObjectType(), (Weapon::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			break;
+		default:
+			itemMap[item.getItemName()] = new Item{ item.getItemName(), item.getObject(), item.getObjectType(), (Item::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			break;
+		}
+	}
+
+	template <typename T = Item>
+	T* getItem(std::string itemName) {
+		auto it = itemMap.find(itemName);
+		if (it != itemMap.end()) {
+			uint8_t objectType = it->second->getObjectType();
+			if (objectType & WEAPON) {
+				if constexpr (std::is_same_v<T, Weapon>) {
+					return (T*)it->second;
+				}
+				else return nullptr;
+			}
+			if (objectType & ARMOR) {
+				if constexpr (std::is_same_v<T, Armor>) {
+					return (T*)it->second;
+				}
+				return nullptr;
+			}
+			if (objectType & EVERY_ITEM) {
+				if constexpr (std::is_same_v<T, Item>) {
+					return (T*)it->second;
+				}
+				return nullptr;
+			}
+		}
+		return nullptr;
+	}
+
+private:
+	std::unordered_map<std::string, Item*> itemMap;
 };
 
 struct ObjectDim {
