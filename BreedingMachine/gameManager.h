@@ -13,6 +13,9 @@
 
 #define THRESHOLD 10.0f
 
+#define GAMETYPE_BIGMAP		1
+#define GAMETYPE_FIGHT		2
+
 class gameManager {
 public:
 	Inventory inv;
@@ -29,6 +32,7 @@ public:
 		factionManager = FactionManager{r_, rect_mcd, 16};
 		cameraOffset = CameraOffset{ 0, 0, 500.0f };
 		initGame(path);
+		game_type = GAMETYPE_BIGMAP;
 
 		std::random_device rd;
 		gen = std::mt19937{ rd() };
@@ -37,23 +41,36 @@ public:
 	void update() {
 		inputHandler();
 		//auto pos = getMousePosition();
-		movementManager.update();
-		handleSquadLogic();
 		//Astar::point p;
 		//for (auto& squad : squads) {
 		//	SetSquadPosition(squad->getSquadPosition(), squad);
 		//}
 
-		r->RenderSelectedModel(MODEL_PLAYER);
-		r->RenderSelectedModel(MODEL_ORKS);
-		r->RenderSelectedModel(MODEL_HUMANS);
-		r->RenderSelectedModel(MODEL_NOMADS);
-		r->RenderSelectedModel(MODEL_GOBLINS);
-		r->RenderSelectedModel(MODEL_EVIL_HUMANS);
-		//_r.RenderSelectedModel(MODEL_BANDITS);
-		//_r.RenderSelectedModel(MODEL_ANIMALS);
+		if (game_type == GAMETYPE_BIGMAP)
+		{
+			movementManager.update();
+			handleSquadLogic();
+			r->RenderSelectedModel(MODEL_PLAYER);
+			r->RenderSelectedModel(MODEL_ORKS);
+			r->RenderSelectedModel(MODEL_HUMANS);
+			r->RenderSelectedModel(MODEL_NOMADS);
+			r->RenderSelectedModel(MODEL_GOBLINS);
+			r->RenderSelectedModel(MODEL_EVIL_HUMANS);
+			//_r.RenderSelectedModel(MODEL_BANDITS);
+			//_r.RenderSelectedModel(MODEL_ANIMALS);
+		}
 		//Test sln
 
+	}
+
+	uint32_t getGameType()
+	{
+		return game_type;
+	}
+
+	void setGameType(uint32_t g)
+	{
+		game_type = g;
 	}
 
 	void inputHandler() {
@@ -76,14 +93,27 @@ public:
 		if (instance.KeyPressed(SDL_SCANCODE_E)) {
 			cameraOffset.z += 20.0f;
 		}
+		if (instance.KeyPressed(SDL_SCANCODE_R))
+		{
+			game_type = (!(game_type - 1) + 1);
+			SDL_Delay(100);
+		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
 			
 			auto mp = getMousePosition();
-			mp.y = 800 - mp.y;
 			Slot* slot = inv.getSlot(mp);
+
+			Armor item = Armor();
+			item.SetAsset(ItemAsset{ LoadTextureFromFile("Data\\EquipmentIconsC2.png") });
 			
 			if (slot != nullptr)
-				printf("%d\n", slot->getItem()->getItemName());
+			{
+				printf("%p\n", slot->getItem());
+				if (slot->getItem() == nullptr)
+				{
+					slot->changeItem(&item);
+				}
+			}
 
 			auto pos = getCorrectedMousePosition();
 			movementManager.createSquadPath(Astar::point{ (int)pos.x, (int)pos.y }, player);
@@ -139,29 +169,57 @@ public:
 
 private:
 	void initItems() {
-		Weapon::ObjectStatistic w1_stats = { 3 };
-		Weapon w1 = {"bastard sword", 0, MELEE, &w1_stats, 3 };
-		ItemLoader itemLoader;
-		itemLoader.loadItem(w1);
-		auto item = itemLoader.getItem<Weapon>("bastard sword");
-		auto weaponStat = item->getObjectStatistic();
-		//weaponStat->armor;
-		auto zz = 1;
+		//Weaponry
+		Weapon bastard_sword = {"bastard sword", (void*) LoadTextureFromFile("","EquipmentIconsC2"), MELEE, new Weapon::ObjectStatistic{0}, 0};
+		Weapon spear = { "spear", (void*)LoadTextureFromFile("","EquipmentIconsC61"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
+		Weapon hatchet = { "hatchet", (void*)LoadTextureFromFile("","EquipmentIconsC57"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
+		Weapon short_bow = { "short bow", (void*)LoadTextureFromFile("","EquipmentIconsC103"), RANGED, new Weapon::ObjectStatistic{0}, 0 };
+		Weapon crossbow = { "crossbow", (void*)LoadTextureFromFile("","EquipmentIconsC121"), RANGED, new Weapon::ObjectStatistic{0}, 0 };
+		Weapon morningstar = { "morningstar", (void*)LoadTextureFromFile("","EquipmentIconsC29"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
+		Weapon sickle_blade = { "sickle_blade", (void*)LoadTextureFromFile("","EquipmentIconsC15"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
+		Weapon berserker_blade = { "berserker blade", (void*)LoadTextureFromFile("","EquipmentIconsC13"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
+		Weapon battlehammer = { "battlehammer", (void*)LoadTextureFromFile("","EquipmentIconsC31"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
+		Weapon trident = { "trident", (void*)LoadTextureFromFile("","EquipmentIconsC65"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
+		Weapon battleaxe = { "battleaxe", (void*)LoadTextureFromFile("","EquipmentIconsC49"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
+		//Armory
+		Armor iron_chestplate = { "iron chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC193"), CHESTPLATE, new Armor::ObjectStatistic{0}, 0 };
+		Armor iron_greaves = { "iron greaves", (void*)LoadTextureFromFile("","EquipmentIconsC217"), LEGS, new Armor::ObjectStatistic{0}, 0 };
+		Armor iron_cap = { "iron cap", (void*)LoadTextureFromFile("","EquipmentIconsC166"), HELMET, new Armor::ObjectStatistic{0}, 0 };
 
-		//Slot s = { &w1, glm::vec2{3.0f,3.0f}, 20, 20, ARMOR };
-		//inv.AddSlotToWindow("main_player_eq", s, 0);
+		Armor guardian_helmet = { "guardian helmet", (void*)LoadTextureFromFile("","EquipmentIconsC179"), HELMET, new Armor::ObjectStatistic{0}, 0 };
+		Armor guardian_chestplate = { "guardian chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC199"), CHESTPLATE, new Armor::ObjectStatistic{0}, 0 };
+		Armor guardian_greaves = { "guardian greaves", (void*)LoadTextureFromFile("","EquipmentIconsC216"), LEGS, new Armor::ObjectStatistic{0}, 0 };
+
+		Armor copper_helmet = { "copper helmet", (void*)LoadTextureFromFile("","EquipmentIconsC163"), HELMET, new Armor::ObjectStatistic{0}, 0 };
+		Armor copper_chestplate = { "copper chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC183"), CHESTPLATE, new Armor::ObjectStatistic{0}, 0 };
+		Armor copper_greaves = { "copper greaves", (void*)LoadTextureFromFile("","EquipmentIconsC204"), LEGS, new Armor::ObjectStatistic{0}, 0 };
+
+		Armor cap = { "cap", (void*)LoadTextureFromFile("","EquipmentIconsC161"), HELMET, new Armor::ObjectStatistic{0}, 0 };
+		Armor clothes = { "clothes", (void*)LoadTextureFromFile("","EquipmentIconsC181"), CHESTPLATE, new Armor::ObjectStatistic{0}, 0 };
+		Armor rags = { "rags", (void*)LoadTextureFromFile("","EquipmentIconsC202"), LEGS, new Armor::ObjectStatistic{0}, 0 };
+
+		Armor darkwraith_helmet = { "darkwraith helmet", (void*)LoadTextureFromFile("","EquipmentIconsC176"), HELMET, new Armor::ObjectStatistic{0}, 0 };
+		Armor darkwraith_chestplate = { "darkwraith chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC191"), CHESTPLATE, new Armor::ObjectStatistic{0}, 0 };
+		Armor darkwraith_greaves = { "darkwraith greaves", (void*)LoadTextureFromFile("","EquipmentIconsC207"), LEGS, new Armor::ObjectStatistic{0}, 0 };
+
+		Armor copper_cap = { "copper cap", (void*)LoadTextureFromFile("","EquipmentIconsC162"), HELMET, new Armor::ObjectStatistic{0}, 0 };
+		Armor copper_vest = { "copper vest", (void*)LoadTextureFromFile("","EquipmentIconsC182"), CHESTPLATE, new Armor::ObjectStatistic{0}, 0 };
+		Armor leather_greaves = { "leather greaves", (void*)LoadTextureFromFile("","EquipmentIconsC203"), LEGS, new Armor::ObjectStatistic{0}, 0 };
 	}
 
 	void initPrimaryInv() {
 		inv.AddWindow("inventory", ObjectDim{ {100.0f, 100.0f}, 300, 300 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("inventory");
-		gwin->AddComponent(new GComponentSlider(glm::vec2(200, 20), glm::vec3(100, 100, 2.5f), nullptr, LoadTextureFromFile("Data\\button.png"), LoadTextureFromFile("Data\\angy.png")));
+		inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(150.0f, 150.0f), 50.0f, 50.0f), LoadTextureFromFile("Data\\item_frame.png"));
+		inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(200.0f, 150.0f), 50.0f, 50.0f), LoadTextureFromFile("Data\\item_frame.png"));
+		//gwin->AddComponent(new GComponentSlider(glm::vec2(200, 20), glm::vec3(100, 100, 2.5f), nullptr, LoadTextureFromFile("Data\\gui.png"), LoadTextureFromFile("Data\\angy.png")));
 		inv.ActivateWindow("inventory");
 	}
 
 	void initGame(std::filesystem::path path) {
 		//DO TOTALNEJ ZMIANY
 		path = path.append("Data\\buildings.txt");
+		initItems();
 
 		factionManager.CreateNewFaction(MODEL_ORKS, "Data\\ork.png", "Orks", buildingManager.getRaceBuildings(MODEL_ORKS));
 		factionManager.CreateNewFaction(MODEL_HUMANS, "Data\\human.png", "Humans", buildingManager.getRaceBuildings(MODEL_HUMANS));
@@ -180,11 +238,6 @@ private:
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		//inv.ActivateWindow("main_player_eq");
 		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
-
-		for (int i = 0; i < 8; i++)
-		{
-			Slot* s = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(150 + 55 * i, 600 - 20), 50, 50), r->getModel(0)->std_texture2d.handle);
-		}
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);
@@ -440,4 +493,6 @@ private:
 	//
 	Timer timer;
 	std::mt19937 gen;
+
+	uint32_t game_type;
 };
