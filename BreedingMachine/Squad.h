@@ -1,7 +1,7 @@
 #pragma once
 #include "Entity.h"
 
-#define SQUAD_MAX_SIZE 20
+#define SQUAD_MAX_SIZE 15
 
 enum SquadState {
 	STAND = 0,
@@ -20,11 +20,18 @@ enum Race {
 
 class Squad {
 public:
+	struct SquadComp {
+		Entity* entities[SQUAD_MAX_SIZE];
+		uint8_t size;
+	};
+public:
 	Squad() {
 		std::cout << "CHUJOWY SQUAD error \n";
 	};
 	Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position) {
-		squadComp.entities[0] = Entity{};
+		squadComp = new SquadComp{};
+		squadComp->entities[0] = new Entity{};
+		squadComp->size = 1;
 		this->squadID = squadID;
 		this->position = position;
 		this->factionID = factionID;
@@ -48,7 +55,7 @@ public:
 	}
 
 	uint8_t getArmySize() {
-		return squadComp.size;
+		return squadComp->size;
 	}
 
 	float force = 10.0f;
@@ -61,15 +68,16 @@ public:
 		return squadState;
 	}
 
+	SquadComp* getSquadComp() {
+		return squadComp;
+	}
+
 private:
 	glm::vec2 position;
-	struct SquadComp {
-		Entity entities[SQUAD_MAX_SIZE];
-		uint8_t size = 1;
-	} squadComp;
 
 	uint64_t squadID;
 	uint8_t factionID;
 
 	SquadState squadState;
+	SquadComp* squadComp;
 };

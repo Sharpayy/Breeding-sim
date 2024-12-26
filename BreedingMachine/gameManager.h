@@ -10,6 +10,7 @@
 #include <random>
 #include "timer.h"
 #include "TextureLoader.h"
+#include "EntityBattleManager.h"
 
 #define THRESHOLD 10.0f
 
@@ -27,9 +28,10 @@ public:
 		std::filesystem::path collisionPath = path, buildingPath = path;
 		collisionPath.append("Data\\collision.txt");
 		buildingPath.append("Data\\buildings.txt");
-		movementManager = MovementManager{ collisionPath, 4096, 16, r_, rect_mcd };
+		movementManager = SquadMovementManager{ collisionPath, 4096, 16, r_, rect_mcd };
 		buildingManager = BuildingManager{ buildingPath };
 		factionManager = FactionManager{r_, rect_mcd, 16};
+		battleManager = EntityBattleManager{ r, rect_mcd };
 		cameraOffset = CameraOffset{ 0, 0, 500.0f };
 		initGame(path);
 		game_type = GAMETYPE_BIGMAP;
@@ -104,7 +106,7 @@ public:
 			Slot* slot = inv.getSlot(mp);
 
 			Armor item = Armor();
-			item.SetAsset(ItemAsset{ LoadTextureFromFile("Data\\EquipmentIconsC2.png") });
+			item.setAsset((void*)LoadTextureFromFile("Data\\EquipmentIconsC2.png"));
 			
 			if (slot != nullptr)
 			{
@@ -307,11 +309,21 @@ private:
 		float distance = 0;
 		float threashold = 10;
 		uint64_t id;
+		float dist;
 		for (auto& squadF : factionManager.getAllSquads()) {
 			if (squadF == player) continue;
 			id = squadF->getSquadID();
 			for (auto& squadS : factionManager.getAllSquads()) {
-				if (squadF != squadS) {
+				if (glm::distance(squadF->getSquadPosition(), player->getSquadPosition()) <= 4.0f) {
+					game_type = GAMETYPE_FIGHT;
+					EntityBattleManager::BattleData battleData = {
+						0,
+						0,
+						0,
+					};
+					//battleManager.startBattle();
+				}
+				else if (squadF != squadS) {
 					handleSquadState(squadF, squadS);
 					handleSquadStateLogic(squadF);
 				}
@@ -482,9 +494,10 @@ private:
 	rasticore::ModelCreationDetails rect_mcd;
 
 	Squad* player;
-	MovementManager movementManager;
+	SquadMovementManager movementManager;
 	BuildingManager buildingManager;
 	FactionManager factionManager;
+	EntityBattleManager battleManager;
 	//std::vector<Squad*> squads;
 	CameraOffset cameraOffset;
 	InputHandler& instance;

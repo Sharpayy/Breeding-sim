@@ -11,10 +11,10 @@
 
 #define STANDARD_SPEED 2
 
-class MovementManager {
+class SquadMovementManager {
 public:
-	MovementManager() = default;
-	MovementManager(std::filesystem::path path, uint32_t mapSize, uint8_t tileSize, rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) {
+	SquadMovementManager() = default;
+	SquadMovementManager(std::filesystem::path path, uint32_t mapSize, uint8_t tileSize, rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) {
 		this->r = r_;
 		this->rect_mcd = rect_mcd;
 		this->movement = Astar{ new Astar::border{ -((int)mapSize / 2), ((int)mapSize / 2), (int)mapSize, (int)mapSize} };
@@ -22,11 +22,6 @@ public:
 
 		this->mapSize = mapSize;
 		this->tileSize = tileSize;
-	}
-
-	bool createEntityPath(Astar::point e, Entity* entity) { //Entity& entity) {
-		//auto path = movement.findPath(, e);
-		//IMPL
 	}
 
 	int createSquadPath(Astar::point e, Squad* squad) { //Entity& entity) {
@@ -165,6 +160,135 @@ private:
 	uint32_t mapSize;
 	Astar movement;
 	std::unordered_map<uint64_t, SquadMovementInfo> squadsMovementData;
+
+	rasticore::RastiCoreRender* r;
+	rasticore::ModelCreationDetails rect_mcd;
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+class EntityMovementManager {
+public:
+	EntityMovementManager() = default;
+	EntityMovementManager(std::filesystem::path path, uint32_t mapSize, uint8_t tileSize, rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) {
+		this->r = r_;
+		this->rect_mcd = rect_mcd;
+		this->movement = Astar{ new Astar::border{ -((int)mapSize / 2), ((int)mapSize / 2), (int)mapSize, (int)mapSize} };
+		loadCollisionData(path);
+
+		this->mapSize = mapSize;
+		this->tileSize = tileSize;
+	}
+
+	int createEntityPath(Astar::point e, Entity* entity) {
+		auto position = entity->getPosition();
+		float offset = tileSize / 2.0f;
+		position.x = ((int)((position.x - offset) / tileSize)) * tileSize;
+		position.y = ((int)((position.y - offset) / tileSize)) * tileSize;
+		e.x = ((int)((e.x - offset) / tileSize)) * tileSize;
+		e.y = ((int)((e.y - offset) / tileSize)) * tileSize;
+		if (glm::vec2{ e.x, e.y } == position) return true;
+		entityMovementData.path = movement.findPath(Astar::point{ (int)position.x, (int)position.y }, e, tileSize);
+		entityMovementData.dt = 0;
+		entityMovementData.entity = entity;
+	}
+
+	bool pathExist() {
+		return entityMovementData.path.size();
+	}
+
+	void update() {
+		moveEntity();
+		SDL_Delay(10);
+	}
+
+	uint8_t getMapTileSize() {
+		return tileSize;
+	}
+
+	uint64_t getMapSize() {
+		return mapSize;
+	}
+
+private:
+	void moveEntity() {
+		//if (!entitydHasPath(entityMovementData.entity)) return;
+		
+		Astar::point prevAP, nextAP;
+		glm::vec2 prevPosition, nextPosition, currentPosition;
+		float offset = tileSize / 2.0f;
+
+		prevAP = entityMovementData.path.at(0);
+		nextAP = entityMovementData.path.at(1);
+		//prevPosition = glm::vec2{ prevAP.x + offset, prevAP.y - offset };
+		//nextPosition = glm::vec2{ nextAP.x + offset, nextAP.y - offset };
+		if (entityMovementData.path.size() >= 2) {
+			prevPosition = glm::vec2{ prevAP.x + offset, prevAP.y + offset };
+			nextPosition = glm::vec2{ nextAP.x + offset, nextAP.y + offset };
+			float speed = 0.0001;
+			//float speed = calculateSquadMovementSpeed(*squadData.second.squad, glm::distance(prevPosition, nextPosition));
+			currentPosition = lerp(prevPosition, nextPosition, entityMovementData.dt);
+			entityMovementData.entity->setEntityPosition(currentPosition);
+			if (currentPosition == nextPosition) {
+				entityMovementData.path.erase(entityMovementData.path.begin());
+				entityMovementData.dt = 0;
+			}
+		}
+		else entityMovementData = {};
+	}
+
+	void loadCollisionData(std::filesystem::path path) {
+		std::ifstream file;
+		file.open(path.string());
+		if (!file) {
+			std::cout << "collision.txt File not found\n";
+			return;
+		};
+
+		int x, y, tileSize, collumns;
+		file >> collumns;
+		file >> tileSize;
+
+		for (int i = 0; i < collumns; i++) {
+			file >> x >> y;
+			movement.addBlockade(Astar::point{ x , y });
+		}
+	}
+
+	glm::vec2 lerp(const glm::vec2& actualPos, const glm::vec2& destination, float dt) {
+		dt = glm::clamp(dt, 0.0f, 1.0f);
+		return actualPos + (destination - actualPos) * dt;
+	}
+
+	glm::vec2 smoothstep(const glm::vec2& actualPos, const glm::vec2& destination, float dt) {
+		dt = glm::clamp(dt, 0.0f, 1.0f);
+		float smoothT = glm::smoothstep(0.0f, 1.0f, dt);
+		return glm::mix(actualPos, destination, smoothT);
+	}
+
+	glm::vec2 easeOutCubic(const glm::vec2& actualPos, const glm::vec2& destination, float dt) {
+		float clampedDt = glm::clamp(dt, 0.0f, 1.0f);
+		float easeValue = 1.0f - std::pow(1.0f - clampedDt, 3.0f);
+		return actualPos + (destination - actualPos) * easeValue;
+	}
+
+	//time = current time;
+	struct EntityMovementInfo {
+		Entity* entity;
+		std::vector<Astar::point> path;
+		float dt;
+	};
+
+	uint8_t tileSize;
+	uint32_t mapSize;
+	Astar movement;
+	EntityMovementInfo entityMovementData;
 
 	rasticore::RastiCoreRender* r;
 	rasticore::ModelCreationDetails rect_mcd;

@@ -9,3 +9,12 @@ public:
 	uint8_t stamina;
 	uint8_t hp;
 };
+
+Stats defaultStats = {
+	0,
+	0,
+	0,
+	0,
+	0,
+	0
+};

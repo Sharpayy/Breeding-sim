@@ -19,39 +19,25 @@
 #define MISC		(1 << 6)
 #define EVERY_ITEM	(ARMOR | WEAPON | MISC)
 
-typedef struct _ItemAsset
-{
-	uint64_t itemTexture;
-} ItemAsset;
-
 class Item {
 public:
 	struct ObjectStatistic {
 		virtual ~ObjectStatistic() = default;
 	};
 public:
-	Item(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic objStats = {}, uint32_t price = 0) {
+	Item(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic* objStats = {}, uint32_t price = 0) {
 		this->itemName = itemtName;
 		this->object = newItem;
 		this->objType = objeType;
 		this->objStat = objStats;
 		this->price = price;
-
-		if (itemAsset != 0)
-			this->asset = *itemAsset;
 	}
 
-	void SetAsset(ItemAsset asset)
-	{
-		this->asset = asset;
+	void setAsset(void* asset) {
+		this->object = asset;
 	}
 
-	uint64_t GetItemTexture()
-	{
-		return asset.itemTexture;
-	}
-
-	void* getObject() {
+	void* getItemTexture() {
 		return object;
 	}
 
@@ -86,7 +72,7 @@ protected:
 	void* object;
 	uint32_t price;
 	uint8_t objType;
-	ObjectStatistic objStat;
+	ObjectStatistic* objStat;
 };
 
 class Armor : public Item {
@@ -152,13 +138,13 @@ public:
 	void loadItem(Item& item) {
 		switch (item.getObjectType()) {
 		case ARMOR:
-			itemMap[item.getItemName()] = new Armor{ item.getItemName(), item.getObject(), item.getObjectType(), (Armor::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			itemMap[item.getItemName()] = new Armor{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (Armor::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
 			break;
 		case WEAPON:
-			itemMap[item.getItemName()] = new Weapon{ item.getItemName(), item.getObject(), item.getObjectType(), (Weapon::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			itemMap[item.getItemName()] = new Weapon{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (Weapon::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
 			break;
 		default:
-			itemMap[item.getItemName()] = new Item{ item.getItemName(), item.getObject(), item.getObjectType(), (Item::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			itemMap[item.getItemName()] = new Item{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (Item::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
 			break;
 		}
 	}
@@ -245,7 +231,7 @@ public:
 			return true;
 		}
 
-		uint64_t tx = this->object->GetItemTexture();
+		uint64_t tx = (uint64_t)this->object->getItemTexture();
 
 		if (tx == -1)
 			((GComponentImage*)item_comp)->texture = 0;
