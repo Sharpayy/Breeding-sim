@@ -64,7 +64,7 @@ public:
 
 		if (game_type == GAMETYPE_FIGHT)
 		{
-
+			battleManager.update();
 		}
 		//Test sln
 
@@ -145,6 +145,11 @@ public:
 		int x, y;
 		SDL_GetMouseState(&x, &y);
 		return glm::vec2{ x,y };
+	}
+
+	void StartBattle(Squad* s0, Squad* s1)
+	{
+
 	}
 
 	glm::vec2 getCorrectedMousePosition() {
@@ -321,7 +326,7 @@ private:
 
 	void handleSquadLogic() {
 		float distance = 0;
-		float threashold = 10;
+		float threashold = 20.0f;
 		uint64_t id;
 		float dist;
 		for (auto& squadF : factionManager.getAllSquads()) {
@@ -331,11 +336,11 @@ private:
 				if (glm::distance(squadF->getSquadPosition(), player->getSquadPosition()) <= 4.0f) {
 					game_type = GAMETYPE_FIGHT;
 					EntityBattleManager::BattleData battleData = {
-						0,
-						0,
-						0,
+						squadF,
+						player,
+						EntityBattleManager::BattleMap{0, std::filesystem::path(), 1024.0f, 0.0f, 30.0f}
 					};
-					//battleManager.startBattle();
+					battleManager.startBattle(battleData);
 				}
 				else if (squadF != squadS) {
 					handleSquadState(squadF, squadS);

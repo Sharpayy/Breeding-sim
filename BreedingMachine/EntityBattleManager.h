@@ -2,6 +2,8 @@
 #include "Squad.h"
 #include "MovementManager.h"
 
+#define DUPA_CYCE_WADOWICE	15
+
 class EntityBattleManager {
 public:
 	struct BattleMap {
@@ -15,18 +17,41 @@ public:
 		Squad* s1;
 		Squad* s2;
 		BattleMap battleMap;
-		
 	};
 public:
-	EntityBattleManager(rasticore::RastiCoreRender* r_ = {}, rasticore::ModelCreationDetails rect_mcd = {}) {
-		this->r_ = r_;
+	EntityBattleManager(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails rect_mcd ) {
+		this->r = r;
 		this->rect_mcd = rect_mcd;
+
+		r->newModel(DUPA_CYCE_WADOWICE, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, rect_mcd.txb, 50);
+	}
+
+	EntityBattleManager()
+	{
+
 	}
 
 	void startBattle(BattleData& battleData) {
 		data = battleData;
 		//std::filesystem::path path, uint32_t mapSize, uint8_t tileSize, rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd
-		entityMovementManager = EntityMovementManager{ battleData.battleMap.path, battleData.battleMap.mapSize, battleData.battleMap.tileSize, r_, rect_mcd };
+		entityMovementManager = EntityMovementManager{ battleData.battleMap.path, battleData.battleMap.mapSize, battleData.battleMap.tileSize, r, rect_mcd };
+
+		Squad::SquadComp* units = data.s1->getSquadComp();
+		
+		for (int i = 0; i < units->size; i++)
+		{
+			Entity* e = units->entities[i];
+			r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 1.5f)));
+		}
+
+		units = data.s2->getSquadComp();
+
+		for (int i = 0; i < units->size; i++)
+		{
+			Entity* e = units->entities[i];
+			r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 1.5f)));
+		}
+
 	}
 
 	bool moveEntity(glm::vec2 e, Entity* entity) {
@@ -35,7 +60,7 @@ public:
 	}
 
 	void update() {
-
+		r->RenderSelectedModel(DUPA_CYCE_WADOWICE);
 	}
 
 private:
@@ -43,6 +68,6 @@ private:
 	//
 	BattleData data;
 	//
-	rasticore::RastiCoreRender* r_;
+	rasticore::RastiCoreRender* r;
 	rasticore::ModelCreationDetails rect_mcd;
 };
