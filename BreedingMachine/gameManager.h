@@ -9,7 +9,9 @@
 #include <glm/gtc/quaternion.hpp> 
 #include <random>
 #include "timer.h"
-#include "textures.h"
+#include "TextureLoader.h"
+#include "EntityBattleManager.h"
+
 #define THRESHOLD 10.0f
 
 #define GAMETYPE_BIGMAP		1
@@ -26,9 +28,10 @@ public:
 		std::filesystem::path collisionPath = path, buildingPath = path;
 		collisionPath.append("Data\\collision.txt");
 		buildingPath.append("Data\\buildings.txt");
-		movementManager = MovementManager{ collisionPath, 4096, 16, r_, rect_mcd };
+		movementManager = SquadMovementManager{ collisionPath, 4096, 16, r_, rect_mcd };
 		buildingManager = BuildingManager{ buildingPath };
 		factionManager = FactionManager{r_, rect_mcd, 16};
+		battleManager = EntityBattleManager{ r, rect_mcd };
 		cameraOffset = CameraOffset{ 0, 0, 500.0f };
 		initGame(path);
 		game_type = GAMETYPE_BIGMAP;
@@ -61,7 +64,7 @@ public:
 
 		if (game_type == GAMETYPE_FIGHT)
 		{
-			r->RenderSelectedModel(9);
+
 		}
 		//Test sln
 
@@ -108,7 +111,7 @@ public:
 			Slot* slot = inv.getSlot(mp);
 
 			Armor item = Armor();
-			item.SetAsset(ItemAsset{ LoadTextureFromFile("Data\\EquipmentIconsC2.png") });
+			item.setAsset((void*)LoadTextureFromFile("Data\\EquipmentIconsC2.png"));
 			
 			if (slot != nullptr)
 			{
@@ -220,6 +223,13 @@ private:
 		auto gwin = inv.getGWindow("inventory");
 		inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(150.0f, 150.0f), 50.0f, 50.0f), LoadTextureFromFile("Data\\item_frame.png"));
 		inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(200.0f, 150.0f), 50.0f, 50.0f), LoadTextureFromFile("Data\\item_frame.png"));
+		Slot* s = inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(150.0f, 200.0f), 50.0f, 50.0f), LoadTextureFromFile("Data\\item_frame.png"));
+		inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(200.0f, 200.0f), 50.0f, 50.0f), LoadTextureFromFile("Data\\item_frame.png"));
+		
+		Armor* item = new Armor();
+		item->setAsset((void*)LoadTextureFromFile("Data\\EquipmentIconsC2.png"));
+		s->changeItem(item);
+
 		//gwin->AddComponent(new GComponentSlider(glm::vec2(200, 20), glm::vec3(100, 100, 2.5f), nullptr, LoadTextureFromFile("Data\\gui.png"), LoadTextureFromFile("Data\\angy.png")));
 		inv.ActivateWindow("inventory");
 	}
@@ -237,16 +247,9 @@ private:
 		factionManager.CreateNewFaction(MODEL_PLAYER, "Data\\player.png", "Player", buildingManager.getRaceBuildings(MODEL_PLAYER));
 		factionManager.CreateNewFaction(MODEL_BANDITS, "Data\\bandit.png", "Bandit", buildingManager.getRaceBuildings(MODEL_BANDITS));
 		factionManager.CreateNewFaction(MODEL_ANIMALS, "Data\\animal.png", "Furry", buildingManager.getRaceBuildings(MODEL_ANIMALS));
-
-		LoadTextureFromFile("Data\\EquipmentIconsC6.png", "tt");
-		r->newModel(9, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, GetTextureFullInfo("tt")->txb, 20);
-
-		glm::mat4 m = glm::mat4(1.0f);
-		m = glm::translate(m, glm::vec3(512.0f, 512.0f, 5.0f));
-		m = glm::scale(m, glm::vec3(1.0f, 1.0f, 1.0f));
-		r->newObject(9, m);
-
+		
 		inv = Inventory();
+		initItems();
 		initPrimaryInv();
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		//inv.ActivateWindow("main_player_eq");
@@ -320,11 +323,21 @@ private:
 		float distance = 0;
 		float threashold = 10;
 		uint64_t id;
+		float dist;
 		for (auto& squadF : factionManager.getAllSquads()) {
 			if (squadF == player) continue;
 			id = squadF->getSquadID();
 			for (auto& squadS : factionManager.getAllSquads()) {
-				if (squadF != squadS) {
+				if (glm::distance(squadF->getSquadPosition(), player->getSquadPosition()) <= 4.0f) {
+					game_type = GAMETYPE_FIGHT;
+					EntityBattleManager::BattleData battleData = {
+						0,
+						0,
+						0,
+					};
+					//battleManager.startBattle();
+				}
+				else if (squadF != squadS) {
 					handleSquadState(squadF, squadS);
 					handleSquadStateLogic(squadF);
 				}
@@ -446,7 +459,7 @@ private:
 		}
 		
 	}
-
+	
 	glm::vec2 getCorrectedSquadPosition(glm::vec2 position) {
 		float offset, tileSize = movementManager.getMapTileSize() / 2.0f;
 		offset = tileSize / 2.0f;
@@ -495,9 +508,10 @@ private:
 	rasticore::ModelCreationDetails rect_mcd;
 
 	Squad* player;
-	MovementManager movementManager;
+	SquadMovementManager movementManager;
 	BuildingManager buildingManager;
 	FactionManager factionManager;
+	EntityBattleManager battleManager;
 	//std::vector<Squad*> squads;
 	CameraOffset cameraOffset;
 	InputHandler& instance;

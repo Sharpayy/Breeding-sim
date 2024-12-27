@@ -1,4 +1,5 @@
 #include "gui.h"
+#include "gltext.h"
 
 rasticore::Program* gui_main_program;
 rasticore::VertexBuffer* gui_square;
@@ -25,9 +26,29 @@ GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec3 pos, const char* t
 	value = 0.0f;
 }
 
+void GComponentSlider::SetText(const char* text_)
+{
+	gltSetText(text, text_);
+}
+
+void GComponentSlider::RenderText(glm::mat4 pm)
+{
+	gltBeginDraw();
+
+	glm::mat4 m = glm::mat4(1.0f);
+	glm::translate(m, glm::vec3(pos.x, pos.y, pos.z + 0.1f));
+	glm::scale(m, glm::vec3(scale_x, scale_y, 1.0f));
+
+	m = pm * m;
+
+	gltDrawText(text, (GLfloat*)&m);
+	gltEndDraw();
+}
+
 void GComponentSlider::Render(glm::mat4 pm)
 {
 	gui_main_program->use();
+	stbi_set_flip_vertically_on_load(true);
 
 	GSHADERRENDERDATA_SLIDER data{};
 	data.d.gui_element = GUI_ELEMENT_SLIDER;
@@ -72,6 +93,7 @@ void GComponentSlider::SetOffset(glm::vec3 of)
 
 void gui_init()
 {
+	gltInit();
 	MAPPEDFILE shdr_src = rasticore::MapFile("Rasticore\\gui_shader_vertex.glsl");
 	rasticore::Shader<GL_VERTEX_SHADER> _shdr_vt_n = rasticore::Shader<GL_VERTEX_SHADER>((char*)shdr_src.data);
 	rasticore::UnmapFile(shdr_src);
@@ -173,6 +195,20 @@ GComponentButton::GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* t
 void GComponentButton::SetCallback(GComponentButton_Callback func)
 {
 	callback = func;
+}
+
+void GComponentButton::RenderText(glm::mat4 pm)
+{
+	gltBeginDraw();
+
+	glm::mat4 m = glm::mat4(1.0f);
+	m = glm::translate(m, glm::vec3(pos.x, pos.y + scale_y / 2.0f, pos.z + 6.1f));
+	//m = glm::scale(m, glm::vec3(1.0f, scale_y, 1.0f));
+
+	m = pm * m;
+
+	gltDrawText(text, (GLfloat*)&m);
+	gltEndDraw();
 }
 
 void GComponentButton::Render(glm::mat4 pm)
@@ -288,6 +324,17 @@ void GWindow::Render(glm::mat4 pm)
 	}
 }
 
+void GWindow::RenderText(glm::mat4 pm)
+{
+	if (window_flags && GUI_WINDOW_ACTIVE != GUI_WINDOW_ACTIVE)
+		return;
+
+	for (auto& i : component_list)
+	{
+		i->RenderText(pm);
+	}
+}
+
 void GWindow::CollisionCheck(float x, float y)
 {
 	if (window_flags && GUI_WINDOW_NO_CLICK == GUI_WINDOW_NO_CLICK)
@@ -314,6 +361,11 @@ GComponentImage::GComponentImage(glm::vec2 scale, glm::vec3 pos, uint64_t tex)
 
 	this->pos = pos;
 	texture = tex;
+}
+
+void GComponentImage::RenderText(glm::mat4 pm)
+{
+	
 }
 
 void GComponentImage::Render(glm::mat4 pm)

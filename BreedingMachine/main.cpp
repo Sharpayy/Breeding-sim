@@ -228,7 +228,6 @@ int main(int argc, char* argv[])
 	_win.glCreateContext();
 
 	glewInit();
-	gltInit();
 	gui_init();
 
 	rasticore::RastiCoreRender _r = rasticore::RastiCoreRender(100);
@@ -338,12 +337,8 @@ int main(int argc, char* argv[])
 
 	//TESTS
 
-	GLTtext* text = gltCreateText();
-	gltSetText(text, "lubie placki");
-
 	RS_ENABLE_FRATURE(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 
 
 	gameManager gmanager(&_r, rect_mcd);
@@ -402,36 +397,14 @@ int main(int argc, char* argv[])
 
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
-			glm::mat4 m = glm::mat4(1.0f);
-			m = glm::translate(m, glm::vec3(512.0f, 512.0f, 5.0f));
-			m = glm::rotate(m, tick, glm::vec3(0, 0, 1));
-
-			_r.BindActiveModel(9);
-			_r.SetObjectMatrix(0, m, true);
-
 		}
 		gmanager.update();
 		gmanager.inv.Render(gui_projection_matrix);
-		
-
-		//gwin->CollisionCheck(xx, yy);
-		
-		//gltBeginDraw();
-		//gltColor(1.0f, 0.5f, 0.2f, 1.0f);
-
-		//glm::mat4 tm = glm::mat4(1.0f);
-		//tm = glm::translate(tm, glm::vec3(0.0f, 0.0f, 1.5f));
-		//tm = glm::rotate(tm, glm::radians(180.0f), vec3(1, 0, 0));
-		//tm = glm::scale(tm, vec3(30.0f, 30.0f, 1.0f));
-		//tm = _r.MVP.matProjCamera * tm;
-		//gltDrawText(text, (GLfloat*)&(tm));
-
-		//gltEndDraw();
+		gmanager.inv.RenderText(gui_projection_matrix);
+		gmanager.inv.RenderCursor(gui_projection_matrix);
 
 
-		//button.Render(gui_projection_matrix)
 
-		//slider.Render(gui_projection_matrix);
 
 
 		tick += 0.001f;

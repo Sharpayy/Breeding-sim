@@ -19,37 +19,25 @@
 #define MISC		(1 << 6)
 #define EVERY_ITEM	(ARMOR | WEAPON | MISC)
 
-typedef struct _ItemAsset
-{
-	uint64_t itemTexture;
-} ItemAsset;
-
 class Item {
 public:
-	struct ObjectStatistic {};
+	struct ObjectStatistic {
+		virtual ~ObjectStatistic() = default;
+	};
 public:
-	Item(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic* objStats = {}, uint32_t price = 0, ItemAsset* itemAsset = 0) {
+	Item(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic* objStats = {}, uint32_t price = 0) {
 		this->itemName = itemtName;
 		this->object = newItem;
 		this->objType = objeType;
 		this->objStat = objStats;
 		this->price = price;
-
-		if (itemAsset != 0)
-			this->asset = *itemAsset;
 	}
 
-	void SetAsset(ItemAsset asset)
-	{
-		this->asset = asset;
+	void setAsset(void* asset) {
+		this->object = asset;
 	}
 
-	uint64_t GetItemTexture()
-	{
-		return asset.itemTexture;
-	}
-
-	void* getObject() {
+	void* getItemTexture() {
 		return object;
 	}
 
@@ -67,14 +55,16 @@ public:
 
 	void setItemStats(ObjectStatistic* objStats) {};
 
-	virtual ObjectStatistic* getObjectStatistic() = 0;
+	virtual ObjectStatistic* getObjectStatistic() { 
+		return objStat; 
+	};
 
 	void setItemPrice(uint32_t price) {
 		this->price = price;
 	}
 
-	Item* getItemPrice() {
-		return (Item*)object;
+	uint32_t getItemPrice() {
+		return price;
 	}
 
 protected:
@@ -83,8 +73,6 @@ protected:
 	uint32_t price;
 	uint8_t objType;
 	ObjectStatistic* objStat;
-
-	ItemAsset asset;
 };
 
 class Armor : public Item {
@@ -107,7 +95,7 @@ public:
 		this->objStat = objStats;
 	}
 
-	virtual ObjectStatistic* getObjectStatistic(){
+	ObjectStatistic* getObjectStatistic() override {
 		return objStat;
 	}
 
@@ -135,12 +123,61 @@ public:
 		this->objStat = objStat;
 	}
 
-	virtual ObjectStatistic* getObjectStatistic(){
+	ObjectStatistic* getObjectStatistic() override {
 		return objStat;
 	}
 
 private:
 	ObjectStatistic* objStat;
+};
+
+class ItemLoader {
+public:
+	ItemLoader() = default;
+
+	void loadItem(Item& item) {
+		switch (item.getObjectType()) {
+		case ARMOR:
+			itemMap[item.getItemName()] = new Armor{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (Armor::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			break;
+		case WEAPON:
+			itemMap[item.getItemName()] = new Weapon{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (Weapon::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			break;
+		default:
+			itemMap[item.getItemName()] = new Item{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (Item::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			break;
+		}
+	}
+
+	template <typename T = Item>
+	T* getItem(std::string itemName) {
+		auto it = itemMap.find(itemName);
+		if (it != itemMap.end()) {
+			uint8_t objectType = it->second->getObjectType();
+			if (objectType & WEAPON) {
+				if constexpr (std::is_same_v<T, Weapon>) {
+					return (T*)it->second;
+				}
+				else return nullptr;
+			}
+			if (objectType & ARMOR) {
+				if constexpr (std::is_same_v<T, Armor>) {
+					return (T*)it->second;
+				}
+				return nullptr;
+			}
+			if (objectType & EVERY_ITEM) {
+				if constexpr (std::is_same_v<T, Item>) {
+					return (T*)it->second;
+				}
+				return nullptr;
+			}
+		}
+		return nullptr;
+	}
+
+private:
+	std::unordered_map<std::string, Item*> itemMap;
 };
 
 struct ObjectDim {
@@ -161,7 +198,7 @@ class Slot {
 public:
 	Slot() = default;
 	Slot(Item* object, glm::vec2 position, int width, int height, uint8_t type = EVERY_ITEM) {
-		if (object) assert(object->getObjectType() & type);
+		if(object) assert(object->getObjectType() & type);
 		this->object = object;
 		this->slotDim = { position, width, height };
 		this->type = type;
@@ -192,10 +229,7 @@ public:
 			return false;
 		}
 
-		if (!(object->getObjectType() & type)) return false;
-		this->object = object;
-
-		uint64_t tx = this->object->GetItemTexture();
+		uint64_t tx = (uint64_t)object->getItemTexture();
 
 		if (tx == -1)
 			((GComponentImage*)item_comp)->texture = 0;
@@ -225,6 +259,8 @@ public:
 	Inventory() {
 		windowSlots[0] = {};
 		windowSlots[1] = {};
+
+		cursor_comp = new GComponentImage(glm::vec2(50.0f), glm::vec3(0.0f, 0.0f, 50.0f), 0);
 	}
 
 	struct Window {
@@ -234,6 +270,42 @@ public:
 		std::vector<Slot*> slots;
 		GWindow* win;
 	};
+
+	void RenderCursor(glm::mat4 pm)
+	{
+		cursor_comp->Render(pm);
+	}
+
+	void SetCursorPosition(glm::vec2 pos)
+	{
+		cursor_comp->pos.x += pos.x;
+		cursor_comp->pos.y += pos.y;
+	}
+
+	void SetCursorItemHold(Item* item)
+	{
+		cursor_hold = item;
+		if (item != nullptr)
+			cursor_comp->texture = (uint64_t)item->getItemTexture();
+		else
+			cursor_comp->texture = 0;
+	}
+
+	Item* GetCursorItemHold()
+	{
+		return cursor_hold;
+	}
+
+	void RenderText(glm::mat4 pm)
+	{
+		float base_h = 2.0f;
+		auto wins = getActiveWindows();
+
+		for (auto& i : wins)
+		{
+			i->win->RenderText(pm);
+		}
+	}
 
 	void Render(glm::mat4 pm)
 	{
@@ -351,7 +423,40 @@ public:
 	}
 
 	Slot* getSlot(glm::vec2 position) {
+		//uint8_t windowsAmount = windowSlots.at(true).size();
+		//if (windowsAmount >= 2) {
+		//	uint8_t height = 0;
+		//	Slot* potentialSlot = nullptr;
+		//	int i = 0;
+		//	for (auto& window : windowSlots.at(true)) {
+		//		if (potentialSlot) break;
+		//		i++;
+		//		if (pointInRect(position, window->dim)) {
+		//			for (auto& slot : window->slots) {
+		//				if (pointInRect(position, slot->getDim())) {
+		//					height = i - 1;
+		//					potentialSlot = slot;
+		//					break;
+		//				}
+		//			}
+		//		}
+		//	}
+		//	for (int x = 0; x < i - 1; x++) {
+		//		if (pointInRect(position, windowSlots.at(true).at(x)->dim)) return nullptr;
+		//	}
+		//	return potentialSlot;
+		//}
+		//else {
+		//	Window* frontWindow = windowSlots.at(true).front();
+		//	if (pointInRect(position, frontWindow->dim)) {
+		//		for (auto& slot : frontWindow->slots) {
+		//			if (pointInRect(position, slot->getDim())) return slot;
+		//		}
+		//	}
+		//}
+		//return nullptr;
 		uint8_t windowsAmount = windowSlots.at(true).size();
+		if (windowsAmount >= 2) {
 			uint8_t height = 0;
 			Slot* potentialSlot = nullptr;
 			int i = 0;
@@ -369,10 +474,19 @@ public:
 				}
 			}
 			for (int x = 0; x < i - 1; x++) {
-				if (pointInRect(position, windowSlots.at(true).at(x)->dim)) potentialSlot = nullptr;
+				if (pointInRect(position, windowSlots.at(true).at(x)->dim)) return nullptr;
 			}
-
-		return potentialSlot;
+			return potentialSlot;
+		}
+		else {
+			Window* frontWindow = windowSlots.at(true).front();
+			if (pointInRect(position, frontWindow->dim)) {
+				for (auto& slot : frontWindow->slots) {
+					if (pointInRect(position, slot->getDim())) return slot;
+				}
+			}
+		}
+		return nullptr;
 	}
 
 private:
@@ -399,4 +513,7 @@ private:
 	}
 
 	std::unordered_map<bool, std::vector<Window*>> windowSlots;
+
+	GComponentImage* cursor_comp;
+	Item* cursor_hold;
 };

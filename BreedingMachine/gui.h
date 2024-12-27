@@ -10,6 +10,7 @@
 #include "Rasticore/rasti_main.h"
 #include "Rasticore/rasti_utils.h"
 #define ENABLE_GROOMING
+
 #define GLT_IMPLEMENTATION
 #include "gltext.h"
 
@@ -77,6 +78,7 @@ public:
 	virtual int GetType() = 0;
 
 	virtual void SetOffset(glm::vec3 of) = 0;
+	virtual void RenderText(glm::mat4 pm) = 0;
 };
 
 class GComponentSlider : public GComponent
@@ -97,6 +99,7 @@ public:
 
 	void SetPosition(glm::vec3 new_pos);
 
+	virtual void RenderText(glm::mat4 pm);
 	virtual void Render(glm::mat4 pm);
 	virtual int ClickCheck(float x, float y, void* window = NULL);
 	virtual int GetType();
@@ -119,6 +122,7 @@ public:
 	GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t tex);
 	void SetCallback(GComponentButton_Callback func);
 
+	virtual void RenderText(glm::mat4 pm);
 	virtual void Render(glm::mat4 pm);
 	virtual int ClickCheck(float x, float y, void* window = NULL);
 	virtual int GetType();
@@ -137,6 +141,7 @@ public:
 
 	GComponentImage(glm::vec2 scale, glm::vec3 pos, uint64_t tex);
 
+	virtual void RenderText(glm::mat4 pm);
 	virtual void Render(glm::mat4 pm);
 	virtual int ClickCheck(float x, float y, void* window = NULL);
 	virtual int GetType();
@@ -165,6 +170,7 @@ public:
 
 	void AddComponent(GComponent* comp);
 	void Render(glm::mat4 pm);
+	void RenderText(glm::mat4 pm);
 
 	void CollisionCheck(float x, float y);
 	void UpdateZComp();
