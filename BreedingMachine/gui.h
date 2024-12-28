@@ -134,6 +134,7 @@ public:
 class GComponentImage : public GComponent
 {
 public:
+
 	float scale_x, scale_y;
 	glm::vec3 pos;
 
