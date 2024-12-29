@@ -247,7 +247,7 @@ private:
 		std::ifstream file;
 		file.open(path.string());
 		if (!file) {
-			std::cout << "collision.txt File not found\n";
+			std::cout << path.filename() <<  " File not found\n";
 			return;
 		};
 
