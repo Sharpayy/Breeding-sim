@@ -223,7 +223,7 @@ private:
 		inv.AddWindow("inventory", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("inventory");
 		//przyciski do zmiany na kolejny panel ekwipunku
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(0, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(0, 5, 0.5f), "penes", LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(20 + 10, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(40 + 20, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(60 + 30, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
@@ -237,7 +237,7 @@ private:
 			}
 		}
 		//labelka z szmeklami
-		gwin->AddComponent(new GComponentSlider(glm::vec2(60, 20), glm::vec3(140, 300, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"), LoadTextureFromFile("Data\\angy.png")));
+		gwin->AddComponent(new GComponentSlider(glm::vec2(60, 20), glm::vec3(140, 300, 0.5f), "penes", LoadTextureFromFile("Data\\red.png"), LoadTextureFromFile("Data\\angy.png")));
 
 		inv.ActivateWindow("inventory");
 	}
@@ -280,7 +280,7 @@ private:
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
 		initItems();
 		initPrimaryInv(500, 500, texItemFrame);
-		initCharInv(500, 500, texItemFrame);
+		//initCharInv(500, 500, texItemFrame);
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		//inv.ActivateWindow("main_player_eq");
 		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);

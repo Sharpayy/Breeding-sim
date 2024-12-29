@@ -37,8 +37,8 @@ void GComponentSlider::RenderText(glm::mat4 pm)
 	gltBeginDraw();
 
 	glm::mat4 m = glm::mat4(1.0f);
-	glm::translate(m, glm::vec3(pos.x, pos.y, pos.z + 0.1f));
-	glm::scale(m, glm::vec3(scale_x, scale_y, 1.0f));
+	m = glm::translate(m, glm::vec3(pos.x, pos.y + scale_y / 2.0f, pos.z + 1.01f));
+	//m = glm::scale(m, glm::vec3(1.0f, scale_y, 1.0f));
 
 	m = pm * m;
 
@@ -201,10 +201,13 @@ void GComponentButton::SetCallback(GComponentButton_Callback func)
 
 void GComponentButton::RenderText(glm::mat4 pm)
 {
+	if (text->_text == 0)
+		return;
+
 	gltBeginDraw();
 
 	glm::mat4 m = glm::mat4(1.0f);
-	m = glm::translate(m, glm::vec3(pos.x, pos.y + scale_y / 2.0f, pos.z + 6.1f));
+	m = glm::translate(m, glm::vec3(pos.x, pos.y + scale_y / 2.0f, pos.z + 1.01f));
 	//m = glm::scale(m, glm::vec3(1.0f, scale_y, 1.0f));
 
 	m = pm * m;
@@ -453,7 +456,7 @@ void GComponentLabel::RenderText(glm::mat4 pm)
 	gltBeginDraw();
 
 	glm::mat4 m = glm::mat4(1.0f);
-	m = glm::translate(m, glm::vec3(pos.x, pos.y + scale_y / 2.0f, pos.z + 6.1f));
+	m = glm::translate(m, glm::vec3(pos.x, pos.y + scale_y / 2.0f, pos.z + 1.01f));
 	//m = glm::scale(m, glm::vec3(1.0f, scale_y, 1.0f));
 
 	m = pm * m;

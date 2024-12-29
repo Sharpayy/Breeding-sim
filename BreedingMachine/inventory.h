@@ -298,12 +298,15 @@ public:
 
 	void RenderText(glm::mat4 pm)
 	{
-		float base_h = 2.0f;
+		float base_depth = 2.0f;
 		auto wins = getActiveWindows();
 
 		for (auto& i : wins)
 		{
+			i->win->UpdateDepth(base_depth);
+			i->win->UpdateZComp();
 			i->win->RenderText(pm);
+			base_depth += 2.0f;
 		}
 	}
 
@@ -312,13 +315,12 @@ public:
 		float base_depth = 2.0f;
 		auto wins = getActiveWindows();
 
-		auto swins = std::vector<Window*>(wins.rbegin(), wins.rend());
-		for (auto& i : swins)
+		for (auto& i : wins)
 		{
 			i->win->UpdateDepth(base_depth);
 			i->win->UpdateZComp();
 			i->win->Render(pm);
-			base_depth += 1.0f;
+			base_depth += 2.0f;
 		}
 	}
 
@@ -363,7 +365,7 @@ public:
 		if (it != vectorAt1.end()) {
 			vectorAt1.erase(it);
 		}
-		win->height = 0x7fffffff;
+		win->height = 0xff;
 		sortVec(1);
 	}
 
