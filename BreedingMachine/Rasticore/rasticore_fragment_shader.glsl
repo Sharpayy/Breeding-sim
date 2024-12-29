@@ -17,6 +17,10 @@ in vec2 uv;
 
 void main()
 {
-    FragColor = texture(TEXTURE_HANDLE, uv);
+	int mirror_flip = 0;
+	if (mirror_flip == 1)
+		FragColor = texture(TEXTURE_HANDLE, vec2(1.0 - uv.x, uv.y));
+	else
+		FragColor = texture(TEXTURE_HANDLE, uv);
 }
 

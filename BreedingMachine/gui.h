@@ -22,6 +22,7 @@
 #define GUI_ELEMENT_BUTTON			2
 #define GUI_ELEMENT_WINDOW			3
 #define GUI_ELEMENT_IMAGE			4
+#define GUI_ELEMENT_LABEL			5
 
 #define GUI_SHADER_DEBUG_INFO
 
@@ -147,8 +148,25 @@ public:
 	virtual int ClickCheck(float x, float y, void* window = NULL);
 	virtual int GetType();
 	virtual void SetOffset(glm::vec3 of);
-
 };
+
+class GComponentLabel : public GComponent
+{
+public:
+
+	float scale_x, scale_y;
+	glm::vec3 pos;
+	GLTtext* text;
+
+	GComponentLabel(glm::vec2 scale, glm::vec3 pos, const char* text);
+
+	virtual void RenderText(glm::mat4 pm);
+	virtual void Render(glm::mat4 pm);
+	virtual int ClickCheck(float x, float y, void* window = NULL);
+	virtual int GetType();
+	virtual void SetOffset(glm::vec3 of);
+};
+
 #define GUI_WINDOW_ACTIVE		1
 #define GUI_WINDOW_TOP			2
 #define GUI_WINDOW_NO_CLICK		4
@@ -173,7 +191,7 @@ public:
 	void Render(glm::mat4 pm);
 	void RenderText(glm::mat4 pm);
 
-	void CollisionCheck(float x, float y);
+	int CollisionCheck(float x, float y);
 	void UpdateZComp();
 
 };
@@ -194,16 +212,4 @@ public:
 	GWindow* BuildWindow();
 };
 
-class GManager
-{
-public:
-	std::vector<GWindow*> windows;
-	GWindow* active_window;
-
-	GManager();
-
-	GWindow* CreateNewWindow(glm::vec2 pos, glm::vec2 scale, uint64_t tex);
-};
-
 void pfnBasicButtonCallback(GComponentButton* button, GWindow* window);
-

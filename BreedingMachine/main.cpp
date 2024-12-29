@@ -253,12 +253,6 @@ int main(int argc, char* argv[])
 	fightMapProgram.programAddShader(fightMapFrag.id);
 	fightMapProgram.programCompile();
 
-	char dd[1024];
-	int dda = fightMapProgram.programGetDebugInfo(dd, 1024);
-
-	if (dda == 0)
-		puts(dd);
-
 	fightMapProgram.use();
 
 	rasticore::Program _program_n = rasticore::Program();
@@ -341,7 +335,7 @@ int main(int argc, char* argv[])
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
-	gameManager gmanager(&_r, rect_mcd);
+	gameManager gmanager(&_r, rect_mcd, gm.rChunkVao, fightMapProgram);
 
 	gameManager::CameraOffset cameraOffset;
 	float tick = 0;
@@ -374,28 +368,6 @@ int main(int argc, char* argv[])
 					glDrawArrays(GL_TRIANGLES, 0, 6);
 				}
 			}
-		}
-
-		if (gmanager.getGameType() == GAMETYPE_FIGHT)
-		{
-			fightMapProgram.use();
-			gm.rChunkVao.bind();
-
-			glUniform1f(fightScaleX, 1024.0f);
-			glUniform1f(fightScaleY, 1024.0f);
-
-			glUniform2f(fightMapTil, 30.0f, 30.0f);
-
-			glUniform2f(fightMapDim, 1024.0f, 1024.0f);
-			vec2 mp = gmanager.getCorrectedMousePosition();
-			glUniform2f(fightMouse, mp.x + 512.0f, mp.y + 512.0f);
-			glUniform1f(fightMoveX, -512.0f);
-			glUniform1f(fightMoveY, -512.0f);
-
-			glUniformHandleui64ARB(1, LoadTextureFromFile("Rasticore\\mm.png"));
-
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
 		}
 		gmanager.update();
 		gmanager.inv.Render(gui_projection_matrix);

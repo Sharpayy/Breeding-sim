@@ -359,6 +359,7 @@ public:
 		if (it != vectorAt1.end()) {
 			vectorAt1.erase(it);
 		}
+		win->height = 0x7fffffff;
 		sortVec(1);
 	}
 
@@ -423,70 +424,27 @@ public:
 	}
 
 	Slot* getSlot(glm::vec2 position) {
-		//uint8_t windowsAmount = windowSlots.at(true).size();
-		//if (windowsAmount >= 2) {
-		//	uint8_t height = 0;
-		//	Slot* potentialSlot = nullptr;
-		//	int i = 0;
-		//	for (auto& window : windowSlots.at(true)) {
-		//		if (potentialSlot) break;
-		//		i++;
-		//		if (pointInRect(position, window->dim)) {
-		//			for (auto& slot : window->slots) {
-		//				if (pointInRect(position, slot->getDim())) {
-		//					height = i - 1;
-		//					potentialSlot = slot;
-		//					break;
-		//				}
-		//			}
-		//		}
-		//	}
-		//	for (int x = 0; x < i - 1; x++) {
-		//		if (pointInRect(position, windowSlots.at(true).at(x)->dim)) return nullptr;
-		//	}
-		//	return potentialSlot;
-		//}
-		//else {
-		//	Window* frontWindow = windowSlots.at(true).front();
-		//	if (pointInRect(position, frontWindow->dim)) {
-		//		for (auto& slot : frontWindow->slots) {
-		//			if (pointInRect(position, slot->getDim())) return slot;
-		//		}
-		//	}
-		//}
-		//return nullptr;
 		uint8_t windowsAmount = windowSlots.at(true).size();
-		if (windowsAmount >= 2) {
-			uint8_t height = 0;
-			Slot* potentialSlot = nullptr;
-			int i = 0;
-			for (auto& window : windowSlots.at(true)) {
-				if (potentialSlot) break;
-				i++;
-				if (pointInRect(position, window->dim)) {
-					for (auto& slot : window->slots) {
-						if (pointInRect(position, slot->getDim())) {
-							height = i - 1;
-							potentialSlot = slot;
-							break;
-						}
+		uint8_t height = 0;
+		Slot* potentialSlot = nullptr;
+		int i = 0;
+		for (auto& window : windowSlots.at(true)) {
+			if (potentialSlot) break;
+			i++;
+			if (pointInRect(position, window->dim)) {
+				for (auto& slot : window->slots) {
+					if (pointInRect(position, slot->getDim())) {
+						height = i - 1;
+						potentialSlot = slot;
+						break;
 					}
 				}
 			}
-			for (int x = 0; x < i - 1; x++) {
-				if (pointInRect(position, windowSlots.at(true).at(x)->dim)) return nullptr;
-			}
-			return potentialSlot;
 		}
-		else {
-			Window* frontWindow = windowSlots.at(true).front();
-			if (pointInRect(position, frontWindow->dim)) {
-				for (auto& slot : frontWindow->slots) {
-					if (pointInRect(position, slot->getDim())) return slot;
-				}
-			}
+		for (int x = 0; x < i - 1; x++) {
+			if (pointInRect(position, windowSlots.at(true).at(x)->dim)) { potentialSlot = nullptr; break; };
 		}
-		return nullptr;
+		return potentialSlot;
 	}
 
 private:
@@ -510,6 +468,11 @@ private:
 		std::sort(windows.begin(), windows.end(), [](Window* a, Window* b) {
 			return a->height > b->height;
 			});
+		int height = 0, windowsAmount = windowSlots.at(active).size();
+		for (auto& win : windowSlots.at(active)) {
+			if (win->height != height) win->height = windowsAmount - height;
+			height++;
+		}
 	}
 
 	std::unordered_map<bool, std::vector<Window*>> windowSlots;

@@ -21,7 +21,7 @@ class gameManager {
 public:
 	Inventory inv;
 
-	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) : instance(InputHandler::getInstance()) {
+	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd, rasticore::VertexBuffer mapVao, rasticore::Program mapPrg) : instance(InputHandler::getInstance()) {
 		this->rect_mcd = rect_mcd;
 		this->r = r_;
 		std::filesystem::path path = std::filesystem::current_path();
@@ -31,7 +31,7 @@ public:
 		movementManager = SquadMovementManager{ collisionPath, 4096, 16, r_, rect_mcd };
 		buildingManager = BuildingManager{ buildingPath };
 		factionManager = FactionManager{r_, rect_mcd, 16};
-		battleManager = EntityBattleManager{ r, rect_mcd };
+		battleManager = EntityBattleManager{ r, rect_mcd, mapPrg, mapVao };
 		cameraOffset = CameraOffset{ 0, 0, 500.0f };
 		initGame(path);
 		game_type = GAMETYPE_BIGMAP;
@@ -64,6 +64,7 @@ public:
 
 		if (game_type == GAMETYPE_FIGHT)
 		{
+			battleManager.SetSelectedUnitPosition(getCorrectedMousePosition());
 			battleManager.update();
 		}
 		//Test sln
@@ -145,11 +146,6 @@ public:
 		int x, y;
 		SDL_GetMouseState(&x, &y);
 		return glm::vec2{ x,y };
-	}
-
-	void StartBattle(Squad* s0, Squad* s1)
-	{
-
 	}
 
 	glm::vec2 getCorrectedMousePosition() {
@@ -277,10 +273,12 @@ private:
 		factionManager.CreateNewFaction(MODEL_BANDITS, "Data\\bandit.png", "Bandit", buildingManager.getRaceBuildings(MODEL_BANDITS));
 		factionManager.CreateNewFaction(MODEL_ANIMALS, "Data\\animal.png", "Furry", buildingManager.getRaceBuildings(MODEL_ANIMALS));
 		
+		battleManager.createBattleMap("BattleMap0", LoadTextureFromFile("Data\\mm.png"), std::filesystem::path(), 1024.0f, 64.0f);
+
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
 		initItems();
-		initPrimaryInv();
+		//initPrimaryInv();
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		//inv.ActivateWindow("main_player_eq");
 		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
@@ -364,6 +362,10 @@ private:
 						squadF,
 						player,
 					};
+					r->setCameraMatrix(glm::lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), (glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(0.0f, 1.0f, 0.0f)));
+					r->UpdateShaderData();
+					cameraOffset.x = 0.0f;
+					cameraOffset.y = 0.0f;
 					battleManager.startBattle(battleData);
 					return;
 				}

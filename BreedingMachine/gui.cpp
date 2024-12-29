@@ -335,15 +335,19 @@ void GWindow::RenderText(glm::mat4 pm)
 	}
 }
 
-void GWindow::CollisionCheck(float x, float y)
+int GWindow::CollisionCheck(float x, float y)
 {
 	if (window_flags && GUI_WINDOW_NO_CLICK == GUI_WINDOW_NO_CLICK)
-		return;
+		return 0;
+
+	int cl = 0;
 
 	for (auto& i : component_list)
 	{
-		i->ClickCheck(x, y, this);
+		cl += i->ClickCheck(x, y, this);
 	}
+
+	return cl;
 }
 
 void GWindow::UpdateZComp()
@@ -421,6 +425,49 @@ int GComponentImage::GetType()
 }
 
 void GComponentImage::SetOffset(glm::vec3 of)
+{
+	pos += of;
+}
+
+GComponentLabel::GComponentLabel(glm::vec2 scale, glm::vec3 pos, const char* text)
+{
+	scale_x = scale.x;
+	scale_y = scale.y;
+
+	this->pos = pos;
+	this->text = gltCreateText();
+	gltSetText(this->text, text);
+}
+
+void GComponentLabel::RenderText(glm::mat4 pm)
+{
+	gltBeginDraw();
+
+	glm::mat4 m = glm::mat4(1.0f);
+	m = glm::translate(m, glm::vec3(pos.x, pos.y + scale_y / 2.0f, pos.z + 6.1f));
+	//m = glm::scale(m, glm::vec3(1.0f, scale_y, 1.0f));
+
+	m = pm * m;
+
+	gltDrawText(text, (GLfloat*)&m);
+	gltEndDraw();
+}
+
+void GComponentLabel::Render(glm::mat4 pm)
+{
+}
+
+int GComponentLabel::ClickCheck(float x, float y, void* window)
+{
+	return 0;
+}
+
+int GComponentLabel::GetType()
+{
+	return GUI_ELEMENT_LABEL;
+}
+
+void GComponentLabel::SetOffset(glm::vec3 of)
 {
 	pos += of;
 }

@@ -23,7 +23,7 @@ void main()
     float tx = MapTiles.x;//30.0;
     float ty = MapTiles.y;//30.0;
 
-    vec2 b_px = vec2(1.0);
+    vec2 b_px = vec2(0.5);
     vec2 bd = vec2(b_px.x / (MapDimensions.x / tx), b_px.y / (MapDimensions.y / ty));
     
     vec2 t_id = floor(uv * vec2(tx, ty));
