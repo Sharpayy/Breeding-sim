@@ -19,6 +19,7 @@ GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec3 pos, const char* t
 	text = gltCreateText();
 	gltSetText(text, text_);
 	this->pos = pos;
+	depth = pos.z;
 
 	base_tex_id = base;
 	fill_tex_id = fill;
@@ -185,6 +186,7 @@ GComponentButton::GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* t
 	gltSetText(text, text_);
 
 	this->pos = pos;
+	depth = pos.z;
 
 	texture = tex;
 	callback = (GComponentButton_Callback)pfnBasicButtonCallback;
@@ -276,7 +278,7 @@ GWindow::GWindow(glm::vec2 pos, glm::vec2 scale, uint64_t tex)
 	position = pos;
 	this->scale = scale;
 	background = tex;
-	z = 2.0f;
+	z = 0.0f;
 
 	component_list = std::list<GComponent*>();
 
@@ -300,7 +302,7 @@ void GWindow::Render(glm::mat4 pm)
 	data.d.gui_element = GUI_ELEMENT_WINDOW;
 	data.d.pos_ = position;
 	data.d.scale_ = scale;
-	data.d.z = 2.0f;
+	data.d.z = z;
 
 #ifndef ENABLE_GROOMING
 	data.textures[0] = background;
@@ -354,8 +356,13 @@ void GWindow::UpdateZComp()
 {
 	for (auto& i : component_list)
 	{
-		i->pos.z = z + 0.1f;
+		i->pos.z = z + i->depth;
 	}
+}
+
+void GWindow::UpdateDepth(float z)
+{
+	this->z = z;
 }
 
 GComponentImage::GComponentImage(glm::vec2 scale, glm::vec3 pos, uint64_t tex)
@@ -364,6 +371,7 @@ GComponentImage::GComponentImage(glm::vec2 scale, glm::vec3 pos, uint64_t tex)
 	scale_y = scale.y;
 
 	this->pos = pos;
+	depth = pos.z;
 	texture = tex;
 }
 
@@ -435,6 +443,7 @@ GComponentLabel::GComponentLabel(glm::vec2 scale, glm::vec3 pos, const char* tex
 	scale_y = scale.y;
 
 	this->pos = pos;
+	depth = pos.z;
 	this->text = gltCreateText();
 	gltSetText(this->text, text);
 }

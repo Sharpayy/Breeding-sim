@@ -330,7 +330,7 @@ int main(int argc, char* argv[])
 	mat4 gui_projection_matrix = ortho(0.0f, 800.0f, 800.0f, 0.0f, -1000.0f, 1000.0f);
 
 	//TESTS
-
+	
 	RS_ENABLE_FRATURE(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

@@ -13,6 +13,7 @@
 
 #define GLT_IMPLEMENTATION
 #include "gltext.h"
+#include "Astar.h"
 
 #define RESOURCE_STORE_BIND_LOCATION 11
 #define GUI_ELEMENT_BIND_LOCATION	 12
@@ -72,6 +73,7 @@ class GComponent
 {
 public:
 	glm::vec3 pos;
+	float depth;
 	GComponent() {}
 
 	virtual void Render(glm::mat4 pm) = 0;
@@ -137,7 +139,6 @@ class GComponentImage : public GComponent
 public:
 
 	float scale_x, scale_y;
-	glm::vec3 pos;
 
 	uint64_t texture;
 
@@ -155,7 +156,6 @@ class GComponentLabel : public GComponent
 public:
 
 	float scale_x, scale_y;
-	glm::vec3 pos;
 	GLTtext* text;
 
 	GComponentLabel(glm::vec2 scale, glm::vec3 pos, const char* text);
@@ -193,6 +193,7 @@ public:
 
 	int CollisionCheck(float x, float y);
 	void UpdateZComp();
+	void UpdateDepth(float z);
 
 };
 

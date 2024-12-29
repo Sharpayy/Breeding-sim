@@ -309,12 +309,16 @@ public:
 
 	void Render(glm::mat4 pm)
 	{
-		float base_h = 2.0f;
+		float base_depth = 2.0f;
 		auto wins = getActiveWindows();
 
-		for (auto& i : wins)
+		auto swins = std::vector<Window*>(wins.rbegin(), wins.rend());
+		for (auto& i : swins)
 		{
+			i->win->UpdateDepth(base_depth);
+			i->win->UpdateZComp();
 			i->win->Render(pm);
+			base_depth += 1.0f;
 		}
 	}
 
@@ -406,8 +410,8 @@ public:
 		ObjectDim slotDim = slot.getDim();
 		if (!win->dim.isRectInRect(slotDim)) return nullptr;
 		Slot* nslot = new Slot{ slot.getItem(), slotDim.position, slotDim.width, slotDim.height, slot.getSlotType() };
-		nslot->item_comp = new GComponentImage(glm::vec2(slot.getDim().width, slot.getDim().height), glm::vec3(slot.getDim().position.x, slot.getDim().position.y, win->win->z + 0.1f), 0);
-		nslot->slot_comp = new GComponentImage(glm::vec2(slot.getDim().width, slot.getDim().height), glm::vec3(slot.getDim().position.x, slot.getDim().position.y, win->win->z + 0.2f), tex);
+		nslot->item_comp = new GComponentImage(glm::vec2(slot.getDim().width, slot.getDim().height), glm::vec3(slot.getDim().position.x, slot.getDim().position.y, 0.1f), 0);
+		nslot->slot_comp = new GComponentImage(glm::vec2(slot.getDim().width, slot.getDim().height), glm::vec3(slot.getDim().position.x, slot.getDim().position.y, 0.2f), tex);
 		win->slots.push_back(nslot);
 		nslot->parent_win = win->win;
 		win->win->AddComponent(nslot->item_comp);
