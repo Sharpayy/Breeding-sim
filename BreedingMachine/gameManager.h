@@ -223,20 +223,44 @@ private:
 		Armor leather_greaves = { "leather greaves", (void*)LoadTextureFromFile("","EquipmentIconsC203"), LEGS, new Armor::ObjectStatistic{0}, 0 };
 	}
 
-	void initPrimaryInv() {
-		inv.AddWindow("inventory", ObjectDim{ {100.0f, 100.0f}, 300, 300 }, 2, LoadTextureFromFile("Data\\gui.png"));
+	void initPrimaryInv(int width, int height, uint64_t texItemFrame) {
+		inv.AddWindow("inventory", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("inventory");
-		inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(150.0f, 150.0f), 50.0f, 50.0f), LoadTextureFromFile("Data\\item_frame.png"));
-		inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(200.0f, 150.0f), 50.0f, 50.0f), LoadTextureFromFile("Data\\item_frame.png"));
-		Slot* s = inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(150.0f, 200.0f), 50.0f, 50.0f), LoadTextureFromFile("Data\\item_frame.png"));
-		inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(200.0f, 200.0f), 50.0f, 50.0f), LoadTextureFromFile("Data\\item_frame.png"));
-		
-		Armor* item = new Armor();
-		item->setAsset((void*)LoadTextureFromFile("Data\\EquipmentIconsC2.png"));
-		s->changeItem(item);
+		//przyciski do zmiany na kolejny panel ekwipunku
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(0, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(20 + 10, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(40 + 20, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(60 + 30, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		//labelka z napisem inventory + które okienko
+		gwin->AddComponent(new GComponentButton(glm::vec2(60, 20), glm::vec3(140, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		//przycisk do zamkniêcia okienka
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(300, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		for (int i = 35; i < height - 75; i += 35) {
+			for (int j = 5; j < width - 15; j += 35) {
+				inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
+			}
+		}
+		//labelka z szmeklami
+		gwin->AddComponent(new GComponentSlider(glm::vec2(60, 20), glm::vec3(140, 300, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png"), LoadTextureFromFile("Data\\angy.png")));
 
-		//gwin->AddComponent(new GComponentSlider(glm::vec2(200, 20), glm::vec3(100, 100, 2.5f), nullptr, LoadTextureFromFile("Data\\gui.png"), LoadTextureFromFile("Data\\angy.png")));
 		inv.ActivateWindow("inventory");
+	}
+	void initCharInv(int width, int height, uint64_t texItemFrame) {
+		inv.AddWindow("char_inv", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = inv.getGWindow("char_inv");
+		//nazwa ch³opa
+		gwin->AddComponent(new GComponentButton(glm::vec2(40, 20), glm::vec3(55, 0, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		//wyjœcie
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(130, 0, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		//sloty
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(60, 30), 30.0f, 30.0f, HELMET), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(60, 60), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(30, 60), 30.0f, 30.0f, WEAPON), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(90, 60), 30.0f, 30.0f, WEAPON), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(60, 90), 30.0f, 30.0f, LEGS), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(60, 120), 30.0f, 30.0f, BOOTS), texItemFrame);
+
+		inv.ActivateWindow("char_inv");
 	}
 
 	void initGame(std::filesystem::path path) {
@@ -254,10 +278,9 @@ private:
 		factionManager.CreateNewFaction(MODEL_ANIMALS, "Data\\animal.png", "Furry", buildingManager.getRaceBuildings(MODEL_ANIMALS));
 		
 		inv = Inventory();
+		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
 		initItems();
 		initPrimaryInv();
-
-		battleManager.createBattleMap("SomeMap", 0, "Data\\BattleMaps\\map1collisions.txt", 1024, 32);
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		//inv.ActivateWindow("main_player_eq");
 		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
