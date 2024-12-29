@@ -16,14 +16,14 @@ public:
 	struct BattleData {
 		Squad* s1;
 		Squad* s2;
-		BattleMap battleMap;
 	};
 public:
 	EntityBattleManager(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails rect_mcd ) {
 		this->r = r;
 		this->rect_mcd = rect_mcd;
 
-		r->newModel(DUPA_CYCE_WADOWICE, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, rect_mcd.txb, 50);
+		LoadTextureFromFile("Data\\mongo.png", "pilgrim");
+		r->newModel(DUPA_CYCE_WADOWICE, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, GetTextureFullInfo("pilgrim")->txb, 50);
 	}
 
 	EntityBattleManager()
@@ -31,17 +31,25 @@ public:
 
 	}
 
+	void createBattleMap(std::string battleMapName, uint64_t texture, std::filesystem::path collisionPath, float mapSize, float tileSize) {
+		battleMaps[battleMapName] = BattleMap{ texture, collisionPath, mapSize, tileSize };
+	}
+
 	void startBattle(BattleData& battleData) {
 		data = battleData;
-		//std::filesystem::path path, uint32_t mapSize, uint8_t tileSize, rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd
-		entityMovementManager = EntityMovementManager{ battleData.battleMap.path, battleData.battleMap.mapSize, battleData.battleMap.tileSize, r, rect_mcd };
+		int idx = (int)(rand() % battleMaps.size());
+		auto it = battleMaps.begin();
+		std::advance(it, idx);
+		currentMap = it->second;
+		entityMovementManager = EntityMovementManager{ currentMap.path, currentMap.mapSize, currentMap.tileSize, r, rect_mcd };
 
 		Squad::SquadComp* units = data.s1->getSquadComp();
 		
 		for (int i = 0; i < units->size; i++)
 		{
 			Entity* e = units->entities[i];
-			r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 1.5f)));
+			e->setEntityPosition(glm::vec2{ 0,0 });
+			r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)));
 		}
 
 		units = data.s2->getSquadComp();
@@ -49,7 +57,8 @@ public:
 		for (int i = 0; i < units->size; i++)
 		{
 			Entity* e = units->entities[i];
-			r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 1.5f)));
+			e->setEntityPosition(glm::vec2{ 0,0 });
+			r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)));
 		}
 
 	}
@@ -66,7 +75,10 @@ public:
 private:
 	EntityMovementManager entityMovementManager;
 	//
+	std::unordered_map<std::string, BattleMap> battleMaps;
 	BattleData data;
+	BattleMap currentMap;
+	//std::vector<>
 	//
 	rasticore::RastiCoreRender* r;
 	rasticore::ModelCreationDetails rect_mcd;

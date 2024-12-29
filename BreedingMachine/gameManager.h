@@ -256,6 +256,8 @@ private:
 		inv = Inventory();
 		initItems();
 		initPrimaryInv();
+
+		battleManager.createBattleMap("SomeMap", 0, "Data\\BattleMaps\\map1collisions.txt", 1024, 32);
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		//inv.ActivateWindow("main_player_eq");
 		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
@@ -338,9 +340,9 @@ private:
 					EntityBattleManager::BattleData battleData = {
 						squadF,
 						player,
-						EntityBattleManager::BattleMap{0, std::filesystem::path(), 1024.0f, 0.0f, 30.0f}
 					};
 					battleManager.startBattle(battleData);
+					return;
 				}
 				else if (squadF != squadS) {
 					handleSquadState(squadF, squadS);
