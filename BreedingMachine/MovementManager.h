@@ -218,7 +218,7 @@ public:
 
 private:
 	void moveEntity() {
-		//if (!entitydHasPath(entityMovementData.entity)) return;
+		if (!entityMovementData.entity) return;
 		
 		Astar::point prevAP, nextAP;
 		glm::vec2 prevPosition, nextPosition, currentPosition;
@@ -226,13 +226,11 @@ private:
 
 		prevAP = entityMovementData.path.at(0);
 		nextAP = entityMovementData.path.at(1);
-		//prevPosition = glm::vec2{ prevAP.x + offset, prevAP.y - offset };
-		//nextPosition = glm::vec2{ nextAP.x + offset, nextAP.y - offset };
 		if (entityMovementData.path.size() >= 2) {
 			prevPosition = glm::vec2{ prevAP.x + offset, prevAP.y + offset };
 			nextPosition = glm::vec2{ nextAP.x + offset, nextAP.y + offset };
 			float speed = 0.0001;
-			//float speed = calculateSquadMovementSpeed(*squadData.second.squad, glm::distance(prevPosition, nextPosition));
+			entityMovementData.dt += speed;
 			currentPosition = lerp(prevPosition, nextPosition, entityMovementData.dt);
 			entityMovementData.entity->setEntityPosition(currentPosition);
 			if (currentPosition == nextPosition) {
@@ -280,7 +278,7 @@ private:
 
 	//time = current time;
 	struct EntityMovementInfo {
-		Entity* entity;
+		Entity* entity = nullptr;
 		std::vector<Astar::point> path;
 		float dt;
 	};

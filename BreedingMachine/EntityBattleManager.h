@@ -62,29 +62,32 @@ public:
 		tilesAmountX = currentMap.mapSize / currentMap.tileSize;
 		offsetY = (tilesAmountX / 2) - ((tilesAmountX / 2) - (units->size / 2));
 		offsetX = -(tilesAmountX / 2);
+		Entity* e = nullptr;
 		for (int i = 0; i < units->size; i++)
 		{
-			Entity* e = units->entities[i];
-			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize, offsetY * currentMap.tileSize });
+			e = units->entities[i];
+			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize, (offsetY + 1) * currentMap.tileSize });
 			offsetY -= 1;
-			r->newObject(DUPA_CYCE_WADOWICE, glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x - (currentMap.tileSize / 2), e->getPosition().y + (currentMap.tileSize / 2), 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)));
+			r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
 		}
+		moveEntity({ 0,0 }, e);
 
 		units = data.s2->getSquadComp();
-		offsetY = (tilesAmountX / 2) - ((tilesAmountX / 2) - (units->size / 2)) - 1;
+		offsetY = (tilesAmountX / 2) - ((tilesAmountX / 2) - (units->size / 2));
 		for (int i = 0; i < units->size; i++)
 		{
-			Entity* e = units->entities[i];
+			e = units->entities[i];
 			offsetY -= 1;
-			e->setEntityPosition(glm::vec2{ - (offsetX + 1) * currentMap.tileSize, offsetY * currentMap.tileSize });
-			r->newObject(DUPA_CYCE_WADOWICE, glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x - (currentMap.tileSize / 2), e->getPosition().y + (currentMap.tileSize / 2), 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)));
+			e->setEntityPosition(glm::vec2{ - (offsetX + 1) * currentMap.tileSize, (offsetY + 1) * currentMap.tileSize });
+			r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
 		}
 
 	}
 
 	bool moveEntity(glm::vec2 e, Entity* entity) {
 		if(!entityMovementManager.pathExist())
-			entityMovementManager.createEntityPath(Astar::point{ (int)e.x, (int)e.y }, entity);
+			return entityMovementManager.createEntityPath(Astar::point{ (int)e.x, (int)e.y }, entity);
+		return false;
 	}
 
 	void SetSelectedUnitPosition(glm::vec2 v)
@@ -94,6 +97,7 @@ public:
 
 	void update() {
 
+		entityMovementManager.update();
 		mapProgram.use();
 		mapVao.bind();
 
