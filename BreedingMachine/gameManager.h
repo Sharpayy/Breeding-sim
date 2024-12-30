@@ -23,7 +23,7 @@ class gameManager {
 public:
 	Inventory inv;
 
-	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) : instance(InputHandler::getInstance()) {
+	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd, rasticore::VertexBuffer mapVao, rasticore::Program mapPrg) : instance(InputHandler::getInstance()) {
 		this->rect_mcd = rect_mcd;
 		this->r = r_;
 		std::filesystem::path path = std::filesystem::current_path();
@@ -33,7 +33,7 @@ public:
 		movementManager = SquadMovementManager{ collisionPath, 4096, 16, r_, rect_mcd };
 		buildingManager = BuildingManager{ buildingPath };
 		factionManager = FactionManager{r_, rect_mcd, 16};
-		battleManager = EntityBattleManager{ r, rect_mcd };
+		battleManager = EntityBattleManager{ r, rect_mcd, mapPrg, mapVao };
 		cameraOffset = CameraOffset{ 0, 0, 500.0f };
 		initGame(path);
 		game_type = GAMETYPE_BIGMAP;
@@ -66,6 +66,7 @@ public:
 
 		if (game_type == GAMETYPE_FIGHT)
 		{
+			battleManager.SetSelectedUnitPosition(getCorrectedMousePosition());
 			battleManager.update();
 		}
 		//Test sln
@@ -149,11 +150,6 @@ public:
 		return glm::vec2{ x,y };
 	}
 
-	void StartBattle(Squad* s0, Squad* s1)
-	{
-
-	}
-
 	glm::vec2 getCorrectedMousePosition() {
 		glm::vec2 mousePos = getMousePosition();
 		glm::vec2 screen = glm::vec2(MAP_WIDTH,MAP_HEIGHT);
@@ -230,31 +226,32 @@ private:
 		auto gwin = inv.getGWindow("inventory");
 		
 		//przyciski do zmiany na kolejny panel ekwipunku
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(0, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(20 + 10, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(40 + 20, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(60 + 30, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(0, 5, 0.5f), "penes", LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(20 + 10, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(40 + 20, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(60 + 30, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//labelka z napisem inventory + które okienko
-		gwin->AddComponent(new GComponentButton(glm::vec2(60, 20), glm::vec3(140, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(60, 20), glm::vec3(140, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//przycisk do zamkniêcia okienka
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(300, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(300, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		for (int i = 35; i < height - 75; i += 35) {
 			for (int j = 5; j < width - 15; j += 35) {
 				inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
 			}
 		}
 		//labelka z szmeklami
-		gwin->AddComponent(new GComponentSlider(glm::vec2(60, 20), glm::vec3(140, 300, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png"), LoadTextureFromFile("Data\\angy.png")));
+		gwin->AddComponent(new GComponentSlider(glm::vec2(60, 20), glm::vec3(140, 300, 0.5f), "penes", LoadTextureFromFile("Data\\red.png"), LoadTextureFromFile("Data\\angy.png")));
 
 		inv.ActivateWindow("inventory");
 	}
+	
 	void initCharInv(int width, int height, uint64_t texItemFrame) {
 		inv.AddWindow("char_inv", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("char_inv");
 		//nazwa ch³opa
-		gwin->AddComponent(new GComponentButton(glm::vec2(40, 20), glm::vec3(55, 0, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(40, 20), glm::vec3(55, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//wyjœcie
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(130, 0, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(130, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//sloty
 		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(60, 30), 30.0f, 30.0f, HELMET), texItemFrame);
 		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(60, 60), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
@@ -280,10 +277,12 @@ private:
 		factionManager.CreateNewFaction(MODEL_BANDITS, "Data\\bandit.png", "Bandit", buildingManager.getRaceBuildings(MODEL_BANDITS));
 		factionManager.CreateNewFaction(MODEL_ANIMALS, "Data\\animal.png", "Furry", buildingManager.getRaceBuildings(MODEL_ANIMALS));
 		
+		battleManager.createBattleMap("BattleMap0", LoadTextureFromFile("Data\\mm.png"), std::filesystem::path(), 1024.0f, 64.0f);
+
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
-		//initPrimaryInv(400, 400, texItemFrame);
-		initCharInv(400, 400, texItemFrame);
+		initItems();
+		initPrimaryInv();
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		//inv.ActivateWindow("main_player_eq");
 		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
@@ -367,6 +366,10 @@ private:
 						squadF,
 						player,
 					};
+					r->setCameraMatrix(glm::lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), (glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(0.0f, 1.0f, 0.0f)));
+					r->UpdateShaderData();
+					cameraOffset.x = 0.0f;
+					cameraOffset.y = 0.0f;
 					battleManager.startBattle(battleData);
 					return;
 				}

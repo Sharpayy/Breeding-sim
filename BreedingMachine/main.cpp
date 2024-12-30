@@ -253,12 +253,6 @@ int main(int argc, char* argv[])
 	fightMapProgram.programAddShader(fightMapFrag.id);
 	fightMapProgram.programCompile();
 
-	char dd[1024];
-	int dda = fightMapProgram.programGetDebugInfo(dd, 1024);
-
-	if (dda == 0)
-		puts(dd);
-
 	fightMapProgram.use();
 
 	rasticore::Program _program_n = rasticore::Program();
@@ -336,12 +330,12 @@ int main(int argc, char* argv[])
 	mat4 gui_projection_matrix = ortho(0.0f, MAP_WIDTH, MAP_HEIGHT, 0.0f, -1000.0f, 1000.0f);
 
 	//TESTS
-
+	
 	RS_ENABLE_FRATURE(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
-	gameManager gmanager(&_r, rect_mcd);
+	gameManager gmanager(&_r, rect_mcd, gm.rChunkVao, fightMapProgram);
 
 	gameManager::CameraOffset cameraOffset;
 	float tick = 0;
@@ -384,7 +378,7 @@ int main(int argc, char* argv[])
 			glUniform1f(fightScaleX, 1024.0f);
 			glUniform1f(fightScaleY, 1024.0f);
 
-			glUniform2f(fightMapTil, 64.0f, 64.0f);
+			glUniform2f(fightMapTil, 30.0f, 30.0f);
 
 			glUniform2f(fightMapDim, 1024.0f, 1024.0f);
 			vec2 mp = gmanager.getCorrectedMousePosition();
