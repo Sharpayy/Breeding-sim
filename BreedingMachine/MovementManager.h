@@ -205,7 +205,7 @@ public:
 
 	void update() {
 		moveEntity();
-		SDL_Delay(10);
+		//SDL_Delay(10);
 	}
 
 	uint8_t getMapTileSize() {
@@ -219,18 +219,19 @@ public:
 private:
 	void moveEntity() {
 		if (!entityMovementData.entity) return;
-		
+
 		Astar::point prevAP, nextAP;
 		glm::vec2 prevPosition, nextPosition, currentPosition;
-		float offset = tileSize / 2.0f;
+;
 
-		prevAP = entityMovementData.path.at(0);
-		nextAP = entityMovementData.path.at(1);
 		if (entityMovementData.path.size() >= 2) {
-			prevPosition = glm::vec2{ prevAP.x + offset, prevAP.y + offset };
-			nextPosition = glm::vec2{ nextAP.x + offset, nextAP.y + offset };
-			float speed = 0.0001;
-			entityMovementData.dt += speed;
+			prevAP = entityMovementData.path.at(0);
+			nextAP = entityMovementData.path.at(1);
+
+			prevPosition = glm::vec2{ prevAP.x, prevAP.y };
+			nextPosition = glm::vec2{ nextAP.x, nextAP.y };
+			float speed = 0.01f;
+			entityMovementData.dt = glm::clamp(0.0f, 1.0f, speed + entityMovementData.dt);
 			currentPosition = lerp(prevPosition, nextPosition, entityMovementData.dt);
 			entityMovementData.entity->setEntityPosition(currentPosition);
 			if (currentPosition == nextPosition) {
@@ -238,7 +239,9 @@ private:
 				entityMovementData.dt = 0;
 			}
 		}
-		else entityMovementData = {};
+		else {
+			entityMovementData = {};
+		}
 	}
 
 	void loadCollisionData(std::filesystem::path path) {
