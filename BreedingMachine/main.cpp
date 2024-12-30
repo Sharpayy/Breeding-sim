@@ -346,7 +346,7 @@ int main(int argc, char* argv[])
 
 		cameraOffset = gmanager.getCameraOffset();
 		_r.setCameraMatrix(lookAt(vec3(cameraOffset.x, cameraOffset.y, 100.0f), (vec3(cameraOffset.x, cameraOffset.y, 1.0f)), vec3(0.0f, 1.0f, 0.0f)));
-		_r.setProjectionMatrix(ortho(-cameraOffset.z, cameraOffset.z, -cameraOffset.z, cameraOffset.z, -1000.0f, 1000.0f));
+		_r.setProjectionMatrix(ortho(-MAP_WIDTH/2.0f * cameraOffset.z, MAP_WIDTH / 2.0f * cameraOffset.z, -MAP_HEIGHT/2.0f * cameraOffset.z, MAP_HEIGHT / 2.0f * cameraOffset.z, -1000.0f, 1000.0f));
 		_r.UpdateShaderData();
 
 		

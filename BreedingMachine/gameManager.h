@@ -34,7 +34,7 @@ public:
 		buildingManager = BuildingManager{ buildingPath };
 		factionManager = FactionManager{r_, rect_mcd, 16};
 		battleManager = EntityBattleManager{ r, rect_mcd, mapPrg, mapVao };
-		cameraOffset = CameraOffset{ 0, 0, 500.0f };
+		cameraOffset = CameraOffset{ 0, 0, 1.0f };
 		initGame(path);
 		game_type = GAMETYPE_BIGMAP;
 
@@ -98,10 +98,10 @@ public:
 			cameraOffset.x += 20;
 		}
 		if (instance.KeyPressed(SDL_SCANCODE_Q)) {
-			cameraOffset.z -= 20.0f;
+			cameraOffset.z *= 0.9f;
 		}
 		if (instance.KeyPressed(SDL_SCANCODE_E)) {
-			cameraOffset.z += 20.0f;
+			cameraOffset.z *= 1.1f;
 		}
 		if (instance.KeyPressed(SDL_SCANCODE_R))
 		{
