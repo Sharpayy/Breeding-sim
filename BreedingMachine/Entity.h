@@ -49,12 +49,19 @@ private:
 class EntityItem : public Item {
 public:
 	EntityItem(Entity* entity = nullptr) {
+		this->itemName = "SOME ENTITY";
+		this->object = (void*)entity->getTexture();
 		this->entity = entity;
-		objType = ENTITY;
+		this->objType = ENTITY;
+		this->price = 0;
 	}
 
 	Entity* getEntity() {
 		return entity;
+	}
+
+	void* getItemTexture() {
+		return object;
 	}
 private:
 	Entity* entity;

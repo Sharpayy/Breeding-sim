@@ -13,8 +13,6 @@
 #include "EntityBattleManager.h"
 
 #define THRESHOLD 10.0f
-#define MAP_WIDTH 1400.0f
-#define MAP_HEIGHT 800.0f
 
 #define GAMETYPE_BIGMAP		1
 #define GAMETYPE_FIGHT		2
@@ -23,7 +21,10 @@ class gameManager {
 public:
 	Inventory inv;
 
-	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd, rasticore::VertexBuffer mapVao, rasticore::Program mapPrg) : instance(InputHandler::getInstance()) {
+	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd, rasticore::VertexBuffer mapVao, rasticore::Program mapPrg) :
+		instance(InputHandler::getInstance()),
+		battleManager(r_, rect_mcd, mapPrg, mapVao)
+	{
 		this->rect_mcd = rect_mcd;
 		this->r = r_;
 		std::filesystem::path path = std::filesystem::current_path();
@@ -33,7 +34,6 @@ public:
 		movementManager = SquadMovementManager{ collisionPath, 4096, 16, r_, rect_mcd };
 		buildingManager = BuildingManager{ buildingPath };
 		factionManager = FactionManager{r_, rect_mcd, 16};
-		battleManager = EntityBattleManager{ r, rect_mcd, mapPrg, mapVao };
 		itemLoader = ItemLoader();
 		cameraOffset = CameraOffset{ 0, 0, 1.0f };
 		initGame(path);
@@ -44,7 +44,7 @@ public:
 	}
 	
 	void update() {
-		inputHandler();
+		instance.handleKeys();
 		//auto pos = getMousePosition();
 		//Astar::point p;
 		//for (auto& squad : squads) {
@@ -53,6 +53,7 @@ public:
 
 		if (game_type == GAMETYPE_BIGMAP)
 		{
+			inputHandler();
 			movementManager.update();
 			handleSquadLogic();
 			r->RenderSelectedModel(MODEL_PLAYER);
@@ -85,7 +86,6 @@ public:
 	}
 
 	void inputHandler() {
-		instance.handleKeys();
 		if (instance.KeyPressed(SDL_SCANCODE_W)) {
 			cameraOffset.y += 20;
 		}
@@ -103,6 +103,21 @@ public:
 		}
 		if (instance.KeyPressed(SDL_SCANCODE_E)) {
 			cameraOffset.z *= 1.1f;
+		}
+		if (instance.KeyPressedOnce(SDL_SCANCODE_I))
+		{
+			if (!inv.isWindowActive("party_view")) {
+				inv.ActivateWindow("party_view");
+				std::vector<Slot*> slots = inv.getAllSlotsFromWindow("party_view");
+				auto playerComp = player->getSquadComp();
+				for (int i = 0; i < playerComp->size; i++) {
+					EntityItem* eitm = new EntityItem(playerComp->entities[i]);
+					eitm->setAsset((void*)LoadTextureFromFile("Data\\Goblin.png"));
+					slots.at(i)->changeItem((Item*)eitm);
+				}
+				auto z = 1;
+			}
+			else inv.DisableWindow("party_view");
 		}
 		if (instance.KeyPressed(SDL_SCANCODE_R))
 		{
@@ -271,7 +286,7 @@ private:
 		//labelka z szmeklami
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width / 2, height - 35, 0.5f), "szmekle zydowskie: ", LoadTextureFromFile("Data\\red.png")));
 
-		inv.ActivateWindow("inventory");
+		//inv.ActivateWindow("inventory");
 	}
 
 	void initCharInv(int width, int height, uint64_t texItemFrame, Entity entity) {
@@ -289,7 +304,7 @@ private:
 		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 90), 30.0f, 30.0f, LEGS), texItemFrame);
 		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 120), 30.0f, 30.0f, BOOTS), texItemFrame);
 		//staty
-		inv.ActivateWindow("char_inv");
+		//inv.ActivateWindow("char_inv");
 	}
 
 	void initSquadViewer(int width, int height, uint64_t texItemFrame) {
@@ -304,7 +319,7 @@ private:
 				gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(j + 20, i + 60, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 			}
 		}
-		inv.ActivateWindow("party_view");
+		//inv.ActivateWindow("party_view");
 	}
 
 	void initGame(std::filesystem::path path) {
@@ -492,8 +507,8 @@ private:
 				if (glm::distance(squadF->getSquadPosition(), player->getSquadPosition()) <= 4.0f) {
 					game_type = GAMETYPE_FIGHT;
 					EntityBattleManager::BattleData battleData = {
-						squadF,
 						player,
+						squadF,
 					};
 					r->setCameraMatrix(glm::lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), (glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(0.0f, 1.0f, 0.0f)));
 					r->UpdateShaderData();
