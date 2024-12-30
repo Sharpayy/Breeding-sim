@@ -2,17 +2,17 @@
 #include <iostream>
 #include "glm/vec2.hpp"
 #include "EntityStatistics.h"
-#include "inventory.h"
+#include "Item.h"
 
 class Entity {
 public:
 	struct EquipedItems {
-		Armor* helmet = nullptr;
-		Armor* Chestplate = nullptr;
-		Armor* Legs = nullptr;
-		Armor* Boots = nullptr;
-		Weapon* weapon_primary = nullptr;
-		Weapon* weapon_secondary = nullptr;
+		ArmorItem* helmet = nullptr;
+		ArmorItem* Chestplate = nullptr;
+		ArmorItem* Legs = nullptr;
+		ArmorItem* Boots = nullptr;
+		WeaponItem* weapon_primary = nullptr;
+		WeaponItem* weapon_secondary = nullptr;
 
 	};
 public:
@@ -44,4 +44,18 @@ private:
 	Stats stats;
 	uint64_t texture;
 	EquipedItems items;
+};
+
+class EntityItem : public Item {
+public:
+	EntityItem(Entity* entity = nullptr) {
+		this->entity = entity;
+		objType = ENTITY;
+	}
+
+	Entity* getEntity() {
+		return entity;
+	}
+private:
+	Entity* entity;
 };

@@ -224,7 +224,7 @@ void CreateMeshes(objl::Loader* ldr, rasticore::RastiCoreRender* r, int of, rast
 
 int main(int argc, char* argv[])
 {
-	rasticore::RastiCoreWindow _win = rasticore::RastiCoreWindow("Rasticore test!", 800, 800, SDL_WINDOW_OPENGL);
+	rasticore::RastiCoreWindow _win = rasticore::RastiCoreWindow("Rasticore test!", MAP_WIDTH, MAP_HEIGHT, SDL_WINDOW_OPENGL);
 	_win.glCreateContext();
 
 	glewInit();
@@ -333,7 +333,7 @@ int main(int argc, char* argv[])
 	RS_ENABLE_FRATURE(GL_DEPTH_TEST);
 	RS_BACKGROUND_CLEAR_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
-	mat4 gui_projection_matrix = ortho(0.0f, 800.0f, 800.0f, 0.0f, -1000.0f, 1000.0f);
+	mat4 gui_projection_matrix = ortho(0.0f, MAP_WIDTH, MAP_HEIGHT, 0.0f, -1000.0f, 1000.0f);
 
 	//TESTS
 
@@ -384,7 +384,7 @@ int main(int argc, char* argv[])
 			glUniform1f(fightScaleX, 1024.0f);
 			glUniform1f(fightScaleY, 1024.0f);
 
-			glUniform2f(fightMapTil, 30.0f, 30.0f);
+			glUniform2f(fightMapTil, 64.0f, 64.0f);
 
 			glUniform2f(fightMapDim, 1024.0f, 1024.0f);
 			vec2 mp = gmanager.getCorrectedMousePosition();

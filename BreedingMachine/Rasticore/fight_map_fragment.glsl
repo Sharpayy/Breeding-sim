@@ -20,10 +20,10 @@ void main()
     
     //vec2 uv = gl_FragCoord.xy/MapDimensions.xy;
     
-    float tx = MapTiles.x;//30.0;
-    float ty = MapTiles.y;//30.0;
+    float tx = MapTiles.x;//32.0;
+    float ty = MapTiles.y;//32.0;
 
-    vec2 b_px = vec2(1.0);
+    vec2 b_px = vec2(0.0);
     vec2 bd = vec2(b_px.x / (MapDimensions.x / tx), b_px.y / (MapDimensions.y / ty));
     
     vec2 t_id = floor(uv * vec2(tx, ty));
@@ -32,7 +32,7 @@ void main()
     vec2 mt_id = floor((MouseCoord.xy/MapDimensions.xy) * vec2(tx, ty));
 
     vec2 unit_position = mt_id;
-    float unit_distance = 2.1;
+    float unit_distance = 5.1;
     
     float d_up_t = distance(unit_position, t_id);
     float ps = step(unit_distance, d_up_t);

@@ -13,6 +13,8 @@
 #include "EntityBattleManager.h"
 
 #define THRESHOLD 10.0f
+#define MAP_WIDTH 1400.0f
+#define MAP_HEIGHT 800.0f
 
 #define GAMETYPE_BIGMAP		1
 #define GAMETYPE_FIGHT		2
@@ -110,7 +112,7 @@ public:
 			auto mp = getMousePosition();
 			Slot* slot = inv.getSlot(mp);
 
-			Armor item = Armor();
+			ArmorItem item = ArmorItem();
 			item.setAsset((void*)LoadTextureFromFile("Data\\EquipmentIconsC2.png"));
 			
 			if (slot != nullptr)
@@ -154,7 +156,7 @@ public:
 
 	glm::vec2 getCorrectedMousePosition() {
 		glm::vec2 mousePos = getMousePosition();
-		glm::vec3 screen = glm::vec3(800.0f);
+		glm::vec2 screen = glm::vec2(MAP_WIDTH,MAP_HEIGHT);
 
 		glm::vec4 nds;
 		nds.x = (2.0f * (float)mousePos.x) / screen.x - 1.0f;
@@ -186,46 +188,47 @@ public:
 private:
 	void initItems() {
 		//Weaponry
-		Weapon bastard_sword = {"bastard sword", (void*) LoadTextureFromFile("","EquipmentIconsC2"), MELEE, new Weapon::ObjectStatistic{0}, 0};
-		Weapon spear = { "spear", (void*)LoadTextureFromFile("","EquipmentIconsC61"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
-		Weapon hatchet = { "hatchet", (void*)LoadTextureFromFile("","EquipmentIconsC57"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
-		Weapon short_bow = { "short bow", (void*)LoadTextureFromFile("","EquipmentIconsC103"), RANGED, new Weapon::ObjectStatistic{0}, 0 };
-		Weapon crossbow = { "crossbow", (void*)LoadTextureFromFile("","EquipmentIconsC121"), RANGED, new Weapon::ObjectStatistic{0}, 0 };
-		Weapon morningstar = { "morningstar", (void*)LoadTextureFromFile("","EquipmentIconsC29"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
-		Weapon sickle_blade = { "sickle_blade", (void*)LoadTextureFromFile("","EquipmentIconsC15"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
-		Weapon berserker_blade = { "berserker blade", (void*)LoadTextureFromFile("","EquipmentIconsC13"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
-		Weapon battlehammer = { "battlehammer", (void*)LoadTextureFromFile("","EquipmentIconsC31"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
-		Weapon trident = { "trident", (void*)LoadTextureFromFile("","EquipmentIconsC65"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
-		Weapon battleaxe = { "battleaxe", (void*)LoadTextureFromFile("","EquipmentIconsC49"), MELEE, new Weapon::ObjectStatistic{0}, 0 };
+		WeaponItem bastard_sword = {"bastard sword", (void*) LoadTextureFromFile("","EquipmentIconsC2"), MELEE, new WeaponItem::ObjectStatistic{0}, 0};
+		WeaponItem spear = { "spear", (void*)LoadTextureFromFile("","EquipmentIconsC61"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		WeaponItem hatchet = { "hatchet", (void*)LoadTextureFromFile("","EquipmentIconsC57"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		WeaponItem short_bow = { "short bow", (void*)LoadTextureFromFile("","EquipmentIconsC103"), RANGED, new WeaponItem::ObjectStatistic{0}, 0 };
+		WeaponItem crossbow = { "crossbow", (void*)LoadTextureFromFile("","EquipmentIconsC121"), RANGED, new WeaponItem::ObjectStatistic{0}, 0 };
+		WeaponItem morningstar = { "morningstar", (void*)LoadTextureFromFile("","EquipmentIconsC29"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		WeaponItem sickle_blade = { "sickle_blade", (void*)LoadTextureFromFile("","EquipmentIconsC15"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		WeaponItem berserker_blade = { "berserker blade", (void*)LoadTextureFromFile("","EquipmentIconsC13"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		WeaponItem battlehammer = { "battlehammer", (void*)LoadTextureFromFile("","EquipmentIconsC31"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		WeaponItem trident = { "trident", (void*)LoadTextureFromFile("","EquipmentIconsC65"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		WeaponItem battleaxe = { "battleaxe", (void*)LoadTextureFromFile("","EquipmentIconsC49"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
 		//Armory
-		Armor iron_chestplate = { "iron chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC193"), CHESTPLATE, new Armor::ObjectStatistic{0}, 0 };
-		Armor iron_greaves = { "iron greaves", (void*)LoadTextureFromFile("","EquipmentIconsC217"), LEGS, new Armor::ObjectStatistic{0}, 0 };
-		Armor iron_cap = { "iron cap", (void*)LoadTextureFromFile("","EquipmentIconsC166"), HELMET, new Armor::ObjectStatistic{0}, 0 };
+		ArmorItem iron_chestplate = { "iron chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC193"), CHESTPLATE, new ArmorItem::ObjectStatistic{0}, 0 };
+		ArmorItem iron_greaves = { "iron greaves", (void*)LoadTextureFromFile("","EquipmentIconsC217"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
+		ArmorItem iron_cap = { "iron cap", (void*)LoadTextureFromFile("","EquipmentIconsC166"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
 
-		Armor guardian_helmet = { "guardian helmet", (void*)LoadTextureFromFile("","EquipmentIconsC179"), HELMET, new Armor::ObjectStatistic{0}, 0 };
-		Armor guardian_chestplate = { "guardian chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC199"), CHESTPLATE, new Armor::ObjectStatistic{0}, 0 };
-		Armor guardian_greaves = { "guardian greaves", (void*)LoadTextureFromFile("","EquipmentIconsC216"), LEGS, new Armor::ObjectStatistic{0}, 0 };
+		ArmorItem guardian_helmet = { "guardian helmet", (void*)LoadTextureFromFile("","EquipmentIconsC179"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
+		ArmorItem guardian_chestplate = { "guardian chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC199"), CHESTPLATE, new ArmorItem::ObjectStatistic{0}, 0 };
+		ArmorItem guardian_greaves = { "guardian greaves", (void*)LoadTextureFromFile("","EquipmentIconsC216"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
 
-		Armor copper_helmet = { "copper helmet", (void*)LoadTextureFromFile("","EquipmentIconsC163"), HELMET, new Armor::ObjectStatistic{0}, 0 };
-		Armor copper_chestplate = { "copper chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC183"), CHESTPLATE, new Armor::ObjectStatistic{0}, 0 };
-		Armor copper_greaves = { "copper greaves", (void*)LoadTextureFromFile("","EquipmentIconsC204"), LEGS, new Armor::ObjectStatistic{0}, 0 };
+		ArmorItem copper_helmet = { "copper helmet", (void*)LoadTextureFromFile("","EquipmentIconsC163"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
+		ArmorItem copper_chestplate = { "copper chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC183"), CHESTPLATE, new ArmorItem::ObjectStatistic{0}, 0 };
+		ArmorItem copper_greaves = { "copper greaves", (void*)LoadTextureFromFile("","EquipmentIconsC204"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
 
-		Armor cap = { "cap", (void*)LoadTextureFromFile("","EquipmentIconsC161"), HELMET, new Armor::ObjectStatistic{0}, 0 };
-		Armor clothes = { "clothes", (void*)LoadTextureFromFile("","EquipmentIconsC181"), CHESTPLATE, new Armor::ObjectStatistic{0}, 0 };
-		Armor rags = { "rags", (void*)LoadTextureFromFile("","EquipmentIconsC202"), LEGS, new Armor::ObjectStatistic{0}, 0 };
+		ArmorItem cap = { "cap", (void*)LoadTextureFromFile("","EquipmentIconsC161"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
+		ArmorItem clothes = { "clothes", (void*)LoadTextureFromFile("","EquipmentIconsC181"), CHESTPLATE, new ArmorItem::ObjectStatistic{0}, 0 };
+		ArmorItem rags = { "rags", (void*)LoadTextureFromFile("","EquipmentIconsC202"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
 
-		Armor darkwraith_helmet = { "darkwraith helmet", (void*)LoadTextureFromFile("","EquipmentIconsC176"), HELMET, new Armor::ObjectStatistic{0}, 0 };
-		Armor darkwraith_chestplate = { "darkwraith chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC191"), CHESTPLATE, new Armor::ObjectStatistic{0}, 0 };
-		Armor darkwraith_greaves = { "darkwraith greaves", (void*)LoadTextureFromFile("","EquipmentIconsC207"), LEGS, new Armor::ObjectStatistic{0}, 0 };
+		ArmorItem darkwraith_helmet = { "darkwraith helmet", (void*)LoadTextureFromFile("","EquipmentIconsC176"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
+		ArmorItem darkwraith_chestplate = { "darkwraith chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC191"), CHESTPLATE, new ArmorItem::ObjectStatistic{0}, 0 };
+		ArmorItem darkwraith_greaves = { "darkwraith greaves", (void*)LoadTextureFromFile("","EquipmentIconsC207"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
 
-		Armor copper_cap = { "copper cap", (void*)LoadTextureFromFile("","EquipmentIconsC162"), HELMET, new Armor::ObjectStatistic{0}, 0 };
-		Armor copper_vest = { "copper vest", (void*)LoadTextureFromFile("","EquipmentIconsC182"), CHESTPLATE, new Armor::ObjectStatistic{0}, 0 };
-		Armor leather_greaves = { "leather greaves", (void*)LoadTextureFromFile("","EquipmentIconsC203"), LEGS, new Armor::ObjectStatistic{0}, 0 };
+		ArmorItem copper_cap = { "copper cap", (void*)LoadTextureFromFile("","EquipmentIconsC162"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
+		ArmorItem copper_vest = { "copper vest", (void*)LoadTextureFromFile("","EquipmentIconsC182"), CHESTPLATE, new ArmorItem::ObjectStatistic{0}, 0 };
+		ArmorItem leather_greaves = { "leather greaves", (void*)LoadTextureFromFile("","EquipmentIconsC203"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
 	}
 
 	void initPrimaryInv(int width, int height, uint64_t texItemFrame) {
 		inv.AddWindow("inventory", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("inventory");
+		
 		//przyciski do zmiany na kolejny panel ekwipunku
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(0, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(20 + 10, 5, 2.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
@@ -279,8 +282,8 @@ private:
 		
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
-		initItems();
-		initPrimaryInv();
+		//initPrimaryInv(400, 400, texItemFrame);
+		initCharInv(400, 400, texItemFrame);
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		//inv.ActivateWindow("main_player_eq");
 		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
