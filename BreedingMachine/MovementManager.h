@@ -143,7 +143,7 @@ private:
 
 	//time = current time;
 	float calculateSquadMovementSpeed(Squad& squad, float dist, float t = 1.0f) {
-		float armySizeFactor = 1.0f - ((float)squad.getArmySize() / (float)SQUAD_MAX_SIZE);
+		float armySizeFactor = 1.0f - (std::log2(1 + squad.getArmySize()) / (float)SQUAD_MAX_SIZE);
 		float totalSpeed = t * armySizeFactor / (dist / (float)STANDARD_SPEED);
 		SquadMovementInfo& data = squadsMovementData[squad.getSquadID()];
 		data.dt = glm::clamp(data.dt + totalSpeed, 0.0f, 1.0f);

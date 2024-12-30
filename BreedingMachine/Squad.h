@@ -30,8 +30,12 @@ public:
 	};
 	Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position) {
 		squadComp = new SquadComp{};
-		squadComp->entities[0] = new Entity{};
-		squadComp->size = 1;
+		//squadComp->entities[0] = new Entity{};
+		//squadComp->size = 1;
+		squadComp->size = rand() % SQUAD_MAX_SIZE;
+		for (int i = 0; i < squadComp->size; i++) {
+			squadComp->entities[i] = new Entity{};
+		}
 		this->squadID = squadID;
 		this->position = position;
 		this->factionID = factionID;

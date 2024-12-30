@@ -56,23 +56,28 @@ public:
 		std::advance(it, idx);
 		currentMap = it->second;
 		entityMovementManager = EntityMovementManager{ currentMap.path, currentMap.mapSize, currentMap.tileSize, r, rect_mcd };
-
 		Squad::SquadComp* units = data.s1->getSquadComp();
 		
+		int tilesAmountX, offsetY, offsetX;
+		tilesAmountX = currentMap.mapSize / currentMap.tileSize;
+		offsetY = (tilesAmountX / 2) - ((tilesAmountX / 2) - (units->size / 2));
+		offsetX = -(tilesAmountX / 2);
 		for (int i = 0; i < units->size; i++)
 		{
 			Entity* e = units->entities[i];
-			e->setEntityPosition(glm::vec2{ 0,0 });
-			r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)));
+			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize, offsetY * currentMap.tileSize });
+			offsetY -= 1;
+			r->newObject(DUPA_CYCE_WADOWICE, glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x - (currentMap.tileSize / 2), e->getPosition().y + (currentMap.tileSize / 2), 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)));
 		}
 
 		units = data.s2->getSquadComp();
-
+		offsetY = (tilesAmountX / 2) - ((tilesAmountX / 2) - (units->size / 2)) - 1;
 		for (int i = 0; i < units->size; i++)
 		{
 			Entity* e = units->entities[i];
-			e->setEntityPosition(glm::vec2{ 0,0 });
-			r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)));
+			offsetY -= 1;
+			e->setEntityPosition(glm::vec2{ - (offsetX + 1) * currentMap.tileSize, offsetY * currentMap.tileSize });
+			r->newObject(DUPA_CYCE_WADOWICE, glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x - (currentMap.tileSize / 2), e->getPosition().y + (currentMap.tileSize / 2), 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)));
 		}
 
 	}

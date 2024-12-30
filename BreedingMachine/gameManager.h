@@ -277,7 +277,7 @@ private:
 		factionManager.CreateNewFaction(MODEL_BANDITS, "Data\\bandit.png", "Bandit", buildingManager.getRaceBuildings(MODEL_BANDITS));
 		factionManager.CreateNewFaction(MODEL_ANIMALS, "Data\\animal.png", "Furry", buildingManager.getRaceBuildings(MODEL_ANIMALS));
 		
-		battleManager.createBattleMap("BattleMap0", LoadTextureFromFile("Data\\mm.png"), std::filesystem::path(), 1024.0f, 64.0f);
+		battleManager.createBattleMap("BattleMap0", LoadTextureFromFile("Data\\BattleMaps\\map.jpg"), std::filesystem::path(), 1024.0f, 64.0f);
 
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
@@ -360,20 +360,7 @@ private:
 			if (squadF == player) continue;
 			id = squadF->getSquadID();
 			for (auto& squadS : factionManager.getAllSquads()) {
-				if (glm::distance(squadF->getSquadPosition(), player->getSquadPosition()) <= 4.0f) {
-					game_type = GAMETYPE_FIGHT;
-					EntityBattleManager::BattleData battleData = {
-						squadF,
-						player,
-					};
-					r->setCameraMatrix(glm::lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), (glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(0.0f, 1.0f, 0.0f)));
-					r->UpdateShaderData();
-					cameraOffset.x = 0.0f;
-					cameraOffset.y = 0.0f;
-					battleManager.startBattle(battleData);
-					return;
-				}
-				else if (squadF != squadS) {
+				if (squadF != squadS) {
 					handleSquadState(squadF, squadS);
 					handleSquadStateLogic(squadF);
 				}
@@ -457,7 +444,19 @@ private:
 		float distance = calculateSquadViewDistance(squadF);
 		if (factionManager.getFactionsRelationships(squadS->getSquadFactionID(), squadF->getSquadFactionID()) == ENEMY) {
 			if (glm::distance(squadF->getSquadPosition(), squadS->getSquadPosition()) <= distance) {
-				//if (abs(squadF->force - squadS->force) >= THRESHOLD) {
+				if (glm::distance(squadF->getSquadPosition(), player->getSquadPosition()) <= 4.0f) {
+					game_type = GAMETYPE_FIGHT;
+					EntityBattleManager::BattleData battleData = {
+						squadF,
+						player,
+					};
+					r->setCameraMatrix(glm::lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), (glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(0.0f, 1.0f, 0.0f)));
+					r->UpdateShaderData();
+					cameraOffset.x = 0.0f;
+					cameraOffset.y = 0.0f;
+					battleManager.startBattle(battleData);
+					return;
+				}
 				if(squadF->force >= squadS->force) {
 					//if(calculateChance(80)) 
 					squadF->setSquadState(CHASE);
@@ -493,7 +492,6 @@ private:
 		default:
 			break;
 		}
-		
 	}
 	
 	glm::vec2 getCorrectedSquadPosition(glm::vec2 position) {

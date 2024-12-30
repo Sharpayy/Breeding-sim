@@ -369,28 +369,6 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
-
-		if (gmanager.getGameType() == GAMETYPE_FIGHT)
-		{
-			fightMapProgram.use();
-			gm.rChunkVao.bind();
-
-			glUniform1f(fightScaleX, 1024.0f);
-			glUniform1f(fightScaleY, 1024.0f);
-
-			glUniform2f(fightMapTil, 30.0f, 30.0f);
-
-			glUniform2f(fightMapDim, 1024.0f, 1024.0f);
-			vec2 mp = gmanager.getCorrectedMousePosition();
-			glUniform2f(fightMouse, mp.x + 512.0f, mp.y + 512.0f);
-			glUniform1f(fightMoveX, -512.0f);
-			glUniform1f(fightMoveY, -512.0f);
-
-			glUniformHandleui64ARB(1, LoadTextureFromFile("Rasticore\\mm.png"));
-
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		}
 		gmanager.update();
 		gmanager.inv.Render(gui_projection_matrix);
 		gmanager.inv.RenderText(gui_projection_matrix);
