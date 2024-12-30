@@ -6,6 +6,7 @@
 
 class Entity {
 public:
+	uint32_t id;
 	struct EquipedItems {
 		ArmorItem* helmet = nullptr;
 		ArmorItem* Chestplate = nullptr;
@@ -40,7 +41,6 @@ public:
 	//IMPL
 private:
 	glm::vec2 position;
-	uint32_t id;
 	Stats stats;
 	uint64_t texture;
 	EquipedItems items;

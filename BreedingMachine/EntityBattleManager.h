@@ -68,7 +68,7 @@ public:
 			e = units->entities[i];
 			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize, (offsetY + 1) * currentMap.tileSize });
 			offsetY -= 1;
-			r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
+			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
 		}
 		moveEntity({ 0,0 }, e);
 
@@ -79,14 +79,16 @@ public:
 			e = units->entities[i];
 			offsetY -= 1;
 			e->setEntityPosition(glm::vec2{ - (offsetX + 1) * currentMap.tileSize, (offsetY + 1) * currentMap.tileSize });
-			r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
+			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
 		}
 
 	}
 
 	bool moveEntity(glm::vec2 e, Entity* entity) {
-		if(!entityMovementManager.pathExist())
+		if (!entityMovementManager.pathExist())
+		{
 			return entityMovementManager.createEntityPath(Astar::point{ (int)e.x, (int)e.y }, entity);
+		}
 		return false;
 	}
 
@@ -98,6 +100,23 @@ public:
 	void update() {
 
 		entityMovementManager.update();
+		Squad::SquadComp* units = data.s1->getSquadComp();
+
+		Entity* e = nullptr;
+		r->BindActiveModel(DUPA_CYCE_WADOWICE);
+		for (int i = 0; i < units->size; i++)
+		{
+			e = units->entities[i];
+			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)), true);
+		}
+
+		units = data.s2->getSquadComp();
+		for (int i = 0; i < units->size; i++)
+		{
+			e = units->entities[i];
+			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)), true);
+		}
+
 		mapProgram.use();
 		mapVao.bind();
 
