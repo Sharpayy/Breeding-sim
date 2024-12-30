@@ -250,7 +250,21 @@ private:
 		ArmorItem leather_greaves = { "leather greaves", (void*)LoadTextureFromFile("","EquipmentIconsC203"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(leather_greaves);
 	}
+	void initShop(int width, int height, uint64_t texItemFrame) {
+		inv.AddWindow("shop", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = inv.getGWindow("shop");
+		//labelka z napisem inventory + które okienko
+		gwin->AddComponent(new GComponentButton(glm::vec2(60, 20), glm::vec3(140, 5, 0.1f), "Shop", 0));
+		//przycisk do zamkniêcia okienka
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		for (int i = 35; i < height - 35; i += 35) {
+			for (int j = 5; j < width - 15; j += 35) {
+				inv.AddSlotToWindow("shop", Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
+			}
+		}
 
+		inv.ActivateWindow("shop");
+	}
 	void initPrimaryInv(int width, int height, uint64_t texItemFrame) {
 		inv.AddWindow("inventory", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("inventory");
@@ -325,7 +339,7 @@ private:
 
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
-		initSquadViewer(300, 400, texItemFrame);
+		initShop(500, 500, texItemFrame);
 		//initItems();
 		//initPrimaryInv();
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
