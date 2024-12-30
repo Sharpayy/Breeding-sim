@@ -278,7 +278,7 @@ private:
 			}
 		}
 
-		inv.ActivateWindow("shop");
+		//inv.ActivateWindow("shop");
 	}
 	void initPrimaryInv(int width, int height, uint64_t texItemFrame) {
 		inv.AddWindow("inventory", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
