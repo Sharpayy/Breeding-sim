@@ -287,8 +287,27 @@ private:
 		inv.ActivateWindow("overworld_hud");
 	}
 	void initBattleHud() {
-		inv.AddWindow("battle_hud", ObjectDim{ {0, 0},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"));
+		uint64_t texButton = LoadTextureFromFile("Data\\red.png");
+		int y = MAP_HEIGHT - 40;
+		int x = (MAP_WIDTH) / 6;
+		int buttonWidth = 100;
+		int labelWidth = 150;
+		int offsetButton = 10;
+		int offsetLabel = 50;
+		inv.AddWindow("battle_hud", ObjectDim{ {0, y},  int (MAP_WIDTH), 40}, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("battle_hud");
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 1.0f), "Current turn: Player"));
+		x += labelWidth + offsetLabel;
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 1.0f), "Turns passed: 0"));
+		x += labelWidth + offsetLabel;
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 1.0f), "Enemy units : 0"));
+		x += labelWidth + offsetLabel;
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 1.0f), "Player units : 0"));
+		x += labelWidth + offsetButton;
+		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Settings", texButton));
+		x += buttonWidth + offsetButton;
+		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
+		
 		inv.ActivateWindow("battle_hud");
 	}
 	void initShop(int width, int height, uint64_t texItemFrame) {
@@ -387,7 +406,8 @@ private:
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
 		//initShop(500, 500, texItemFrame);
-		initOverworldHud();
+		//initOverworldHud();
+		initBattleHud();
 		//initItems();
 		//initPrimaryInv();
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
