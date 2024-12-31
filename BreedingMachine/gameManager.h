@@ -270,18 +270,20 @@ private:
 		uint64_t texButton = LoadTextureFromFile("Data\\red.png");
 		int y = MAP_HEIGHT - 40;
 		int x = (MAP_WIDTH) / 4;
+		int buttonWidth = 100;
+		int offset = 10;
 		inv.AddWindow("overworld_hud", ObjectDim{ {0, y},  int (MAP_WIDTH), 40}, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("overworld_hud");
 		//labelka z iloœci¹ ch³opa
 		gwin->AddComponent(new GComponentLabel(glm::vec2(150, 20), glm::vec3(x, y, 1.0f), "Squad count: 0/16"));
-		x += 150 + 50;
-		gwin->AddComponent(new GComponentButton(glm::vec2(50, 20), glm::vec3(x, y, 0.1f), "Party", texButton));
-		x += 50 + 50;
-		gwin->AddComponent(new GComponentButton(glm::vec2(50, 20), glm::vec3(x, y, 0.1f), "Inventory", texButton));
-		x += 50 + 50;
-		gwin->AddComponent(new GComponentButton(glm::vec2(50, 20), glm::vec3(x, y, 0.1f), "Settings", texButton));
-		x += 50 + 50;
-		gwin->AddComponent(new GComponentButton(glm::vec2(50, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
+		x += 150;
+		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Party", texButton));
+		x += buttonWidth + offset;
+		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Inventory", texButton));
+		x += buttonWidth + offset;
+		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Settings", texButton));
+		x += buttonWidth + offset;
+		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
 		inv.ActivateWindow("overworld_hud");
 	}
 	void initBattleHud() {
@@ -384,7 +386,7 @@ private:
 
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
-		initShop(500, 500, texItemFrame);
+		//initShop(500, 500, texItemFrame);
 		initOverworldHud();
 		//initItems();
 		//initPrimaryInv();

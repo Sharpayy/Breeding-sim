@@ -287,7 +287,7 @@ public:
 	std::vector<Slot*> getAllSlotsFromWindow(std::string windowName) {
 		Window* win = windowExist(windowName, 0);
 		if (!win) win = windowExist(windowName, 1);
-		else if (!win) return {};
+		if (!win) return {};
 		return win->slots;
 	}
 
