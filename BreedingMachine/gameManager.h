@@ -265,6 +265,30 @@ private:
 		ArmorItem leather_greaves = { "leather greaves", (void*)LoadTextureFromFile("","EquipmentIconsC203"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(leather_greaves);
 	}
+	//jeszcze nie skalowane, póki co statyczne rzeczy które bêd¹ przekazywane jakoœ do funkcji
+	void initOverworldHud() {
+		uint64_t texButton = LoadTextureFromFile("Data\\red.png");
+		int y = MAP_HEIGHT - 40;
+		int x = (MAP_WIDTH) / 4;
+		inv.AddWindow("overworld_hud", ObjectDim{ {0, y},  int (MAP_WIDTH), 40}, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = inv.getGWindow("overworld_hud");
+		//labelka z iloœci¹ ch³opa
+		gwin->AddComponent(new GComponentLabel(glm::vec2(150, 20), glm::vec3(x, y, 1.0f), "Squad count: 0/16"));
+		x += 150 + 50;
+		gwin->AddComponent(new GComponentButton(glm::vec2(50, 20), glm::vec3(x, y, 0.1f), "Party", texButton));
+		x += 50 + 50;
+		gwin->AddComponent(new GComponentButton(glm::vec2(50, 20), glm::vec3(x, y, 0.1f), "Inventory", texButton));
+		x += 50 + 50;
+		gwin->AddComponent(new GComponentButton(glm::vec2(50, 20), glm::vec3(x, y, 0.1f), "Settings", texButton));
+		x += 50 + 50;
+		gwin->AddComponent(new GComponentButton(glm::vec2(50, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
+		inv.ActivateWindow("overworld_hud");
+	}
+	void initBattleHud() {
+		inv.AddWindow("battle_hud", ObjectDim{ {0, 0},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = inv.getGWindow("battle_hud");
+		inv.ActivateWindow("battle_hud");
+	}
 	void initShop(int width, int height, uint64_t texItemFrame) {
 		inv.AddWindow("shop", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("shop");
@@ -272,13 +296,19 @@ private:
 		gwin->AddComponent(new GComponentButton(glm::vec2(60, 20), glm::vec3(140, 5, 0.1f), "Shop", 0));
 		//przycisk do zamkniêcia okienka
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
-		for (int i = 35; i < height - 35; i += 35) {
+		for (int i = 35; i < height - 100; i += 35) {
 			for (int j = 5; j < width - 15; j += 35) {
 				inv.AddSlotToWindow("shop", Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
 			}
 		}
+		//rekruci
+		for (int i = height - 70; i < height - 60; i += 60) {
+			for (int j = 5; j < width - 15; j += 60) {
+				inv.AddSlotToWindow("shop", Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
+			}
+		}
 
-		//inv.ActivateWindow("shop");
+		inv.ActivateWindow("shop");
 	}
 	void initPrimaryInv(int width, int height, uint64_t texItemFrame) {
 		inv.AddWindow("inventory", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
@@ -300,7 +330,7 @@ private:
 		//labelka z szmeklami
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width / 2, height - 35, 0.5f), "szmekle zydowskie: ", LoadTextureFromFile("Data\\red.png")));
 
-		//inv.ActivateWindow("inventory");
+		inv.ActivateWindow("inventory");
 	}
 
 	void initCharInv(int width, int height, uint64_t texItemFrame, Entity entity) {
@@ -318,7 +348,7 @@ private:
 		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 90), 30.0f, 30.0f, LEGS), texItemFrame);
 		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 120), 30.0f, 30.0f, BOOTS), texItemFrame);
 		//staty
-		//inv.ActivateWindow("char_inv");
+		inv.ActivateWindow("char_inv");
 	}
 
 	void initSquadViewer(int width, int height, uint64_t texItemFrame) {
@@ -333,7 +363,7 @@ private:
 				gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(j + 20, i + 60, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 			}
 		}
-		//inv.ActivateWindow("party_view");
+		inv.ActivateWindow("party_view");
 	}
 
 	void initGame(std::filesystem::path path) {
@@ -355,6 +385,7 @@ private:
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
 		initShop(500, 500, texItemFrame);
+		initOverworldHud();
 		//initItems();
 		//initPrimaryInv();
 		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
