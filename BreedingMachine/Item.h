@@ -18,11 +18,10 @@ public:
 		virtual ~ObjectStatistic() = default;
 	};
 public:
-	Item(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic* objStats = {}, uint32_t price = 0) {
+	Item(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objeType = UNDEFINE, uint32_t price = 0) {
 		this->itemName = itemtName;
 		this->object = newItem;
 		this->objType = objeType;
-		this->objStat = objStats;
 		this->price = price;
 	}
 
@@ -30,7 +29,7 @@ public:
 		this->object = asset;
 	}
 
-	void* getItemTexture() {
+	virtual void* getItemTexture() {
 		return object;
 	}
 
@@ -46,10 +45,8 @@ public:
 		return objType;
 	}
 
-	void setItemStats(ObjectStatistic* objStats) {};
-
 	virtual ObjectStatistic* getObjectStatistic() {
-		return objStat;
+		return nullptr;
 	};
 
 	void setItemPrice(uint32_t price) {
@@ -65,7 +62,6 @@ protected:
 	void* object;
 	uint32_t price;
 	uint8_t objType;
-	ObjectStatistic* objStat;
 };
 
 class ArmorItem : public Item {

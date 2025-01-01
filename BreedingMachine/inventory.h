@@ -21,7 +21,7 @@ public:
 			itemMap[item.getItemName()] = new WeaponItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (WeaponItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
 			break;
 		default:
-			itemMap[item.getItemName()] = new Item{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (Item::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			itemMap[item.getItemName()] = new Item{ item.getItemName(), item.getItemTexture(), item.getObjectType(), item.getItemPrice() };
 			break;
 		}
 	}
@@ -249,7 +249,7 @@ public:
 	}
 
 	bool DisableWindow(std::string windowName) {
-		Window* win = windowExist(windowName, 0);
+		Window* win = windowExist(windowName, 1);
 		if (!win) return false;
 		win->height = 0;
 		windowSlots[0].push_back(win);
@@ -278,10 +278,16 @@ public:
 		return windowSlots.at(1);
 	}
 
+	bool isWindowActive(std::string windowName) {
+		Window* win = windowExist(windowName, 1);
+		if (win) return true;
+		else return false;
+	}
+
 	std::vector<Slot*> getAllSlotsFromWindow(std::string windowName) {
 		Window* win = windowExist(windowName, 0);
 		if (!win) win = windowExist(windowName, 1);
-		else if (!win) return {};
+		if (!win) return {};
 		return win->slots;
 	}
 

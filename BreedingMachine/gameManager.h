@@ -13,8 +13,6 @@
 #include "EntityBattleManager.h"
 
 #define THRESHOLD 10.0f
-#define MAP_WIDTH 1400.0f
-#define MAP_HEIGHT 800.0f
 
 #define GAMETYPE_BIGMAP		1
 #define GAMETYPE_FIGHT		2
@@ -23,7 +21,10 @@ class gameManager {
 public:
 	Inventory inv;
 
-	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd, rasticore::VertexBuffer mapVao, rasticore::Program mapPrg) : instance(InputHandler::getInstance()) {
+	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd, rasticore::VertexBuffer mapVao, rasticore::Program mapPrg) :
+		instance(InputHandler::getInstance()),
+		battleManager(r_, rect_mcd, mapPrg, mapVao)
+	{
 		this->rect_mcd = rect_mcd;
 		this->r = r_;
 		std::filesystem::path path = std::filesystem::current_path();
@@ -33,7 +34,7 @@ public:
 		movementManager = SquadMovementManager{ collisionPath, 4096, 16, r_, rect_mcd };
 		buildingManager = BuildingManager{ buildingPath };
 		factionManager = FactionManager{r_, rect_mcd, 16};
-		battleManager = EntityBattleManager{ r, rect_mcd, mapPrg, mapVao };
+		itemLoader = ItemLoader();
 		cameraOffset = CameraOffset{ 0, 0, 1.0f };
 		initGame(path);
 		game_type = GAMETYPE_BIGMAP;
@@ -43,7 +44,7 @@ public:
 	}
 	
 	void update() {
-		inputHandler();
+		instance.handleKeys();
 		//auto pos = getMousePosition();
 		//Astar::point p;
 		//for (auto& squad : squads) {
@@ -52,6 +53,7 @@ public:
 
 		if (game_type == GAMETYPE_BIGMAP)
 		{
+			inputHandler();
 			movementManager.update();
 			handleSquadLogic();
 			r->RenderSelectedModel(MODEL_PLAYER);
@@ -84,7 +86,6 @@ public:
 	}
 
 	void inputHandler() {
-		instance.handleKeys();
 		if (instance.KeyPressed(SDL_SCANCODE_W)) {
 			cameraOffset.y += 20;
 		}
@@ -102,6 +103,21 @@ public:
 		}
 		if (instance.KeyPressed(SDL_SCANCODE_E)) {
 			cameraOffset.z *= 1.1f;
+		}
+		if (instance.KeyPressedOnce(SDL_SCANCODE_I))
+		{
+			if (!inv.isWindowActive("party_view")) {
+				inv.ActivateWindow("party_view");
+				std::vector<Slot*> slots = inv.getAllSlotsFromWindow("party_view");
+				auto playerComp = player->getSquadComp();
+				for (int i = 0; i < playerComp->size; i++) {
+					EntityItem* eitm = new EntityItem(playerComp->entities[i]);
+					eitm->setAsset((void*)LoadTextureFromFile("Data\\Goblin.png"));
+					slots.at(i)->changeItem((Item*)eitm);
+				}
+				auto z = 1;
+			}
+			else inv.DisableWindow("party_view");
 		}
 		if (instance.KeyPressed(SDL_SCANCODE_R))
 		{
@@ -185,82 +201,210 @@ private:
 	void initItems() {
 		//Weaponry
 		WeaponItem bastard_sword = {"bastard sword", (void*) LoadTextureFromFile("","EquipmentIconsC2"), MELEE, new WeaponItem::ObjectStatistic{0}, 0};
+		itemLoader.loadItem(bastard_sword);
 		WeaponItem spear = { "spear", (void*)LoadTextureFromFile("","EquipmentIconsC61"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(spear);
 		WeaponItem hatchet = { "hatchet", (void*)LoadTextureFromFile("","EquipmentIconsC57"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(hatchet);
 		WeaponItem short_bow = { "short bow", (void*)LoadTextureFromFile("","EquipmentIconsC103"), RANGED, new WeaponItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(short_bow);
 		WeaponItem crossbow = { "crossbow", (void*)LoadTextureFromFile("","EquipmentIconsC121"), RANGED, new WeaponItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(crossbow);
 		WeaponItem morningstar = { "morningstar", (void*)LoadTextureFromFile("","EquipmentIconsC29"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(morningstar);
 		WeaponItem sickle_blade = { "sickle_blade", (void*)LoadTextureFromFile("","EquipmentIconsC15"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(sickle_blade);
 		WeaponItem berserker_blade = { "berserker blade", (void*)LoadTextureFromFile("","EquipmentIconsC13"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(berserker_blade);
 		WeaponItem battlehammer = { "battlehammer", (void*)LoadTextureFromFile("","EquipmentIconsC31"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(battlehammer);
 		WeaponItem trident = { "trident", (void*)LoadTextureFromFile("","EquipmentIconsC65"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(trident);
 		WeaponItem battleaxe = { "battleaxe", (void*)LoadTextureFromFile("","EquipmentIconsC49"), MELEE, new WeaponItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(battleaxe);
 		//Armory
 		ArmorItem iron_chestplate = { "iron chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC193"), CHESTPLATE, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(iron_chestplate);
 		ArmorItem iron_greaves = { "iron greaves", (void*)LoadTextureFromFile("","EquipmentIconsC217"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(iron_greaves);
 		ArmorItem iron_cap = { "iron cap", (void*)LoadTextureFromFile("","EquipmentIconsC166"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(iron_cap);
+		ArmorItem iron_boots = { "iron boots", (void*)LoadTextureFromFile("","EquipmentIconsC237"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(iron_boots);
 
 		ArmorItem guardian_helmet = { "guardian helmet", (void*)LoadTextureFromFile("","EquipmentIconsC179"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(guardian_helmet);
 		ArmorItem guardian_chestplate = { "guardian chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC199"), CHESTPLATE, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(guardian_chestplate);
 		ArmorItem guardian_greaves = { "guardian greaves", (void*)LoadTextureFromFile("","EquipmentIconsC216"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(guardian_greaves);
+		ArmorItem guardian_boots = { "guardian boots", (void*)LoadTextureFromFile("","EquipmentIconsC231"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(guardian_boots);
 
 		ArmorItem copper_helmet = { "copper helmet", (void*)LoadTextureFromFile("","EquipmentIconsC163"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(copper_helmet);
 		ArmorItem copper_chestplate = { "copper chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC183"), CHESTPLATE, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(copper_chestplate);
 		ArmorItem copper_greaves = { "copper greaves", (void*)LoadTextureFromFile("","EquipmentIconsC204"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(copper_greaves);
+		ArmorItem copper_boots = { "copper boots", (void*)LoadTextureFromFile("","EquipmentIconsC222"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(copper_boots);
 
 		ArmorItem cap = { "cap", (void*)LoadTextureFromFile("","EquipmentIconsC161"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(cap);
 		ArmorItem clothes = { "clothes", (void*)LoadTextureFromFile("","EquipmentIconsC181"), CHESTPLATE, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(clothes);
 		ArmorItem rags = { "rags", (void*)LoadTextureFromFile("","EquipmentIconsC202"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(rags);
+		ArmorItem shoes = { "shoes", (void*)LoadTextureFromFile("","EquipmentIconsC223"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(shoes);
 
 		ArmorItem darkwraith_helmet = { "darkwraith helmet", (void*)LoadTextureFromFile("","EquipmentIconsC176"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(darkwraith_helmet);
 		ArmorItem darkwraith_chestplate = { "darkwraith chestplate", (void*)LoadTextureFromFile("","EquipmentIconsC191"), CHESTPLATE, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(darkwraith_chestplate);
 		ArmorItem darkwraith_greaves = { "darkwraith greaves", (void*)LoadTextureFromFile("","EquipmentIconsC207"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(darkwraith_greaves);
+		ArmorItem darkwraith_boots = { "darkwraith boots", (void*)LoadTextureFromFile("","EquipmentIconsC227"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(darkwraith_boots);
 
 		ArmorItem copper_cap = { "copper cap", (void*)LoadTextureFromFile("","EquipmentIconsC162"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(copper_cap);
 		ArmorItem copper_vest = { "copper vest", (void*)LoadTextureFromFile("","EquipmentIconsC182"), CHESTPLATE, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(copper_vest);
 		ArmorItem leather_greaves = { "leather greaves", (void*)LoadTextureFromFile("","EquipmentIconsC203"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(leather_greaves);
+		ArmorItem leather_boots = { "leather boots", (void*)LoadTextureFromFile("","EquipmentIconsC221"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(leather_boots);
+	}
+
+	void initOverworldHud() {
+		uint64_t texButton = LoadTextureFromFile("Data\\red.png");
+		int y = MAP_HEIGHT - 40;
+		int x = (MAP_WIDTH) / 4;
+		int buttonWidth = 100;
+		int offset = 10;
+		inv.AddWindow("overworld_hud", ObjectDim{ {0, y},  int (MAP_WIDTH), 40}, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = inv.getGWindow("overworld_hud");
+		//labelka z iloœci¹ ch³opa
+		gwin->AddComponent(new GComponentLabel(glm::vec2(150, 20), glm::vec3(x, y, 1.0f), "Squad count: 0/16"));
+		x += 150;
+		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Party", texButton));
+		x += buttonWidth + offset;
+		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Inventory", texButton));
+		x += buttonWidth + offset;
+		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Settings", texButton));
+		x += buttonWidth + offset;
+		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
+		inv.ActivateWindow("overworld_hud");
+	}
+	void initBattleHud() {
+		uint64_t texButton = LoadTextureFromFile("Data\\red.png");
+		int y = MAP_HEIGHT - 40;
+		int x = (MAP_WIDTH) / 6;
+		int buttonWidth = 100;
+		int labelWidth = 150;
+		int offsetButton = 10;
+		int offsetLabel = 50;
+		inv.AddWindow("battle_hud", ObjectDim{ {0, y},  int (MAP_WIDTH), 40}, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = inv.getGWindow("battle_hud");
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 1.0f), "Current turn: Player"));
+		x += labelWidth + offsetLabel;
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 1.0f), "Turns passed: 0"));
+		x += labelWidth + offsetLabel;
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 1.0f), "Enemy units : 0"));
+		x += labelWidth + offsetLabel;
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 1.0f), "Player units : 0"));
+		x += labelWidth + offsetButton;
+		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Settings", texButton));
+		x += buttonWidth + offsetButton;
+		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
+		
+		inv.ActivateWindow("battle_hud");
+	}
+	void initShopItems(int width, int height, uint64_t texItemFrame) {
+		inv.AddWindow("shop_items", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = inv.getGWindow("shop_items");
+		//labelka z napisem inventory + które okienko
+		gwin->AddComponent(new GComponentButton(glm::vec2(60, 20), glm::vec3(140, 5, 0.1f), "Shop", 0));
+		//przycisk do zamkniêcia okienka
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		for (int i = 35; i < height - 35; i += 50) {
+			for (int j = 5; j < width - 15; j += 35) {
+				inv.AddSlotToWindow("shop_items", Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
+				//cena itemku
+				gwin->AddComponent(new GComponentLabel(glm::vec2(1, 1), glm::vec3(j, i + 30, 1.0f), "0"));
+			}
+		}
+
+		inv.ActivateWindow("shop");
+	}
+	void initShopRecruits(int width, int height, uint64_t texItemFrame) {
+		inv.AddWindow("shop_recruits", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = inv.getGWindow("shop_recruits");
+		//wyjœcie
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		for (int i = 30; i < height - 90; i += 90) {
+			for (int j = 10; j < width - 60; j += 60) {
+				inv.AddSlotToWindow("shop_recruits", Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
+				gwin->AddComponent(new GComponentLabel(glm::vec2(20, 20), glm::vec3(j, i + 60, 0.1f), "0"));
+			}
+		}
+		inv.ActivateWindow("shop_recruits");
 	}
 
 	void initPrimaryInv(int width, int height, uint64_t texItemFrame) {
 		inv.AddWindow("inventory", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("inventory");
-		
 		//przyciski do zmiany na kolejny panel ekwipunku
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(0, 5, 0.5f), "penes", LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(0, 5, 0.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(20 + 10, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(40 + 20, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(60 + 30, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//labelka z napisem inventory + które okienko
-		gwin->AddComponent(new GComponentButton(glm::vec2(60, 20), glm::vec3(140, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(60, 20), glm::vec3(140, 5, 0.1f), "Inventory 1", 0));
 		//przycisk do zamkniêcia okienka
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(300, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		for (int i = 35; i < height - 75; i += 35) {
 			for (int j = 5; j < width - 15; j += 35) {
 				inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
 			}
 		}
 		//labelka z szmeklami
-		gwin->AddComponent(new GComponentSlider(glm::vec2(60, 20), glm::vec3(140, 300, 0.5f), "penes", LoadTextureFromFile("Data\\red.png"), LoadTextureFromFile("Data\\angy.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width / 2, height - 35, 0.5f), "szmekle zydowskie: ", LoadTextureFromFile("Data\\red.png")));
 
 		inv.ActivateWindow("inventory");
 	}
-	
-	void initCharInv(int width, int height, uint64_t texItemFrame) {
+
+	void initCharInv(int width, int height, uint64_t texItemFrame, Entity entity) {
 		inv.AddWindow("char_inv", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("char_inv");
 		//nazwa ch³opa
-		gwin->AddComponent(new GComponentButton(glm::vec2(40, 20), glm::vec3(55, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(40, 20), glm::vec3(55, 0, 0.1f), "Ryszard drañ", LoadTextureFromFile("Data\\red.png")));
 		//wyjœcie
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(130, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//sloty
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(60, 30), 30.0f, 30.0f, HELMET), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(60, 60), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(30, 60), 30.0f, 30.0f, WEAPON), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(90, 60), 30.0f, 30.0f, WEAPON), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(60, 90), 30.0f, 30.0f, LEGS), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(60, 120), 30.0f, 30.0f, BOOTS), texItemFrame);
-
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 30), 30.0f, 30.0f, HELMET), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 60), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30 - 30, 60), 30.0f, 30.0f, WEAPON), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30 + 30, 60), 30.0f, 30.0f, WEAPON), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 90), 30.0f, 30.0f, LEGS), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 120), 30.0f, 30.0f, BOOTS), texItemFrame);
+		//staty
 		inv.ActivateWindow("char_inv");
+	}
+
+	void initSquadViewer(int width, int height, uint64_t texItemFrame) {
+		inv.AddWindow("party_view", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = inv.getGWindow("party_view");
+		//wyjœcie
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		for (int i = 30; i < height - 90; i += 90) {
+			for (int j = 10; j < width - 60; j += 60) {
+				inv.AddSlotToWindow("party_view", Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
+			}
+		}
+		inv.ActivateWindow("party_view");
 	}
 
 	void initGame(std::filesystem::path path) {
@@ -281,11 +425,12 @@ private:
 
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
+		//initShopRecruits(300, 400, texItemFrame);
+		//initOverworldHud();
+		//initBattleHud();
 		//initItems();
 		//initPrimaryInv();
-		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
-		//inv.ActivateWindow("main_player_eq");
-		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
+		//initSquadViewer(300, 400, texItemFrame);
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);
@@ -446,9 +591,8 @@ private:
 			if (glm::distance(squadF->getSquadPosition(), squadS->getSquadPosition()) <= distance) {
 				if (glm::distance(squadF->getSquadPosition(), player->getSquadPosition()) <= 4.0f) {
 					game_type = GAMETYPE_FIGHT;
-					BattleData battleData = {
+					EntityBattleManager::BattleData battleData = {
 						squadF,
-						player,
 					};
 					r->setCameraMatrix(glm::lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), (glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(0.0f, 1.0f, 0.0f)));
 					r->UpdateShaderData();
@@ -540,7 +684,7 @@ private:
 private:
 	rasticore::RastiCoreRender* r;
 	rasticore::ModelCreationDetails rect_mcd;
-
+	ItemLoader itemLoader;
 	Squad* player;
 	SquadMovementManager movementManager;
 	BuildingManager buildingManager;
