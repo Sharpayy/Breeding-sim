@@ -95,7 +95,7 @@ public:
 
 	//DO NOT USE THAT
 	void changePosition(glm::vec2 position) {
-		this->slotDim.position -= position;
+		this->slotDim.position = position;
 	}
 
 	bool changeItem(Item* object) {
@@ -224,14 +224,15 @@ public:
 		}
 		if (!win) return false;
 		int offsetX, offsetY;
-		offsetX = win->dim.position.x - x;
-		offsetY = win->dim.position.y - y;
+		offsetX = win->dim.position.x + x;
+		offsetY = win->dim.position.y + y;
 		win->dim.position.x = x;
 		win->dim.position.y = y;
 		auto slots = getAllSlotsFromWindow(windowName);
 		for (auto& slot : slots) {
-			slot->changePosition(glm::vec2{ offsetX,offsetY });
+			slot->changePosition(glm::vec2{ offsetX,offsetY });	
 		}
+		win->win->ChangeComponentPosition(x, y);
 	}
 
 	bool ActivateWindow(std::string windowName) {
@@ -313,6 +314,17 @@ public:
 		slot1->changeItem(slot2->getItem());
 		slot2->changeItem(itemTemp);
 		return true;
+	}
+
+	void setPressedWindowOnTop(glm::vec2 position) {
+		bool windowExist = false;
+		for (auto& window : windowSlots.at(true)) {
+			if (pointInRect(position, window->dim)) {
+				window->height = INT_MAX;
+				windowExist = true;
+			}
+		}
+		if(windowExist) sortVec(1);
 	}
 
 	Slot* getSlot(glm::vec2 position) {

@@ -194,6 +194,7 @@ public:
 	int CollisionCheck(float x, float y);
 	void UpdateZComp();
 	void UpdateDepth(float z);
+	void ChangeComponentPosition(int offsetX, int offsetY);
 
 };
 

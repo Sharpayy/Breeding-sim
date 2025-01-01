@@ -57,34 +57,26 @@ public:
 		entityMovementManager = EntityMovementManager{ currentMap.path, currentMap.mapSize, currentMap.tileSize, r, rect_mcd };
 		Squad::SquadComp* units = data.s1->getSquadComp();
 		
-		int tilesAmountX, offsetY, offsetX;
+		int tilesAmountX, offsetY, offsetX, tileOffset;
 		tilesAmountX = currentMap.mapSize / currentMap.tileSize;
 		offsetY = (tilesAmountX / 2) - ((tilesAmountX / 2) - (units->size / 2));
 		offsetX = -(tilesAmountX / 2);
+		tileOffset = currentMap.tileSize / 2.0f;
 		Entity* e = nullptr;
-		//for (int i = 0; i < units->size; i++)
-		//{
-		//	e = units->entities[i];
-		//	e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize, (offsetY + 1) * currentMap.tileSize });
-		//	offsetY -= 1;
-		//	e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
-		//}
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
-			e->setEntityPosition({512,512});
-			//e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize, (offsetY + 1) * currentMap.tileSize });
-			//offsetY -= 1;
+			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
+			offsetY -= 1;
 			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
 		}
-
 		units = data.s2->getSquadComp();
 		offsetY = (tilesAmountX / 2) - ((tilesAmountX / 2) - (units->size / 2));
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
+			e->setEntityPosition(glm::vec2{ -(offsetX + 1) * currentMap.tileSize, (offsetY + 1) * currentMap.tileSize });
 			offsetY -= 1;
-			e->setEntityPosition(glm::vec2{ - (offsetX + 1) * currentMap.tileSize, (offsetY + 1) * currentMap.tileSize });
 			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
 		}
 	}
@@ -104,14 +96,14 @@ public:
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
-			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)), true);
+			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
 		}
 
 		units = data.s2->getSquadComp();
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
-			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)), true);
+			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
 		}
 
 		mapProgram.use();
@@ -144,10 +136,11 @@ private:
 		Entity* entity;
 		glm::vec2 entityPos, mousePos;
 		mousePos = getCorrectedMousePosition();
+		int tileOffset = currentMap.tileSize / 2.0f;
 		for (int idx = 0; idx < squadComp->size; idx++) {
 			entity = squadComp->entities[idx];
 			entityPos = entity->getPosition();
-			if (pointInRect(mousePos, glm::vec4{ entityPos.x, entityPos.y, currentMap.tileSize, currentMap.tileSize })) {
+			if (pointInRect(mousePos, glm::vec4{ entityPos.x - tileOffset, entityPos.y - tileOffset, currentMap.tileSize, currentMap.tileSize })) {
 				return entity;
 			}
 		}
@@ -200,11 +193,21 @@ private:
 
 	void inputHandler() {
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
-			if (!selectedEntity) selectedEntity = getEntity();
-			else {
+			auto mouse = getCorrectedMousePosition();
+			//mouse.x = ((int)((mouse.x + 32.0f) / currentMap.tileSize)) * currentMap.tileSize;
+			//mouse.y = ((int)((mouse.y + 32.0f) / currentMap.tileSize)) * currentMap.tileSize;
+			if (selectedEntity) {
+				moveEntity(mouse + 512.0f, selectedEntity);
+			}
+			selectedEntity = getEntity();
+			if (selectedEntity) {
+				std::cout << selectedEntity << "\n";
+			}
+			std::cout << mouse.x << " " << mouse.y << "\n";
+		/*	else {
 				auto pos = getCorrectedMousePosition();
 				moveEntity(pos, selectedEntity);
-			}
+			}*/
 		}
 	}
 

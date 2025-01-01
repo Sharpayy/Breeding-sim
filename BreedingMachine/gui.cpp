@@ -483,3 +483,15 @@ void GComponentLabel::SetOffset(glm::vec3 of)
 {
 	pos += of;
 }
+
+void GWindow::ChangeComponentPosition(int x, int y) {
+	int offsetX, offsetY;
+	offsetX = x - position.x;
+	offsetY = y - position.y;
+	position.x = x;
+	position.y = y;
+	for (auto& component : component_list) {
+		component->pos.x += offsetX;
+		component->pos.y += offsetY;
+	}
+}

@@ -127,6 +127,7 @@ public:
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
 			
 			auto mp = getMousePosition();
+			inv.setPressedWindowOnTop(mp);
 			Slot* slot = inv.getSlot(mp);
 
 			ArmorItem item = ArmorItem();
@@ -284,7 +285,7 @@ private:
 		int x = (MAP_WIDTH) / 4;
 		int buttonWidth = 100;
 		int offset = 10;
-		inv.AddWindow("overworld_hud", ObjectDim{ {0, y},  int (MAP_WIDTH), 40}, 2, LoadTextureFromFile("Data\\gui.png"));
+		inv.AddWindow("overworld_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("overworld_hud");
 		//labelka z iloœci¹ ch³opa
 		gwin->AddComponent(new GComponentLabel(glm::vec2(150, 20), glm::vec3(x, y, 1.0f), "Squad count: 0/16"));
@@ -306,29 +307,31 @@ private:
 		int labelWidth = 150;
 		int offsetButton = 10;
 		int offsetLabel = 50;
-		inv.AddWindow("battle_hud", ObjectDim{ {0, y},  int (MAP_WIDTH), 40}, 2, LoadTextureFromFile("Data\\gui.png"));
+		inv.AddWindow("battle_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("battle_hud");
-		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 1.0f), "Current turn: Player"));
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.01f), "Current turn: Player"));
 		x += labelWidth + offsetLabel;
-		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 1.0f), "Turns passed: 0"));
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Turns passed: 0"));
 		x += labelWidth + offsetLabel;
-		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 1.0f), "Enemy units : 0"));
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Enemy units : 0"));
 		x += labelWidth + offsetLabel;
-		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 1.0f), "Player units : 0"));
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Player units : 0"));
 		x += labelWidth + offsetButton;
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Settings", texButton));
 		x += buttonWidth + offsetButton;
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
-		
+
 		inv.ActivateWindow("battle_hud");
 	}
 	void initShopItems(int width, int height, uint64_t texItemFrame) {
 		inv.AddWindow("shop_items", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+
 		auto gwin = inv.getGWindow("shop_items");
+		gwin->AddComponent(new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//labelka z napisem inventory + które okienko
 		gwin->AddComponent(new GComponentButton(glm::vec2(60, 20), glm::vec3(140, 5, 0.1f), "Shop", 0));
 		//przycisk do zamkniêcia okienka
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png")));
 		for (int i = 35; i < height - 35; i += 50) {
 			for (int j = 5; j < width - 15; j += 35) {
 				inv.AddSlotToWindow("shop_items", Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
@@ -342,8 +345,9 @@ private:
 	void initShopRecruits(int width, int height, uint64_t texItemFrame) {
 		inv.AddWindow("shop_recruits", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("shop_recruits");
+		gwin->AddComponent(new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//wyjœcie
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png")));
 		for (int i = 30; i < height - 90; i += 90) {
 			for (int j = 10; j < width - 60; j += 60) {
 				inv.AddSlotToWindow("shop_recruits", Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
@@ -352,19 +356,30 @@ private:
 		}
 		inv.ActivateWindow("shop_recruits");
 	}
+	void initInteractionViewer(int width, int height) {
+		inv.AddWindow("interaction_viewer", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = inv.getGWindow("interaction_viewer");
+		gwin->AddComponent(new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 40, 0.1f), "Trade", LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 90, 0.1f), "Recruit", LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 140, 0.1f), "Wait", LoadTextureFromFile("Data\\red.png")));
+		inv.ActivateWindow("interaction_viewer");
 
+	}
 	void initPrimaryInv(int width, int height, uint64_t texItemFrame) {
 		inv.AddWindow("inventory", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("inventory");
+		gwin->AddComponent(new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//przyciski do zmiany na kolejny panel ekwipunku
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(0, 5, 0.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(20 + 10, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(40 + 20, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(60 + 30, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		//gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(0, 5, 0.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		//gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(20 + 10, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		//gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(40 + 20, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		//gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(60 + 30, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//labelka z napisem inventory + które okienko
-		gwin->AddComponent(new GComponentButton(glm::vec2(60, 20), glm::vec3(140, 5, 0.1f), "Inventory 1", 0));
+		gwin->AddComponent(new GComponentButton(glm::vec2(1, 1), glm::vec3(140, 20, 0.1f), "Inventory 1", 0));
 		//przycisk do zamkniêcia okienka
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png")));
 		for (int i = 35; i < height - 75; i += 35) {
 			for (int j = 5; j < width - 15; j += 35) {
 				inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
@@ -375,21 +390,21 @@ private:
 
 		inv.ActivateWindow("inventory");
 	}
-
 	void initCharInv(int width, int height, uint64_t texItemFrame, Entity entity) {
 		inv.AddWindow("char_inv", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("char_inv");
+		gwin->AddComponent(new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//nazwa ch³opa
-		gwin->AddComponent(new GComponentButton(glm::vec2(40, 20), glm::vec3(55, 0, 0.1f), "Ryszard drañ", LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(1, 1), glm::vec3(55, 21, 0.1f), "Ryszard drañ", LoadTextureFromFile("Data\\red.png")));
 		//wyjœcie
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png")));
 		//sloty
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 30), 30.0f, 30.0f, HELMET), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 60), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30 - 30, 60), 30.0f, 30.0f, WEAPON), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30 + 30, 60), 30.0f, 30.0f, WEAPON), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 90), 30.0f, 30.0f, LEGS), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 120), 30.0f, 30.0f, BOOTS), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 50), 30.0f, 30.0f, HELMET), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 80), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30 - 30, 80), 30.0f, 30.0f, WEAPON), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30 + 30, 80), 30.0f, 30.0f, WEAPON), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 110), 30.0f, 30.0f, LEGS), texItemFrame);
+		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 140), 30.0f, 30.0f, BOOTS), texItemFrame);
 		//staty
 		inv.ActivateWindow("char_inv");
 	}
@@ -425,11 +440,12 @@ private:
 
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
-		//initShopRecruits(300, 400, texItemFrame);
+		initShopRecruits(300, 400, texItemFrame);
 		//initOverworldHud();
-		//initBattleHud();
+		initBattleHud();
 		//initItems();
-		//initPrimaryInv();
+		//initPrimaryInv(300, 400, texItemFrame);
+		//inv.changeWindowPosition("inventory", 200, 0);
 		//initSquadViewer(300, 400, texItemFrame);
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);

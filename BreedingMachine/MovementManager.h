@@ -179,7 +179,7 @@ public:
 	EntityMovementManager(std::filesystem::path path, float mapSize, float tileSize, rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) {
 		this->r = r_;
 		this->rect_mcd = rect_mcd;
-		this->movement = Astar{ new Astar::border{ -((int)mapSize / 2), ((int)mapSize / 2), (int)mapSize, (int)mapSize} };
+		this->movement = Astar{ new Astar::border{ 0, 0, (int)mapSize, (int)mapSize} };
 		loadCollisionData(path);
 
 		this->mapSize = mapSize;
@@ -187,13 +187,16 @@ public:
 	}
 
 	int createEntityPath(Astar::point e, Entity* entity) {
-		auto position = entity->getPosition();
+		auto position = entity->getPosition() + (mapSize / 2.0f);
 		float offset = tileSize / 2.0f;
-		position.x = ((int)((position.x - offset) / tileSize)) * tileSize;
-		position.y = ((int)((position.y - offset) / tileSize)) * tileSize;
-		e.x = ((int)((e.x - offset) / tileSize)) * tileSize;
-		e.y = ((int)((e.y - offset) / tileSize)) * tileSize;
-		if (glm::vec2{ e.x, e.y } == position) return true;
+		position.x = ((int)((position.x) / tileSize)) * tileSize;
+		position.y = ((int)((position.y) / tileSize)) * tileSize;
+		auto z = e;
+		e.x = (((int)((e.x) / tileSize)) * tileSize);
+		e.y = (((int)((e.y) / tileSize)) * tileSize);
+		if (glm::vec2{ e.x, e.y } == position) {
+			return true;
+		}
 		entityMovementData.path = movement.findPath(Astar::point{ (int)position.x, (int)position.y }, e, tileSize);
 		entityMovementData.dt = 0;
 		entityMovementData.entity = entity;
@@ -222,14 +225,14 @@ private:
 
 		Astar::point prevAP, nextAP;
 		glm::vec2 prevPosition, nextPosition, currentPosition;
-;
+;		float offset = (tileSize / 2.0f) - (mapSize / 2.0f);
 
 		if (entityMovementData.path.size() >= 2) {
 			prevAP = entityMovementData.path.at(0);
 			nextAP = entityMovementData.path.at(1);
 
-			prevPosition = glm::vec2{ prevAP.x, prevAP.y };
-			nextPosition = glm::vec2{ nextAP.x, nextAP.y };
+			prevPosition = glm::vec2{ prevAP.x + offset, prevAP.y + offset};
+			nextPosition = glm::vec2{ nextAP.x + offset, nextAP.y + offset };
 			float speed = 0.01f;
 			entityMovementData.dt = glm::clamp(0.0f, 1.0f, speed + entityMovementData.dt);
 			currentPosition = lerp(prevPosition, nextPosition, entityMovementData.dt);
