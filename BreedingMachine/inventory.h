@@ -178,7 +178,8 @@ public:
 		float base_depth = 2.0f;
 		auto wins = getActiveWindows();
 
-		for (auto& i : wins)
+		auto svec = std::vector<Window*>(wins.rbegin(), wins.rend());
+		for (auto& i : svec)
 		{
 			i->win->UpdateDepth(base_depth);
 			i->win->UpdateZComp();
