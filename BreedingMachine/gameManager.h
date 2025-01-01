@@ -446,7 +446,7 @@ private:
 			if (glm::distance(squadF->getSquadPosition(), squadS->getSquadPosition()) <= distance) {
 				if (glm::distance(squadF->getSquadPosition(), player->getSquadPosition()) <= 4.0f) {
 					game_type = GAMETYPE_FIGHT;
-					EntityBattleManager::BattleData battleData = {
+					BattleData battleData = {
 						squadF,
 						player,
 					};
