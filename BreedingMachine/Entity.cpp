@@ -27,7 +27,7 @@ int EntityCombatCloseRange::MoveEntity(void* battleContext)
             dist_close = distance(tilePos, enemyPos);
         }
     }
-    
+
     return true;
 }
 

@@ -66,8 +66,9 @@ public:
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
-			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
-			offsetY -= 1;
+			e->setEntityPosition({512,512});
+			//e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize, (offsetY + 1) * currentMap.tileSize });
+			//offsetY -= 1;
 			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
 		}
 		units = data.s2->getSquadComp();
@@ -75,8 +76,8 @@ public:
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
-			e->setEntityPosition(glm::vec2{ -(offsetX + 1) * currentMap.tileSize, (offsetY + 1) * currentMap.tileSize });
 			offsetY -= 1;
+			e->setEntityPosition(glm::vec2{ - (offsetX + 1) * currentMap.tileSize, (offsetY + 1) * currentMap.tileSize });
 			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
 		}
 	}
@@ -96,14 +97,14 @@ public:
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
-			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
+			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)), true);
 		}
 
 		units = data.s2->getSquadComp();
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
-			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
+			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)), true);
 		}
 
 		mapProgram.use();
@@ -127,7 +128,47 @@ public:
 		r->RenderSelectedModel(DUPA_CYCE_WADOWICE);
 	}
 
-	
+	float AiGetUnitArmor(Entity* e)
+	{
+		return 1.6f;
+	}
+
+	float AiGetAttackAfterArmor(Entity* e, float atk)
+	{
+		return 1.0f / pow(AiGetUnitArmor(e), 0.1f) * atk;
+	}
+
+	void AiUpdateEntityState(Entity* e)
+	{
+		e->state->NextState();
+	}
+
+	void AiDecideEntityInitialState(Entity* self, EntityBattleManager* battle)
+	{
+		if (self->getHp() <= 0.0f)
+		{
+			self->changeEntityState(new EntityCombatDead(self));
+			return;
+		}
+
+		Stats* stats = self->getStats();
+		if (stats->melee > stats->ranged)
+		{
+			self->changeEntityState(new EntityCombatCloseRange(self));
+			return;
+		}
+		else
+		{
+			self->changeEntityState(new EntityCombatLongRange(self));
+			return;
+		}
+
+		if (self->getHp() / stats->hp > 0.25f)
+		{
+			self->changeEntityState(new EntityCombatEscape(self));
+			return;
+		}
+	}
 
 private:
 	Entity* getEntity() {
@@ -193,21 +234,11 @@ private:
 
 	void inputHandler() {
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
-			auto mouse = getCorrectedMousePosition();
-			//mouse.x = ((int)((mouse.x + 32.0f) / currentMap.tileSize)) * currentMap.tileSize;
-			//mouse.y = ((int)((mouse.y + 32.0f) / currentMap.tileSize)) * currentMap.tileSize;
-			if (selectedEntity) {
-				moveEntity(mouse + 512.0f, selectedEntity);
-			}
-			selectedEntity = getEntity();
-			if (selectedEntity) {
-				std::cout << selectedEntity << "\n";
-			}
-			std::cout << mouse.x << " " << mouse.y << "\n";
-		/*	else {
+			if (!selectedEntity) selectedEntity = getEntity();
+			else {
 				auto pos = getCorrectedMousePosition();
 				moveEntity(pos, selectedEntity);
-			}*/
+			}
 		}
 	}
 
