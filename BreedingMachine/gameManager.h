@@ -229,6 +229,8 @@ private:
 		itemLoader.loadItem(iron_greaves);
 		ArmorItem iron_cap = { "iron cap", (void*)LoadTextureFromFile("","EquipmentIconsC166"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(iron_cap);
+		ArmorItem iron_boots = { "iron boots", (void*)LoadTextureFromFile("","EquipmentIconsC237"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(iron_boots);
 
 		ArmorItem guardian_helmet = { "guardian helmet", (void*)LoadTextureFromFile("","EquipmentIconsC179"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(guardian_helmet);
@@ -236,6 +238,8 @@ private:
 		itemLoader.loadItem(guardian_chestplate);
 		ArmorItem guardian_greaves = { "guardian greaves", (void*)LoadTextureFromFile("","EquipmentIconsC216"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(guardian_greaves);
+		ArmorItem guardian_boots = { "guardian boots", (void*)LoadTextureFromFile("","EquipmentIconsC231"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(guardian_boots);
 
 		ArmorItem copper_helmet = { "copper helmet", (void*)LoadTextureFromFile("","EquipmentIconsC163"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(copper_helmet);
@@ -243,6 +247,8 @@ private:
 		itemLoader.loadItem(copper_chestplate);
 		ArmorItem copper_greaves = { "copper greaves", (void*)LoadTextureFromFile("","EquipmentIconsC204"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(copper_greaves);
+		ArmorItem copper_boots = { "copper boots", (void*)LoadTextureFromFile("","EquipmentIconsC222"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(copper_boots);
 
 		ArmorItem cap = { "cap", (void*)LoadTextureFromFile("","EquipmentIconsC161"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(cap);
@@ -250,6 +256,8 @@ private:
 		itemLoader.loadItem(clothes);
 		ArmorItem rags = { "rags", (void*)LoadTextureFromFile("","EquipmentIconsC202"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(rags);
+		ArmorItem shoes = { "shoes", (void*)LoadTextureFromFile("","EquipmentIconsC223"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(shoes);
 
 		ArmorItem darkwraith_helmet = { "darkwraith helmet", (void*)LoadTextureFromFile("","EquipmentIconsC176"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(darkwraith_helmet);
@@ -257,6 +265,8 @@ private:
 		itemLoader.loadItem(darkwraith_chestplate);
 		ArmorItem darkwraith_greaves = { "darkwraith greaves", (void*)LoadTextureFromFile("","EquipmentIconsC207"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(darkwraith_greaves);
+		ArmorItem darkwraith_boots = { "darkwraith boots", (void*)LoadTextureFromFile("","EquipmentIconsC227"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(darkwraith_boots);
 
 		ArmorItem copper_cap = { "copper cap", (void*)LoadTextureFromFile("","EquipmentIconsC162"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(copper_cap);
@@ -264,8 +274,10 @@ private:
 		itemLoader.loadItem(copper_vest);
 		ArmorItem leather_greaves = { "leather greaves", (void*)LoadTextureFromFile("","EquipmentIconsC203"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(leather_greaves);
+		ArmorItem leather_boots = { "leather boots", (void*)LoadTextureFromFile("","EquipmentIconsC221"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
+		itemLoader.loadItem(leather_boots);
 	}
-	//jeszcze nie skalowane, póki co statyczne rzeczy które bêd¹ przekazywane jakoœ do funkcji
+
 	void initOverworldHud() {
 		uint64_t texButton = LoadTextureFromFile("Data\\red.png");
 		int y = MAP_HEIGHT - 40;
@@ -310,27 +322,37 @@ private:
 		
 		inv.ActivateWindow("battle_hud");
 	}
-	void initShop(int width, int height, uint64_t texItemFrame) {
-		inv.AddWindow("shop", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
-		auto gwin = inv.getGWindow("shop");
+	void initShopItems(int width, int height, uint64_t texItemFrame) {
+		inv.AddWindow("shop_items", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = inv.getGWindow("shop_items");
 		//labelka z napisem inventory + które okienko
 		gwin->AddComponent(new GComponentButton(glm::vec2(60, 20), glm::vec3(140, 5, 0.1f), "Shop", 0));
 		//przycisk do zamkniêcia okienka
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
-		for (int i = 35; i < height - 100; i += 35) {
+		for (int i = 35; i < height - 35; i += 50) {
 			for (int j = 5; j < width - 15; j += 35) {
-				inv.AddSlotToWindow("shop", Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
-			}
-		}
-		//rekruci
-		for (int i = height - 70; i < height - 60; i += 60) {
-			for (int j = 5; j < width - 15; j += 60) {
-				inv.AddSlotToWindow("shop", Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
+				inv.AddSlotToWindow("shop_items", Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
+				//cena itemku
+				gwin->AddComponent(new GComponentLabel(glm::vec2(1, 1), glm::vec3(j, i + 30, 1.0f), "0"));
 			}
 		}
 
 		inv.ActivateWindow("shop");
 	}
+	void initShopRecruits(int width, int height, uint64_t texItemFrame) {
+		inv.AddWindow("shop_recruits", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = inv.getGWindow("shop_recruits");
+		//wyjœcie
+		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		for (int i = 30; i < height - 90; i += 90) {
+			for (int j = 10; j < width - 60; j += 60) {
+				inv.AddSlotToWindow("shop_recruits", Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
+				gwin->AddComponent(new GComponentLabel(glm::vec2(20, 20), glm::vec3(j, i + 60, 0.1f), "0"));
+			}
+		}
+		inv.ActivateWindow("shop_recruits");
+	}
+
 	void initPrimaryInv(int width, int height, uint64_t texItemFrame) {
 		inv.AddWindow("inventory", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = inv.getGWindow("inventory");
@@ -378,10 +400,8 @@ private:
 		//wyjœcie
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		for (int i = 30; i < height - 90; i += 90) {
-			for (int j = 30; j < width - 60; j += 60) {
+			for (int j = 10; j < width - 60; j += 60) {
 				inv.AddSlotToWindow("party_view", Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
-				//przycisk do usuniêcia
-				gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(j + 20, i + 60, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 			}
 		}
 		inv.ActivateWindow("party_view");
@@ -405,14 +425,12 @@ private:
 
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
-		//initShop(500, 500, texItemFrame);
+		//initShopRecruits(300, 400, texItemFrame);
 		//initOverworldHud();
-		initBattleHud();
+		//initBattleHud();
 		//initItems();
 		//initPrimaryInv();
-		//inv.AddWindow("main_player_eq", ObjectDim{ {100.0f, 100.0f}, 600, 600 }, 2, LoadTextureFromFile("Data\\gui.png"));
-		//inv.ActivateWindow("main_player_eq");
-		//Slot* s0 = inv.AddSlotToWindow("main_player_eq", Slot(nullptr, glm::vec2(400.0f, 400.0f), 50, 50), r->getModel(0)->std_texture2d.handle);
+		//initSquadViewer(300, 400, texItemFrame);
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);
