@@ -67,7 +67,7 @@ protected:
 class ArmorItem : public Item {
 public:
 	struct ObjectStatistic : public Item::ObjectStatistic {
-		uint8_t armor;
+		float armor;
 		ObjectStatistic(uint8_t armor = 0) { this->armor = armor; };
 	};
 public:
@@ -95,7 +95,7 @@ private:
 class WeaponItem : public Item {
 public:
 	struct ObjectStatistic : public Item::ObjectStatistic {
-		uint8_t damage;
+		float damage;
 		ObjectStatistic(uint8_t damage = 0) { this->damage = damage; };
 	};
 public:

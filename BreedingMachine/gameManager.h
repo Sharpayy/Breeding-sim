@@ -608,7 +608,8 @@ private:
 				if (glm::distance(squadF->getSquadPosition(), player->getSquadPosition()) <= 4.0f) {
 					game_type = GAMETYPE_FIGHT;
 					EntityBattleManager::BattleData battleData = {
-						squadF,
+						player,
+						squadF
 					};
 					r->setCameraMatrix(glm::lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), (glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(0.0f, 1.0f, 0.0f)));
 					r->UpdateShaderData();

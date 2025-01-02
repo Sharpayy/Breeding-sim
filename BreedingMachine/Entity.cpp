@@ -16,7 +16,7 @@ int EntityCombatCloseRange::MoveEntity(void* battleContext)
 
     vec2 tilePos = floor(self->getPosition() / vec2(tileSize));
 
-    Squad::SquadComp* bc = ((BattleData*)battleContext)->s2->getSquadComp();
+    Squad::SquadComp* bc = ((BattleData*)battleContext)->s1->getSquadComp();
     for (int i = 0; i < bc->size; i++)
     {
         Entity* e = bc->entities[i];
@@ -28,6 +28,7 @@ int EntityCombatCloseRange::MoveEntity(void* battleContext)
         }
     }
 
+    self->travel = enemy_close->getPosition();
     return true;
 }
 
@@ -65,7 +66,7 @@ int EntityCombatLongRange::MoveEntity(void* battleContext)
 
     vec2 tilePos = floor(self->getPosition() / vec2(tileSize));
 
-    Squad::SquadComp* bc = ((BattleData*)battleContext)->s2->getSquadComp();
+    Squad::SquadComp* bc = ((BattleData*)battleContext)->s1->getSquadComp();
     for (int i = 0; i < bc->size; i++)
     {
         Entity* e = bc->entities[i];
@@ -77,6 +78,7 @@ int EntityCombatLongRange::MoveEntity(void* battleContext)
         }
     }
 
+    self->travel = enemy_close->getPosition();
     return true;
 }
 
@@ -98,25 +100,7 @@ EntityCombatDead::EntityCombatDead(Entity* self)
 
 int EntityCombatDead::MoveEntity(void* battleContext)
 {
-    float tileSize = 64.0f;
-    Entity* enemy_close = 0;
-    float dist_close = INFINITY;
-
-    vec2 tilePos = floor(self->getPosition() / vec2(tileSize));
-
-    Squad::SquadComp* bc = ((BattleData*)battleContext)->s2->getSquadComp();
-    for (int i = 0; i < bc->size; i++)
-    {
-        Entity* e = bc->entities[i];
-        vec2 enemyPos = floor(e->getPosition() / vec2(tileSize));
-        if (dist_close > distance(tilePos, enemyPos))
-        {
-            enemy_close = e;
-            dist_close = distance(tilePos, enemyPos);
-        }
-    }
-
-    return true;
+    return false;
 }
 
 int EntityCombatDead::NextState()

@@ -104,6 +104,7 @@ public:
 	}
 
 	IEntityState* state;
+	glm::vec2 travel;
 	//IMPL
 private:
 	glm::vec2 position;
@@ -171,6 +172,8 @@ public:
 	SquadComp* getSquadComp() {
 		return squadComp;
 	}
+
+	
 
 private:
 	glm::vec2 position;

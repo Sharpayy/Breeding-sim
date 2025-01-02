@@ -370,6 +370,7 @@ int main(int argc, char* argv[])
 			}
 		}
 		gmanager.update();
+		gmanager.inv.UpdateCursorPosition(gmanager.getMousePosition());
 		gmanager.inv.Render(gui_projection_matrix);
 		gmanager.inv.RenderText(gui_projection_matrix);
 		gmanager.inv.RenderCursor(gui_projection_matrix);

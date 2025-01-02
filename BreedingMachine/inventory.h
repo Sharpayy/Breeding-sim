@@ -148,11 +148,6 @@ public:
 		GWindow* win;
 	};
 
-	void RenderCursor(glm::mat4 pm)
-	{
-		cursor_comp->Render(pm);
-	}
-
 	void SetCursorPosition(glm::vec2 pos)
 	{
 		cursor_comp->pos.x += pos.x;
@@ -201,6 +196,15 @@ public:
 			i->win->Render(pm);
 			base_depth += 2.0f;
 		}
+
+		cursor_comp->pos.z = base_depth + 0.5f;
+		cursor_comp->Render(pm);
+	}
+
+	void UpdateCursorPosition(glm::vec2 pos)
+	{
+		cursor_comp->pos.x = pos.x;
+		cursor_comp->pos.y = pos.y;
 	}
 
 	bool setWindowHeight(std::string windowName, uint8_t height) {

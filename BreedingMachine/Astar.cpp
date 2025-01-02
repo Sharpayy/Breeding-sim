@@ -57,6 +57,17 @@ void Astar::clearCollisionBlocks() {
 	collisionBlocks.clear();
 }
 
+void Astar::delBlockade(point p)
+{
+	if (collisionBlocks.find(p) != collisionBlocks.end())
+		collisionBlocks.erase(p);
+}
+
+bool Astar::canPass(point p)
+{
+	return tileIsBlocked(p);
+}
+
 double Astar::ManhattanDistance(point s, point e) {
 	return std::abs(s.x - e.x) + std::abs(s.y - e.y);
 }
@@ -73,12 +84,12 @@ float Astar::EuclideanDistance(point s, point e) {
 }
 
 bool Astar::tileIsBlocked(point p) {
-	if (b) {;
-		if (!(p.x >= b->x && p.x < b->x + b->width
-			&& p.y > -b->y && p.y <= -b->y + b->height)) {
-			return true;
-		}
-	}
+	//if (b) {
+	//	if (!(p.x >= b->x && p.x < b->x + b->width
+	//		&& p.y > -b->y && p.y <= -b->y + b->height)) {
+	//		return true;
+	//	}
+	//}
 	return collisionBlocks.find(p) != collisionBlocks.end();
 }
 
