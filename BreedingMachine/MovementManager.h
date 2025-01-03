@@ -17,20 +17,22 @@ public:
 	SquadMovementManager(std::filesystem::path path, uint32_t mapSize, uint8_t tileSize, rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd) {
 		this->r = r_;
 		this->rect_mcd = rect_mcd;
-		this->movement = Astar{ new Astar::border{ -((int)mapSize / 2), ((int)mapSize / 2), (int)mapSize, (int)mapSize} };
-		loadCollisionData(path);
 
 		this->mapSize = mapSize;
 		this->tileSize = tileSize;
+		
+		this->movement = Astar{ new Astar::border{ 0, 0, (int)mapSize, (int)mapSize} };
+		loadCollisionData(path);
+
 	}
 
 	int createSquadPath(Astar::point e, Squad* squad) { //Entity& entity) {
-		auto position = squad->getSquadPosition();
-		float offset = tileSize / 2.0f;
-		position.x = ((int)((position.x - offset) / tileSize)) * tileSize;
-		position.y = ((int)((position.y - offset) / tileSize)) * tileSize;
-		e.x = ((int)((e.x - offset) / tileSize)) * tileSize;
-		e.y = ((int)((e.y - offset) / tileSize)) * tileSize;
+		auto position = squad->getSquadPosition() + (mapSize / 2.0f);;
+		//float offset = (tileSize / 2.0f)
+		position.x = ((int)((position.x) / tileSize)) * tileSize;
+		position.y = ((int)((position.y) / tileSize)) * tileSize;
+		e.x = (((int)((e.x) / tileSize)) * tileSize) + (mapSize / 2.0f);;
+		e.y = (((int)((e.y) / tileSize)) * tileSize) + (mapSize / 2.0f);;
 		if (glm::vec2{ e.x, e.y } == position) return true;
 		if (squadsMovementData[squad->getSquadID()].path.size() >= 2) {
 			if (squadsMovementData[squad->getSquadID()].path.back() == e) return true;
@@ -71,7 +73,7 @@ private:
 		Astar::point prevAP, nextAP;
 		glm::vec2 prevPosition, nextPosition, currentPosition;
 		uint64_t id;
-		float offset = tileSize / 2.0f;
+		float offset = (tileSize / 2.0f) - (mapSize / 2.0f);
 		std::vector<uint64_t> squadsPathToRemove;
 		for (auto& squadData : squadsMovementData) {
 			if (squadData.second.path.size() >= 2) {
@@ -120,7 +122,7 @@ private:
 
 		for (int i = 0; i < collumns; i++) {
 			file >> x >> y;
-			movement.addBlockade(Astar::point{ x , y  });
+			movement.addBlockade(Astar::point{ x + (int)(mapSize / 2.0f), y + (int)(mapSize / 2.0f) });
 		}
 	}
 
