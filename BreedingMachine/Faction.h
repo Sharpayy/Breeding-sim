@@ -12,7 +12,7 @@ public:
 	Faction() {
 
 	}
-	Faction(std::string factionName, uint8_t factionID, std::vector<Building> buildings = {}) {
+	Faction(std::string factionName, uint8_t factionID, std::vector<Building*> buildings = {}) {
 		this->factionName = factionName;
 		this->factionID_ = factionID;
 		this->factionBuildings = buildings;
@@ -29,7 +29,7 @@ public:
 	}
 
 
-	std::vector<Building> getFactionBuildings() const {
+	std::vector<Building*> getFactionBuildings() const {
 		return factionBuildings;
 	}
 
@@ -38,5 +38,5 @@ private:
 	std::string factionName;
 	uint8_t factionID_;
 	std::unordered_map<uint8_t, uint8_t> data;
-	std::vector<Building> factionBuildings;
+	std::vector<Building*> factionBuildings;
 };

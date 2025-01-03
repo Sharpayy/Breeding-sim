@@ -15,7 +15,7 @@ public:
 		this->position = position;
 	}
 
-	glm::vec2 getBuildingPosition() {
+	glm::vec2 getPosition() {
 		return position;
 	}
 

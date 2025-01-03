@@ -29,19 +29,25 @@ public:
 		file >> size;
 		for (int i = 0; i < size; i++) {
 			file >> position.x >> position.y >> id >> race;
-			fBuildings[race].push_back(Building{ position });
+			Building* building = new Building{ position };
+			fBuildings[race].push_back(building);
+			allBuildings.push_back(building);
 		}
 	}
 
-	std::vector<Building> getRaceBuildings(uint8_t raceID) {
+	std::vector<Building*> getRaceBuildings(uint8_t raceID) {
 		for (auto& building : fBuildings) {
 			if (building.first == raceID) return building.second;
 		}
 		std::cout << "Buildings not found\n";
-		return std::vector<Building>{};
+		return std::vector<Building*>{};
+	}
+
+	std::vector<Building*> getAllBuildings() {
+		return allBuildings;
 	}
 
 private:
-	std::unordered_map<uint8_t, std::vector<Building>> fBuildings;
-
+	std::unordered_map<uint8_t, std::vector<Building*>> fBuildings;
+	std::vector<Building*> allBuildings;
 };

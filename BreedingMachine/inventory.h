@@ -167,7 +167,7 @@ public:
 			return nslot;
 		}
 
-		std::vector<Slot*> getAllSlotsFromWindow() {
+		std::vector<Slot*> getAllSlots() {
 			return slots;
 		}
 
@@ -193,8 +193,10 @@ public:
 
 		void changeWindowPosition(int x, int y) {
 			int offsetX, offsetY;
-			offsetX = dim.position.x + x;
-			offsetY = dim.position.y + y;
+			/*offsetX = glm::distance(dim.position.x, (float)x);
+			offsetY = glm::distance(dim.position.y, (float)y);*/
+			offsetX = -dim.position.x + x;
+			offsetY = -dim.position.y + y;
 			dim.position.x = x;
 			dim.position.y = y;
 			for (auto& slot : slots) {
@@ -362,7 +364,7 @@ public:
 			if (potentialSlot) break;
 			i++;
 			if (pointInRect(position, window->getDim())) {
-				for (auto& slot : window->getAllSlotsFromWindow()) {
+				for (auto& slot : window->getAllSlots()) {
 					if (pointInRect(position, slot->getDim())) {
 						height = i - 1;
 						potentialSlot = slot;
@@ -372,7 +374,10 @@ public:
 			}
 		}
 		for (int x = 0; x < i - 1; x++) {
-			if (pointInRect(position, active_windows.at(x)->getDim())) { potentialSlot = nullptr; break; };
+			if (pointInRect(position, active_windows.at(x)->getDim())) { 
+				potentialSlot = nullptr; 
+				break; 
+			};
 		}
 		return potentialSlot;
 	}

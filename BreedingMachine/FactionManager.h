@@ -27,7 +27,7 @@ public:
 		return squad;
 	}
 
-	void CreateNewFaction(uint32_t faction_id, const char* filename, const char* faction_name, std::vector<Building> factionBuildings = {})
+	void CreateNewFaction(uint32_t faction_id, const char* filename, const char* faction_name, std::vector<Building*> factionBuildings = {})
 	{
 		rasticore::Image img = rasticore::Image(filename, 4);
 		rasticore::Texture2D tx{ img.data, (int)img.x_, (int)img.y_, GL_RGBA, GL_RGBA8 };

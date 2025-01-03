@@ -107,9 +107,9 @@ public:
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_I))
 		{
-		/*	if (!inv.isWindowActive("party_view")) {
-				inv.ActivateWindow("party_view");
-				std::vector<Slot*> slots = inv.getAllSlotsFromWindow("party_view");
+			if (!inv.isWindowActive(gui_windows.inventory)) {
+				inv.ActivateWindow(gui_windows.inventory);
+				std::vector<Slot*> slots = gui_windows.inventory->getAllSlots();
 				auto playerComp = player->getSquadComp();
 				for (int i = 0; i < playerComp->size; i++) {
 					EntityItem* eitm = new EntityItem(playerComp->entities[i]);
@@ -118,8 +118,16 @@ public:
 				}
 				auto z = 1;
 			}
-			else inv.DisableWindow("party_view");*/
+			else inv.DisableWindow(gui_windows.inventory);
 		}
+		if (instance.KeyPressedOnce(SDL_SCANCODE_V))
+		{
+			if (!inv.isWindowActive(gui_windows.partyView)) {
+				inv.ActivateWindow(gui_windows.partyView);
+			}
+			else inv.DisableWindow(gui_windows.partyView);
+		}
+
 		if (instance.KeyPressed(SDL_SCANCODE_R))
 		{
 			game_type = (!(game_type - 1) + 1);
@@ -130,12 +138,14 @@ public:
 			if (draggedObj.draggedWindow.win && !draggedObj.draggedWindow.wasPressed) {
 				draggedObj.draggedWindow.wasPressed = true;
 				auto dim = draggedObj.draggedWindow.win->getDim();
-				int offset = abs(dim.position.x - mp.x);
-				draggedObj.draggedWindow.offset.x = offset;
+				int offsetX = abs(dim.position.x - mp.x);
+				int offsetY = abs(dim.position.y - mp.y);
+				draggedObj.draggedWindow.offset.x = offsetX;
+				draggedObj.draggedWindow.offset.y = offsetY;
 			}
 			if (draggedObj.draggedWindow.wasPressed) {
 				//std::cout << offset << "\n";
-				draggedObj.draggedWindow.win->changeWindowPosition(mp.x - draggedObj.draggedWindow.offset.x, mp.y);
+				draggedObj.draggedWindow.win->changeWindowPosition(mp.x - draggedObj.draggedWindow.offset.x, mp.y - draggedObj.draggedWindow.offset.y);
 			}
 		}
 		else {
@@ -171,8 +181,21 @@ public:
 				}
 			}
 			else {
-				auto pos = getCorrectedMousePosition();
-				movementManager.createSquadPath(Astar::point{ (int)pos.x, (int)pos.y }, player);
+				auto mousePos = getCorrectedMousePosition();
+				if (instance.KeyPressed(SDL_SCANCODE_LALT)) {
+					for (auto& building : buildingManager.getAllBuildings()) {
+						auto buildingPos = building->getPosition();
+						if (glm::distance(mousePos, buildingPos) < 64.0f) {
+							inv.ActivateWindow(gui_windows.interaction);
+							gui_windows.interaction->changeWindowPosition(buildingPos.x + 128, buildingPos.y - 64);
+						}
+					}
+					
+				}
+				else {
+
+					movementManager.createSquadPath(Astar::point{ (int)mousePos.x, (int)mousePos.y }, player);
+				}
 			}
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
@@ -347,7 +370,7 @@ private:
 		x += buttonWidth + offsetButton;
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
 
-		inv.ActivateWindow(win);
+		//inv.ActivateWindow(win);
 	}
 	void initShopItems(int width, int height, uint64_t texItemFrame) {
 		Inventory::Window* win = inv.AddWindow("shop_items", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
@@ -370,7 +393,7 @@ private:
 			}
 		}
 
-		inv.ActivateWindow(win);
+		//inv.ActivateWindow(win);
 	}
 	void initShopRecruits(int width, int height, uint64_t texItemFrame) {
 		Inventory::Window* win = inv.AddWindow("shop_recruits", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
@@ -391,7 +414,7 @@ private:
 				gwin->AddComponent(new GComponentLabel(glm::vec2(20, 20), glm::vec3(j, i + 60, 0.1f), "0"));
 			}
 		}
-		inv.ActivateWindow(win);
+		//inv.ActivateWindow(win);
 	}
 	void initInteractionViewer(int width, int height) {
 		Inventory::Window* win = inv.AddWindow("interaction_viewer", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
@@ -405,7 +428,8 @@ private:
 		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 40, 0.1f), "Trade", LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 90, 0.1f), "Recruit", LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 140, 0.1f), "Wait", LoadTextureFromFile("Data\\red.png")));
-		inv.ActivateWindow(win);
+		//inv.ActivateWindow(win);
+		gui_windows.interaction = win;
 
 	}
 	void initPrimaryInv(int width, int height, uint64_t texItemFrame) {
@@ -432,10 +456,9 @@ private:
 		}
 		//labelka z szmeklami
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width / 2, height - 35, 0.5f), "szmekle zydowskie: ", LoadTextureFromFile("Data\\red.png")));
+		gui_windows.inventory = win;
+		//inv.ActivateWindow(win);
 
-		inv.ActivateWindow(win);
-
-		win->changeWindowPosition(200, 0);
 	}
 	void initCharInv(int width, int height, uint64_t texItemFrame, Entity entity) {
 		Inventory::Window* win = inv.AddWindow("char_inv", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
@@ -457,7 +480,7 @@ private:
 		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, 110), 30.0f, 30.0f, LEGS), texItemFrame);
 		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, 140), 30.0f, 30.0f, BOOTS), texItemFrame);
 		//staty
-		inv.ActivateWindow(win);
+		//inv.ActivateWindow(win);
 	}
 
 	void initSquadViewer(int width, int height, uint64_t texItemFrame) {
@@ -475,7 +498,8 @@ private:
 				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
 			}
 		}
-		inv.ActivateWindow(win);
+		gui_windows.partyView = win;
+		//inv.ActivateWindow(win);
 	}
 
 	//void setHooveredWindow(Inventory::Window* win) {
@@ -500,13 +524,13 @@ private:
 
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
-		//initShopRecruits(300, 400, texItemFrame);
-		//initOverworldHud();
+		initShopRecruits(300, 400, texItemFrame);
+		initOverworldHud();
 		//initBattleHud();
-		//initShopItems(300, 300, texItemFrame);
-		//initInteractionViewer(200, 200);
+		initShopItems(300, 300, texItemFrame);
+		initInteractionViewer(200, 200);
 		initPrimaryInv(300, 400, texItemFrame);
-		//initSquadViewer(300, 400, texItemFrame);
+		initSquadViewer(300, 400, texItemFrame);
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);
@@ -559,7 +583,7 @@ private:
 		for (int i = 0; i < 32; i++) {
 			auto buildings = buildingManager.getRaceBuildings(i % 8);
 			if (i == MODEL_PLAYER || !buildings.size()) continue;
-			squad = factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size()).getBuildingPosition());
+			squad = factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size())->getPosition());
 			if (squad) amount++;
 			timer.startMeasure(squad->getSquadID(), 0);
 			squad->force = getRandomNumber(10, 100);
@@ -632,7 +656,7 @@ private:
 		int buildingAmount = buildings.size();
 		if (buildingAmount) {
 			if (!movementManager.SquadHasPath(squad)) { 
-				glm::vec2 randomBuildingPosition = buildings.at(getRandomNumber(0, buildingAmount - 1)).getBuildingPosition();
+				glm::vec2 randomBuildingPosition = buildings.at(getRandomNumber(0, buildingAmount - 1))->getPosition();
 				movementManager.createSquadPath(Astar::point{ (int)randomBuildingPosition.x, (int)randomBuildingPosition.y }, squad);
 			}
 		}
@@ -775,6 +799,12 @@ private:
 	//
 	Timer timer;
 	std::mt19937 gen;
+
+	struct GUI_Windows {
+		Inventory::Window* partyView;
+		Inventory::Window* inventory;
+		Inventory::Window* interaction;
+	} gui_windows;
 
 	struct DraggedObj {
 		GUI_DraggedWindow draggedWindow = {};
