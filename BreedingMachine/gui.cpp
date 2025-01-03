@@ -172,7 +172,7 @@ void gui_init()
 
 }
 
-void pfnBasicButtonCallback(GComponentButton* button, GWindow* window)
+void pfnBasicButtonCallback(void* button, void* window)
 {
 	printf("chij");
 }
@@ -189,12 +189,12 @@ GComponentButton::GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* t
 	depth = pos.z;
 
 	texture = tex;
-	callback = (GComponentButton_Callback)pfnBasicButtonCallback;
+	callback = pfnBasicButtonCallback;
 
 	val = 0.0f;
 }
 
-void GComponentButton::SetCallback(GComponentButton_Callback func)
+void GComponentButton::SetCallback(std::function<void(void*, void*)> func)
 {
 	callback = func;
 }

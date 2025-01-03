@@ -15,6 +15,8 @@
 #include "gltext.h"
 #include "Astar.h"
 
+#include <functional>
+
 #define RESOURCE_STORE_BIND_LOCATION 11
 #define GUI_ELEMENT_BIND_LOCATION	 12
 
@@ -26,8 +28,6 @@
 #define GUI_ELEMENT_LABEL			5
 
 #define GUI_SHADER_DEBUG_INFO
-
-typedef void(*GComponentButton_Callback)(void*, void*);
 
 extern rasticore::Program* gui_main_program;
 extern rasticore::VertexBuffer* gui_square;
@@ -120,10 +120,10 @@ public:
 	float val;
 
 	uint64_t texture;
-	GComponentButton_Callback callback;
+	std::function<void(void*, void*)> callback;
 
 	GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t tex);
-	void SetCallback(GComponentButton_Callback func);
+	void SetCallback(std::function<void(void*, void*)> func);
 
 	virtual void RenderText(glm::mat4 pm);
 	virtual void Render(glm::mat4 pm);
@@ -214,4 +214,4 @@ public:
 	GWindow* BuildWindow();
 };
 
-void pfnBasicButtonCallback(GComponentButton* button, GWindow* window);
+void pfnBasicButtonCallback(void* button, void* window);

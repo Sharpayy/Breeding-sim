@@ -391,7 +391,8 @@ private:
 		gwin->AddComponent(new GComponentButton(glm::vec2(1, 1), glm::vec3(140, 20, 0.1f), "Inventory 1", 0));
 		//przycisk do zamkniêcia okienka
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
-		exit->callback = (GComponentButton_Callback)  (std::function<void(void*, void*, Inventory*, Inventory::Window*)>)std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
+		//(GComponentButton_Callback)(std::function<void(void*, void*, Inventory*, Inventory::Window*)>)
+		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
 		for (int i = 35; i < height - 75; i += 35) {
 			for (int j = 5; j < width - 15; j += 35) {
