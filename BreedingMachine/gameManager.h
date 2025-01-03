@@ -147,9 +147,22 @@ public:
 				draggedObj.draggedWindow.offset.x = offsetX;
 				draggedObj.draggedWindow.offset.y = offsetY;
 			}
-			if (draggedObj.draggedWindow.wasPressed) {
+			else if (draggedObj.draggedWindow.wasPressed) {
 				//std::cout << offset << "\n";
 				draggedObj.draggedWindow.win->changeWindowPosition(mp.x - draggedObj.draggedWindow.offset.x, mp.y - draggedObj.draggedWindow.offset.y);
+			}
+			else if (draggedObj.draggedItem.item && !draggedObj.draggedItem.wasPressed) {
+				draggedObj.draggedItem.wasPressed = true;
+				inv.SetCursorItemHold(draggedObj.draggedItem.item);
+			/*	auto dim = draggedObj.draggedItem.item.->getDim();
+				int offsetX = abs(dim.position.x - mp.x);
+				int offsetY = abs(dim.position.y - mp.y);
+				draggedObj.draggedWindow.offset.x = offsetX;
+				draggedObj.draggedWindow.offset.y = offsetY;*/
+			}
+			else if (draggedObj.draggedItem.wasPressed) {
+				//std::cout << offset << "\n";
+				//draggedObj.draggedWindow.win->changeWindowPosition(mp.x - draggedObj.draggedWindow.offset.x, mp.y - draggedObj.draggedWindow.offset.y);
 			}
 		}
 		else {
@@ -166,22 +179,24 @@ public:
 					//
 				};
 				Slot* slot = inv.getSlot(mp);
-
-				ArmorItem item = ArmorItem();
-				item.setAsset((void*)LoadTextureFromFile("Data\\EquipmentIconsC2.png"));
-
-				if (slot != nullptr)
-				{
-					printf("%p\n", slot->getItem());
-					if (slot->getItem() == nullptr)
-					{
-						slot->changeItem(&item);
-					}
-					else
-					{
-						slot->changeItem(nullptr);
-					}
+				if (slot) {
+					draggedObj.draggedItem.item = slot->getItem();
 				}
+				//ArmorItem item = ArmorItem();
+				////item.setAsset((void*)LoadTextureFromFile("Data\\EquipmentIconsC2.png"));
+
+				//if (slot != nullptr)
+				//{
+				//	printf("%p\n", slot->getItem());
+				//	if (slot->getItem() == nullptr)
+				//	{
+				//		slot->changeItem(&item);
+				//	}
+				//	else
+				//	{
+				//		slot->changeItem(nullptr);
+				//	}
+				//}
 			}
 			else {
 				auto mousePos = getCorrectedMousePosition();
