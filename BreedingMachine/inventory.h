@@ -437,3 +437,17 @@ void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, In
 		}
 	}
 }
+
+void setParty(void* v1, void* v2, Squad** squad, Inventory* inv, Inventory::Window* win) {
+	if (inv) {
+		if (inv->ActivateWindow(win) && (*squad)) {
+			auto squadComp = (*squad)->getSquadComp();
+			auto slots = win->getAllSlots();
+			for (int idx = 0; idx < squadComp->size; idx++) {
+				delete slots.at(idx)->getItem();
+				EntityItem* eitm = new EntityItem(squadComp->entities[idx]);
+				slots.at(idx)->changeItem(eitm);
+			}
+		}
+	}
+}

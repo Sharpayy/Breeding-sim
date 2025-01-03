@@ -127,7 +127,8 @@ public:
 		if (instance.KeyPressedOnce(SDL_SCANCODE_V))
 		{
 			if (!inv.isWindowActive(gui_windows.partyView)) {
-				inv.ActivateWindow(gui_windows.partyView);
+				setParty(nullptr, nullptr, (&player), &inv, gui_windows.partyView);
+				//inv.ActivateWindow(gui_windows.partyView);
 			}
 			else inv.DisableWindow(gui_windows.partyView);
 		}
