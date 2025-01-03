@@ -7,55 +7,8 @@
 #include <string.h>
 #include <cassert>
 #include "Entity.h"
-
-class ItemLoader {
-public:
-	ItemLoader() = default;
-
-	void loadItem(Item& item) {
-		switch (item.getObjectType()) {
-		case ARMOR:
-			itemMap[item.getItemName()] = new ArmorItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (ArmorItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
-			break;
-		case WEAPON:
-			itemMap[item.getItemName()] = new WeaponItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (WeaponItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
-			break;
-		default:
-			itemMap[item.getItemName()] = new Item{ item.getItemName(), item.getItemTexture(), item.getObjectType(), item.getItemPrice() };
-			break;
-		}
-	}
-
-	template <typename T = Item>
-	T* getItem(std::string itemName) {
-		auto it = itemMap.find(itemName);
-		if (it != itemMap.end()) {
-			uint8_t objectType = it->second->getObjectType();
-			if (objectType & WEAPON) {
-				if constexpr (std::is_same_v<T, WeaponItem>) {
-					return (T*)it->second;
-				}
-				else return nullptr;
-			}
-			if (objectType & ARMOR) {
-				if constexpr (std::is_same_v<T, ArmorItem>) {
-					return (T*)it->second;
-				}
-				return nullptr;
-			}
-			if (objectType & EVERY_ITEM) {
-				if constexpr (std::is_same_v<T, Item>) {
-					return (T*)it->second;
-				}
-				return nullptr;
-			}
-		}
-		return nullptr;
-	}
-
-private:
-	std::unordered_map<std::string, Item*> itemMap;
-};
+#include "Building.h"
+#include "gui.h"
 
 struct ObjectDim {
 	glm::vec2 position;
@@ -469,4 +422,17 @@ void SetDraggedWindow(void* v1, void* v2, GUI_DraggedWindow* guiDW, Inventory::W
 
 void SetDraggedItem(void* v1, void* v2, GUI_DraggedItem* guiDI, Item* item) {
 	guiDI->item = item;
+}
+
+void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, Inventory::Window* win) {
+	if (inv) {
+		if (inv->ActivateWindow(win) && (*building)) {
+			auto items = (*building)->getItemsRotation();
+			auto slots = win->getAllSlots();
+			int size = items.size() < slots.size() ? items.size() : slots.size();
+			for (int idx = 0; idx < size; idx++) {
+				slots.at(idx)->changeItem(items.at(idx));
+			}
+		}
+	}
 }
