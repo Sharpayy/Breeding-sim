@@ -187,6 +187,7 @@ public:
 						auto buildingPos = building->getPosition();
 						if (glm::distance(mousePos, buildingPos) < 64.0f) {
 							inv.ActivateWindow(gui_windows.interaction);
+							buildingPos = getOnScreenPosition(buildingPos);
 							gui_windows.interaction->changeWindowPosition(buildingPos.x + 128, buildingPos.y - 64);
 						}
 					}
@@ -210,14 +211,25 @@ public:
 		}
 	}
 
+	glm::vec2 getOnScreenPosition(glm::vec2 p)
+	{
+		glm::vec4 res = r->MVP.matProjCamera * glm::vec4(p.x, p.y, 0.0f, 1.0f);
+
+		return glm::vec2((res.x * MAP_WIDTH) / (2.0 * res.w) + MAP_WIDTH / 2.0f, (-res.y * MAP_HEIGHT) / (2.0 * res.w) + MAP_HEIGHT / 2.0f);
+	}
+
 	glm::vec2 getMousePosition() {
 		int x, y;
 		SDL_GetMouseState(&x, &y);
 		return glm::vec2{ x,y };
 	}
 
-	glm::vec2 getCorrectedMousePosition() {
-		glm::vec2 mousePos = getMousePosition();
+	glm::vec2 getCorrectedMousePosition(glm::vec2 v = glm::vec2((float)0xbadc0ffe)) {
+		glm::vec2 mousePos;
+		if (v == glm::vec2((float)0xbadc0ffe))
+			mousePos = getMousePosition();
+		else
+			mousePos = v;
 		glm::vec2 screen = glm::vec2(MAP_WIDTH,MAP_HEIGHT);
 
 		glm::vec4 nds;

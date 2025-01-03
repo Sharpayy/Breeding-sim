@@ -20,6 +20,8 @@ int EntityCombatCloseRange::MoveEntity(void* battleContext)
     for (int i = 0; i < bc->size; i++)
     {
         Entity* e = bc->entities[i];
+        if (e->getHp() <= 0.0f)
+            continue;
         vec2 enemyPos = floor(e->getPosition() / vec2(tileSize));
         if (dist_close > distance(tilePos, enemyPos))
         {
@@ -51,6 +53,11 @@ int EntityCombatCloseRange::NextState()
     }
 
     return 0;
+}
+
+int EntityCombatCloseRange::CanMoveEntity()
+{
+    return 1;
 }
 
 EntityCombatLongRange::EntityCombatLongRange(Entity* self)
@@ -93,6 +100,11 @@ int EntityCombatLongRange::NextState()
     return 0;
 }
 
+int EntityCombatLongRange::CanMoveEntity()
+{
+    return 1;
+}
+
 EntityCombatDead::EntityCombatDead(Entity* self)
 {
     this->self = self;
@@ -104,6 +116,11 @@ int EntityCombatDead::MoveEntity(void* battleContext)
 }
 
 int EntityCombatDead::NextState()
+{
+    return 0;
+}
+
+int EntityCombatDead::CanMoveEntity()
 {
     return 0;
 }
@@ -141,6 +158,11 @@ int EntityCombatEscape::NextState()
     return 0;
 }
 
+int EntityCombatEscape::CanMoveEntity()
+{
+    return 1;
+}
+
 EntityCombatStand::EntityCombatStand(Entity* self)
 {
     this->self = self;
@@ -170,6 +192,11 @@ int EntityCombatStand::MoveEntity(void* battleContext)
 }
 
 int EntityCombatStand::NextState()
+{
+    return 0;
+}
+
+int EntityCombatStand::CanMoveEntity()
 {
     return 0;
 }
