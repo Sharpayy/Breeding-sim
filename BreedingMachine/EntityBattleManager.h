@@ -37,11 +37,12 @@ public:
 		fightMouse = glGetUniformLocation(pid, "MouseCoord");
 		fightMapDim = glGetUniformLocation(pid, "MapDimensions");
 		fightMapTil = glGetUniformLocation(pid, "MapTiles");
+		fightMapVisn = glGetUniformLocation(pid, "visn");
 
 		this->mapProgram = fmp;
 		this->mapVao = mapVao;
 
-		selectedEntity = nullptr;
+		selectedEntity = nullptr; 
 	}
 
 	void createBattleMap(std::string battleMapName, uint64_t texture, std::filesystem::path collisionPath, float mapSize, float tileSize) {
@@ -66,18 +67,20 @@ public:
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
-			//e->setEntityPosition({512,512});
+			Stats* st = e->getStats();
+			st->stamina = i + 0.1f;
 			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
+			//entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
 			offsetY -= 1;
-			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
+			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)));
 		}
 		units = data.s2->getSquadComp();
 		offsetY = (tilesAmountX / 2) - ((tilesAmountX / 2) - (units->size / 2));
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
-			e->setEntityPosition(glm::vec2{ - (offsetX + 1) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
 			offsetY -= 1;
+			e->setEntityPosition(glm::vec2{ - (offsetX + 1) * currentMap.tileSize, (offsetY + 1) * currentMap.tileSize });
 			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
 		}
 	}
@@ -104,7 +107,7 @@ public:
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
-			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
+			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)), true);
 		}
 
 		mapProgram.use();
@@ -116,10 +119,24 @@ public:
 		glUniform2f(fightMapTil, currentMap.mapSize / currentMap.tileSize, currentMap.mapSize / currentMap.tileSize);
 
 		glUniform2f(fightMapDim, currentMap.mapSize, currentMap.mapSize);
-		glm::vec2 mp = unitSelectedPos;
+		glm::vec2 mp;
+		float vision;
+
+		if (selectedEntity != nullptr)
+		{
+			mp = selectedEntity->getPosition() - glm::vec2(32.0f, 32.0f);
+			vision = selectedEntity->getStats()->stamina;
+		}
+		else
+		{
+			mp = glm::vec2(-1000.0f);
+			vision = 0.0f;
+		}
 		glUniform2f(fightMouse, mp.x + currentMap.mapSize / 2.0f, mp.y + currentMap.mapSize / 2.0f);
 		glUniform1f(fightMoveX, -currentMap.mapSize / 2.0f);
 		glUniform1f(fightMoveY, -currentMap.mapSize / 2.0f);
+
+		glUniform1f(fightMapVisn, vision);
 
 		glUniformHandleui64ARB(1, currentMap.texture);
 
@@ -224,19 +241,42 @@ private:
 		return glm::vec2(nds.x, nds.y);
 	}
 
-	bool moveEntity(glm::vec2 e, Entity* entity) {
-		if (!entityMovementManager.pathExist())
+	bool moveEntityNear(glm::vec2 e, Entity* entity)
+	{
+		for (int a = 1; a > -1; a--)
 		{
-			return entityMovementManager.createEntityPath(Astar::point{ (int)e.x, (int)e.y }, entity);
+			for (int b = 1; b > -1; b--)
+			{
+				if (entityMovementManager.pass(e + glm::vec2(64.0f * a, 64.0f * b) + 512.0f) == false)
+				{
+					moveEntity(e + glm::vec2(64.0f * a, 64.0f * b), entity);
+					return true;
+				}
+			}
 		}
 		return false;
 	}
 
+	bool moveEntity(glm::vec2 e, Entity* entity) {
+		bool r = false;
+		if (!entityMovementManager.pathExist())
+		{
+			entityMovementManager.DelCollision(entity->getPosition() + 512.0f - 32.0f);
+			r = entityMovementManager.createEntityPath(Astar::point{ (int)e.x + 512, (int)e.y  + 512}, entity);
+			e.x = ((int)((e.x + 512.0f) / currentMap.tileSize)) * currentMap.tileSize;
+			e.y = ((int)((e.y + 512.0f) / currentMap.tileSize)) * currentMap.tileSize;
+			entityMovementManager.AddCollision(e);
+			return r;
+		}
+		return r;
+	}
+
 	void inputHandler() {
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
-			auto pos = getCorrectedMousePosition();
-			if(selectedEntity) {
-				moveEntity(pos + 512.0f, selectedEntity);
+			if (!selectedEntity) selectedEntity = getEntity();
+			else {
+				auto pos = getCorrectedMousePosition();
+				moveEntity(pos, selectedEntity);
 			}
 			selectedEntity = getEntity();
 			std::cout << selectedEntity << "\n";
@@ -267,6 +307,7 @@ private:
 	uint32_t fightMouse;
 	uint32_t fightMapDim;
 	uint32_t fightMapTil;
+	uint32_t fightMapVisn;
 
 	rasticore::VertexBuffer mapVao;
 	rasticore::Program mapProgram;

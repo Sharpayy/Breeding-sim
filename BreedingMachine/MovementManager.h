@@ -201,6 +201,11 @@ public:
 		entityMovementData.entity = entity;
 	}
 
+	bool pass(glm::vec2 p)
+	{
+		return movement.canPass(Astar::point{ (int)p.x, (int)p.y });
+	}
+
 	bool pathExist() {
 		return entityMovementData.path.size();
 	}
@@ -218,6 +223,16 @@ public:
 		return mapSize;
 	}
 
+	void AddCollision(glm::vec2 v)
+	{
+		movement.addBlockade(Astar::point{ (int)v.x, (int)v.y });
+	}
+
+	void DelCollision(glm::vec2 v)
+	{
+		movement.delBlockade(Astar::point{ (int)v.x, (int)v.y });
+	}
+
 private:
 	void moveEntity() {
 		if (!entityMovementData.entity) return;
@@ -232,7 +247,7 @@ private:
 
 			prevPosition = glm::vec2{ prevAP.x + offset, prevAP.y + offset};
 			nextPosition = glm::vec2{ nextAP.x + offset, nextAP.y + offset };
-			float speed = 0.01f;
+			float speed = 0.05f;
 			entityMovementData.dt = glm::clamp(0.0f, 1.0f, speed + entityMovementData.dt);
 			currentPosition = lerp(prevPosition, nextPosition, entityMovementData.dt);
 			entityMovementData.entity->setEntityPosition(currentPosition);

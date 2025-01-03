@@ -50,6 +50,10 @@ public:
 
 	void clearCollisionBlocks();
 
+	void delBlockade(point p);
+
+	bool canPass(point p);
+
 private:
 
 	double ManhattanDistance(point s, point e);
