@@ -405,7 +405,7 @@ struct GUI_DraggedWindow {
 struct GUI_DraggedItem {
 	bool wasPressed = false;
 	Item* item;
-	glm::vec2 offset;
+	Slot* previousSlot;
 };
 
 void ActivateWindow(void* v1, void* v2, Inventory* inv, Inventory::Window* win) {

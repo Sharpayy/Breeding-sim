@@ -154,18 +154,20 @@ public:
 			else if (draggedObj.draggedItem.item && !draggedObj.draggedItem.wasPressed) {
 				draggedObj.draggedItem.wasPressed = true;
 				inv.SetCursorItemHold(draggedObj.draggedItem.item);
-			/*	auto dim = draggedObj.draggedItem.item.->getDim();
-				int offsetX = abs(dim.position.x - mp.x);
-				int offsetY = abs(dim.position.y - mp.y);
-				draggedObj.draggedWindow.offset.x = offsetX;
-				draggedObj.draggedWindow.offset.y = offsetY;*/
 			}
-			else if (draggedObj.draggedItem.wasPressed) {
-				//std::cout << offset << "\n";
-				//draggedObj.draggedWindow.win->changeWindowPosition(mp.x - draggedObj.draggedWindow.offset.x, mp.y - draggedObj.draggedWindow.offset.y);
-			}
+			//else if (draggedObj.draggedItem.wasPressed) {
+			//	inv.getSlot
+			//	//std::cout << offset << "\n";
+			//	//draggedObj.draggedWindow.win->changeWindowPosition(mp.x - draggedObj.draggedWindow.offset.x, mp.y - draggedObj.draggedWindow.offset.y);
+			//}
 		}
 		else {
+			auto mp = getMousePosition();
+			if (draggedObj.draggedItem.item) {
+				Slot* slot = inv.getSlot(mp);
+				draggedObj.draggedItem.previousSlot->changeItem(draggedObj.draggedItem.item);
+				if (slot) inv.swapItems(slot, draggedObj.draggedItem.previousSlot);
+			}
 			draggedObj.draggedWindow = {};
 			draggedObj.draggedItem = {};
 			inv.SetCursorItemHold(nullptr);
@@ -182,6 +184,8 @@ public:
 				Slot* slot = inv.getSlot(mp);
 				if (slot) {
 					draggedObj.draggedItem.item = slot->getItem();
+					slot->changeItem(nullptr);
+					draggedObj.draggedItem.previousSlot = slot;
 				}
 				//ArmorItem item = ArmorItem();
 				////item.setAsset((void*)LoadTextureFromFile("Data\\EquipmentIconsC2.png"));
@@ -206,6 +210,8 @@ public:
 						auto buildingPos = building->getPosition();
 						if (glm::distance(mousePos, buildingPos) < 64.0f) {
 							inv.ActivateWindow(gui_windows.interaction);
+							buildingPos = getOnScreenPosition(buildingPos);
+							selectedBuilding.building = building;
 							gui_windows.interaction->changeWindowPosition(buildingPos.x + 128, buildingPos.y - 64);
 						}
 					}
