@@ -32,12 +32,16 @@ public:
 		std::filesystem::path collisionPath = path, buildingPath = path;
 		collisionPath.append("Data\\collision.txt");
 		buildingPath.append("Data\\buildings.txt");
+		itemLoader = ItemLoader();
 		movementManager = SquadMovementManager{ collisionPath, 4096, 16, r_, rect_mcd };
 		buildingManager = BuildingManager{ buildingPath };
 		factionManager = FactionManager{r_, rect_mcd, 16};
-		itemLoader = ItemLoader();
 		cameraOffset = CameraOffset{ 0, 0, 1.0f };
 		initGame(path);
+		for (auto& building : buildingManager.getAllBuildings()) {
+			building->setRandomItemsRotation(&itemLoader, 10);
+		}
+
 		game_type = GAMETYPE_BIGMAP;
 
 		std::random_device rd;
@@ -159,8 +163,7 @@ public:
 			if (inv.isGuiClicked(mp)) {
 				Inventory::Window* win = inv.setPressedWindowOnTop(mp);
 				if (win->getGWindow()->CollisionCheck(mp.x, mp.y)) {
-					
-
+					//
 				};
 				Slot* slot = inv.getSlot(mp);
 
@@ -187,6 +190,7 @@ public:
 						auto buildingPos = building->getPosition();
 						if (glm::distance(mousePos, buildingPos) < 64.0f) {
 							inv.ActivateWindow(gui_windows.interaction);
+							selectedBuilding.building = building;
 							gui_windows.interaction->changeWindowPosition(buildingPos.x + 128, buildingPos.y - 64);
 						}
 					}
@@ -288,7 +292,7 @@ private:
 		itemLoader.loadItem(guardian_chestplate);
 		ArmorItem guardian_greaves = { "guardian greaves", (void*)LoadTextureFromFile("","EquipmentIconsC216"), LEGS, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(guardian_greaves);
-		ArmorItem guardian_boots = { "guardian boots", (void*)LoadTextureFromFile("","EquipmentIconsC231"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
+		ArmorItem guardian_boots = { "guardian boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC231.png","EquipmentIconsC231"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0 };
 		itemLoader.loadItem(guardian_boots);
 
 		ArmorItem copper_helmet = { "copper helmet", (void*)LoadTextureFromFile("","EquipmentIconsC163"), HELMET, new ArmorItem::ObjectStatistic{0}, 0 };
@@ -393,6 +397,7 @@ private:
 			}
 		}
 
+		gui_windows.shop = win;
 		//inv.ActivateWindow(win);
 	}
 	void initShopRecruits(int width, int height, uint64_t texItemFrame) {
@@ -425,7 +430,9 @@ private:
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
-		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 40, 0.1f), "Trade", LoadTextureFromFile("Data\\red.png")));
+		GComponentButton* trade = new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 40, 0.1f), "Trade", LoadTextureFromFile("Data\\red.png"));
+		trade->callback = std::bind(setShopRotation, std::placeholders::_1, std::placeholders::_2, &selectedBuilding.building, &inv, gui_windows.shop);
+		gwin->AddComponent(trade);
 		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 90, 0.1f), "Recruit", LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 140, 0.1f), "Wait", LoadTextureFromFile("Data\\red.png")));
 		//inv.ActivateWindow(win);
@@ -804,7 +811,12 @@ private:
 		Inventory::Window* partyView;
 		Inventory::Window* inventory;
 		Inventory::Window* interaction;
+		Inventory::Window* shop;
 	} gui_windows;
+
+	struct SelectedBuilding {
+		Building* building;
+	} selectedBuilding;
 
 	struct DraggedObj {
 		GUI_DraggedWindow draggedWindow = {};
