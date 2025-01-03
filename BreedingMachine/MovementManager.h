@@ -191,7 +191,6 @@ public:
 		float offset = tileSize / 2.0f;
 		position.x = ((int)((position.x) / tileSize)) * tileSize;
 		position.y = ((int)((position.y) / tileSize)) * tileSize;
-		auto z = e;
 		e.x = (((int)((e.x) / tileSize)) * tileSize);
 		e.y = (((int)((e.y) / tileSize)) * tileSize);
 		if (glm::vec2{ e.x, e.y } == position) {

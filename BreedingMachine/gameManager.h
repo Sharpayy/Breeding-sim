@@ -440,9 +440,9 @@ private:
 
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
-		initShopRecruits(300, 400, texItemFrame);
+		//initShopRecruits(300, 400, texItemFrame);
 		//initOverworldHud();
-		initBattleHud();
+		//initBattleHud();
 		//initItems();
 		//initPrimaryInv(300, 400, texItemFrame);
 		//inv.changeWindowPosition("inventory", 200, 0);
@@ -608,6 +608,7 @@ private:
 				if (glm::distance(squadF->getSquadPosition(), player->getSquadPosition()) <= 4.0f) {
 					game_type = GAMETYPE_FIGHT;
 					EntityBattleManager::BattleData battleData = {
+						player,
 						squadF,
 					};
 					r->setCameraMatrix(glm::lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), (glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(0.0f, 1.0f, 0.0f)));
