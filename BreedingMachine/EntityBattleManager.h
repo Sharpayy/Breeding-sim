@@ -50,6 +50,8 @@ public:
 	}
 
 	void startBattle(BattleData& battleData) {
+		tour = BT_TOUR_AI;
+		printf("Bitka!\n");
 		data = battleData;
 		int idx = (int)(rand() % battleMaps.size());
 		auto it = battleMaps.begin();
@@ -70,6 +72,7 @@ public:
 			Stats* st = e->getStats();
 			st->stamina = i + 0.1f;
 			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
+			e->EntityClearMove();
 			//entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
 			offsetY -= 1;
 			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)));
@@ -84,10 +87,11 @@ public:
 			e->SetHp(90.0f);
 			e->setEntityPosition(glm::vec2{ -(offsetX + 1) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
 			entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
+			e->EntityClearMove();
 			offsetY -= 1;
 			AiDecideEntityInitialState(e);
-			int b = e->state->MoveEntity(&data);
-			if (b == true) moveEntityNear(e->travel, e);
+			//int b = e->state->MoveEntity(&data);
+			//if (b == true) moveEntityNear(e->travel, e);
 			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)));
 		}
 	}
@@ -101,6 +105,20 @@ public:
 		inputHandler();
 		entityMovementManager.update();
 		Squad::SquadComp* units = data.s1->getSquadComp();
+
+		if (AiCanBattle() == true)
+		{
+			if (tour == BT_TOUR_AI && entityMovementManager.pathExist() == false)
+			{
+				Entity* ent = AiGetNextMoveableEntity();
+				auto b = ent->state->MoveEntity(&data);
+				ent->EntitySetMove();
+				if (b == true)
+					moveEntityNear(ent->travel, ent);
+				tour = BT_TOUR_PLAYER;
+			}
+		}
+
 
 		Entity* e = nullptr;
 		r->BindActiveModel(DUPA_CYCE_WADOWICE);
@@ -152,6 +170,32 @@ public:
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		r->RenderSelectedModel(DUPA_CYCE_WADOWICE);
+	}
+
+	Entity* AiGetNextMoveableEntity()
+	{
+		Entity* found = NULL;
+		Squad::SquadComp* units = data.s2->getSquadComp();
+		for (int i = 0; i < units->size; i++)
+		{
+			if (units->entities[i]->state->CanMoveEntity() == true && units->entities[i]->canMove() == true)
+			{
+				found = units->entities[i];
+				return found;
+			}
+		}
+
+		for (int i = 0; i < units->size; i++)
+		{
+			units->entities[i]->EntityClearMove();
+		}
+		
+		return AiGetNextMoveableEntity();
+	}
+
+	bool AiCanBattle()
+	{
+		return true;
 	}
 
 	float AiGetUnitArmor(Entity* e)
@@ -295,11 +339,19 @@ private:
 			}
 			else
 			{
-				auto pos = getCorrectedMousePosition();
-				moveEntity(pos, selectedEntity);
+				if (tour == BT_TOUR_PLAYER && selectedEntity->canMove() == true)
+				{
+					auto pos = getCorrectedMousePosition();
+					moveEntity(pos, selectedEntity);
+					selectedEntity->EntitySetMove();
+					tour = BT_TOUR_AI;
+				}
 			}
 		}
 	}
+
+	uint32_t aiNextUnitCounter;
+	uint32_t tour;
 
 	EntityMovementManager entityMovementManager;
 	//

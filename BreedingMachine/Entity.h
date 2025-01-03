@@ -39,8 +39,9 @@ public:
 		Entity* self;
 		virtual int MoveEntity(void* battleContext) = 0;
 		virtual int NextState() = 0;
+		virtual int CanMoveEntity() = 0;
+		//virtual int AttackEntity(void* battleContext) = 0;
 	};
-
 
 	uint32_t id;
 	struct EquipedItems {
@@ -77,6 +78,21 @@ public:
 		state = new_;
 	}
 
+	void EntityClearMove()
+	{
+		canMoveEnt = true;
+	}
+
+	void EntitySetMove()
+	{
+		canMoveEnt = false;
+	}
+
+	bool canMove()
+	{
+		return canMoveEnt;
+	}
+
 	glm::vec2 getPosition() {
 		return position;
 	}
@@ -111,6 +127,7 @@ private:
 	Stats stats;
 	uint64_t texture;
 	EquipedItems items;
+	bool canMoveEnt;
 
 	float hp;
 };
@@ -196,6 +213,7 @@ public:
 	EntityCombatCloseRange(Entity* self);
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
+	virtual int CanMoveEntity();
 };
 
 class EntityCombatLongRange : public Entity::IEntityState
@@ -204,6 +222,7 @@ public:
 	EntityCombatLongRange(Entity* self);
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
+	virtual int CanMoveEntity();
 };
 
 class EntityCombatDead : public Entity::IEntityState
@@ -212,6 +231,7 @@ public:
 	EntityCombatDead(Entity* self);
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
+	virtual int CanMoveEntity();
 };
 
 class EntityCombatEscape : public Entity::IEntityState
@@ -220,6 +240,7 @@ public:
 	EntityCombatEscape(Entity* self);
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
+	virtual int CanMoveEntity();
 };
 
 class EntityCombatStand : public Entity::IEntityState
@@ -228,6 +249,7 @@ public:
 	EntityCombatStand(Entity* self);
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
+	virtual int CanMoveEntity();
 };
 
 class EntityItem : public Item {

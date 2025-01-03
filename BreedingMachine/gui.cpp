@@ -405,18 +405,6 @@ void GComponentImage::Render(glm::mat4 pm)
 
 int GComponentImage::ClickCheck(float x, float y, void* window)
 {
-	float _min = -0.5f * scale_x + pos.x;
-	float _max = 0.5f * scale_x + pos.x;
-
-	if (x >= _min && x < _max)
-	{
-		_min = -0.5f * scale_y + pos.y;
-		_max = 0.5f * scale_y + pos.y;
-		if (y >= _min && y < _max)
-		{
-			return 1;
-		}
-	}
 	return 0;
 }
 
