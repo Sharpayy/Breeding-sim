@@ -98,6 +98,10 @@ public:
 		this->slotDim.position = position;
 	}
 
+	glm::vec2 getPosition() {
+		return slotDim.position;
+	}
+
 	bool changeItem(Item* object) {
 		if (object == nullptr)
 		{
@@ -134,18 +138,78 @@ private:
 class Inventory {
 public:
 	Inventory() {
-		windowSlots[0] = {};
-		windowSlots[1] = {};
+		windows = {};
+		active_windows = {};
 
 		cursor_comp = new GComponentImage(glm::vec2(50.0f), glm::vec3(0.0f, 0.0f, 50.0f), 0);
 	}
 
-	struct Window {
+	class Window {
+	public:
+		Window(std::string name, ObjectDim dim, uint8_t height, std::vector<Slot*> slots, GWindow* gwin) {
+			this->name = name;
+			this->dim = dim;
+			this->height = height;
+			this->slots = slots;
+			this->gwin = gwin;
+		}
+
+		Slot* AddSlotToWindow(Slot slot, uint64_t tex) {
+			ObjectDim slotDim = slot.getDim();
+			if (!dim.isRectInRect(slotDim)) return nullptr;
+			Slot* nslot = new Slot{ slot.getItem(), slotDim.position, slotDim.width, slotDim.height, slot.getSlotType() };
+			nslot->item_comp = new GComponentImage(glm::vec2(slot.getDim().width, slot.getDim().height), glm::vec3(slot.getDim().position.x, slot.getDim().position.y, 0.1f), 0);
+			nslot->slot_comp = new GComponentImage(glm::vec2(slot.getDim().width, slot.getDim().height), glm::vec3(slot.getDim().position.x, slot.getDim().position.y, 0.2f), tex);
+			slots.push_back(nslot);
+			nslot->parent_win = gwin;
+			gwin->AddComponent(nslot->item_comp);
+			gwin->AddComponent(nslot->slot_comp);
+			return nslot;
+		}
+
+		std::vector<Slot*> getAllSlotsFromWindow() {
+			return slots;
+		}
+
+		GWindow* getGWindow() {
+			return gwin;
+		}
+
+		std::string getWindowName() {
+			return name;
+		}
+
+		uint8_t getWindowHeight() {
+			return height;
+		}
+
+		void setWindowHeight(uint8_t height) {
+			this->height = height;
+		}
+
+		ObjectDim getDim() {
+			return dim;
+		}
+
+		void changeWindowPosition(int x, int y) {
+			int offsetX, offsetY;
+			offsetX = dim.position.x + x;
+			offsetY = dim.position.y + y;
+			dim.position.x = x;
+			dim.position.y = y;
+			for (auto& slot : slots) {
+				glm::vec2 slotCurrentPosition = slot->getPosition();
+				slot->changePosition(glm::vec2{ offsetX + slotCurrentPosition.x, offsetY + slotCurrentPosition.y });
+			}
+			gwin->ChangeComponentPosition(x, y);
+		}
+
+	private:
 		std::string name;
 		ObjectDim dim;
 		uint8_t height;
 		std::vector<Slot*> slots;
-		GWindow* win;
+		GWindow* gwin;
 	};
 
 	void SetCursorPosition(glm::vec2 pos)
@@ -171,14 +235,14 @@ public:
 	void RenderText(glm::mat4 pm)
 	{
 		float base_depth = 2.0f;
-		auto wins = getActiveWindows();
+		auto wins = active_windows;
 
 		auto svec = std::vector<Window*>(wins.rbegin(), wins.rend());
 		for (auto& i : svec)
 		{
-			i->win->UpdateDepth(base_depth);
-			i->win->UpdateZComp();
-			i->win->RenderText(pm);
+			i->getGWindow()->UpdateDepth(base_depth);
+			i->getGWindow()->UpdateZComp();
+			i->getGWindow()->RenderText(pm);
 			base_depth += 2.0f;
 		}
 	}
@@ -191,9 +255,9 @@ public:
 		auto svec = std::vector<Window*>(wins.rbegin(), wins.rend());
 		for (auto& i : svec)
 		{
-			i->win->UpdateDepth(base_depth);
-			i->win->UpdateZComp();
-			i->win->Render(pm);
+			i->getGWindow()->UpdateDepth(base_depth);
+			i->getGWindow()->UpdateZComp();
+			i->getGWindow()->Render(pm);
 			base_depth += 2.0f;
 		}
 
@@ -207,110 +271,62 @@ public:
 		cursor_comp->pos.y = pos.y;
 	}
 
-	bool setWindowHeight(std::string windowName, uint8_t height) {
-		bool active = false;
-		Window* win = windowExist(windowName, active);
+	bool setWindowHeight(Window* window, uint8_t height) {
+		Window* win = windowExist(window);
 		if (!win)
 		{
-			active = true;
-			win = windowExist(windowName, active);
+			win = windowExist(window);
 		}
 		else if (!win) return false;
-		win->height = height;
-		sortVec(active);
+		win->setWindowHeight(height);
+		sortVec();
 	}
 
-	bool changeWindowPosition(std::string windowName, int x, int y) {
-		bool active = false;
-		Window* win = windowExist(windowName, active);
-		if (!win) {
-			active = true;
-			win = windowExist(windowName, active);
+	bool ActivateWindow(Window* win) {
+		Window* winExist = windowExist(win);
+		Window* winIsActive = windowExistActive(win);
+		if (winExist && !winIsActive) {
+			win->setWindowHeight(MAXINT64);
+			active_windows.push_back(win);
+			sortVec();
+
+			return true;
 		}
-		if (!win) return false;
-		int offsetX, offsetY;
-		offsetX = win->dim.position.x + x;
-		offsetY = win->dim.position.y + y;
-		win->dim.position.x = x;
-		win->dim.position.y = y;
-		auto slots = getAllSlotsFromWindow(windowName);
-		for (auto& slot : slots) {
-			slot->changePosition(glm::vec2{ offsetX,offsetY });	
+		else if (winExist && winIsActive) {
+			active_windows.erase(std::remove(active_windows.begin(), active_windows.end(), win), active_windows.end());
+			win->setWindowHeight(MAXINT64);
+			active_windows.push_back(win);
+
+			return true;
 		}
-		win->win->ChangeComponentPosition(x, y);
-	}
-
-	bool ActivateWindow(std::string windowName) {
-		Window* win = windowExist(windowName, 0);
-		if (!win) return false;
-		win->height = MAXINT64;
-		windowSlots[1].push_back(win);
-		auto& vectorAt1 = windowSlots[0];
-		auto it = std::find(vectorAt1.begin(), vectorAt1.end(), win);
-		if (it != vectorAt1.end()) {
-			vectorAt1.erase(it);
-		}
-		win->height = 0xff;
-		sortVec(1);
-	}
-
-	bool DisableWindow(std::string windowName) {
-		Window* win = windowExist(windowName, 1);
-		if (!win) return false;
-		win->height = 0;
-		windowSlots[0].push_back(win);
-		auto& vectorAt1 = windowSlots[1];
-		auto it = std::find(vectorAt1.begin(), vectorAt1.end(), win);
-		if (it != vectorAt1.end()) {
-			vectorAt1.erase(it);
-		}
-		sortVec(0);
-	}
-
-	void AddWindow(std::string windowName, ObjectDim dim, uint8_t height, uint64_t tex) {
-		Window* win = new Window{ windowName, dim, height, {}, new GWindow{ dim.position, glm::vec2{ dim.width, dim.height }, tex } };
-		windowSlots[0].push_back(win);
-		sortVec(0);
-	}
-
-	GWindow* getGWindow(std::string windowName) {
-		Window* win = windowExist(windowName, 0);
-		if (!win) win = windowExist(windowName, 1);
-		if (!win) return nullptr;
-		return win->win;
-	}
-
-	std::vector<Window*> getActiveWindows() {
-		return windowSlots.at(1);
-	}
-
-	bool isWindowActive(std::string windowName) {
-		Window* win = windowExist(windowName, 1);
-		if (win) return true;
 		else return false;
 	}
 
-	std::vector<Slot*> getAllSlotsFromWindow(std::string windowName) {
-		Window* win = windowExist(windowName, 0);
-		if (!win) win = windowExist(windowName, 1);
-		if (!win) return {};
-		return win->slots;
+	bool DisableWindow(Window* win) {
+		Window* winExist = windowExist(win);
+		Window* winIsActive = windowExistActive(win);
+		if (winExist && winIsActive) {
+			active_windows.erase(std::remove(active_windows.begin(), active_windows.end(), win), active_windows.end());
+
+			return true;
+		}
+		return false;
 	}
 
-	Slot* AddSlotToWindow(std::string windowName, Slot slot, uint64_t tex) {
-		Window* win = windowExist(windowName, 0);
-		if (!win) win = windowExist(windowName, 1);
-		if (!win) return nullptr;
-		ObjectDim slotDim = slot.getDim();
-		if (!win->dim.isRectInRect(slotDim)) return nullptr;
-		Slot* nslot = new Slot{ slot.getItem(), slotDim.position, slotDim.width, slotDim.height, slot.getSlotType() };
-		nslot->item_comp = new GComponentImage(glm::vec2(slot.getDim().width, slot.getDim().height), glm::vec3(slot.getDim().position.x, slot.getDim().position.y, 0.1f), 0);
-		nslot->slot_comp = new GComponentImage(glm::vec2(slot.getDim().width, slot.getDim().height), glm::vec3(slot.getDim().position.x, slot.getDim().position.y, 0.2f), tex);
-		win->slots.push_back(nslot);
-		nslot->parent_win = win->win;
-		win->win->AddComponent(nslot->item_comp);
-		win->win->AddComponent(nslot->slot_comp);
-		return nslot;
+	Window* AddWindow(std::string windowName, ObjectDim dim, uint8_t height, uint64_t tex) {
+		Window* win = new Window{ windowName, dim, height, {}, new GWindow{ dim.position, glm::vec2{ dim.width, dim.height }, tex } };
+		windows.push_back(win);
+		return win;
+	}
+
+	std::vector<Window*> getActiveWindows() {
+		return active_windows;
+	}
+
+	bool isWindowActive(Window* win) {
+		Window* winExist = windowExistActive(win);
+		if (winExist) return true;
+		else return false;
 	}
 
 	bool swapItems(Slot* slot1, Slot* slot2) {
@@ -321,27 +337,32 @@ public:
 		return true;
 	}
 
-	void setPressedWindowOnTop(glm::vec2 position) {
-		bool windowExist = false;
-		for (auto& window : windowSlots.at(true)) {
-			if (pointInRect(position, window->dim)) {
-				window->height = INT_MAX;
-				windowExist = true;
+	Window* setPressedWindowOnTop(glm::vec2 position) {
+		Window* windowExist = nullptr;
+		for (auto& window : active_windows) {
+			if (pointInRect(position, window->getDim())) {
+				window->setWindowHeight(INT_MAX);
+				windowExist = window;
+				break;
 			}
 		}
-		if(windowExist) sortVec(1);
+		if (windowExist) {
+			sortVec();
+			return windowExist;
+		}
+		return nullptr;
 	}
 
 	Slot* getSlot(glm::vec2 position) {
-		uint8_t windowsAmount = windowSlots.at(true).size();
+		uint8_t windowsAmount = getActiveWindows().size();
 		uint8_t height = 0;
 		Slot* potentialSlot = nullptr;
 		int i = 0;
-		for (auto& window : windowSlots.at(true)) {
+		for (auto& window : getActiveWindows()) {
 			if (potentialSlot) break;
 			i++;
-			if (pointInRect(position, window->dim)) {
-				for (auto& slot : window->slots) {
+			if (pointInRect(position, window->getDim())) {
+				for (auto& slot : window->getAllSlotsFromWindow()) {
 					if (pointInRect(position, slot->getDim())) {
 						height = i - 1;
 						potentialSlot = slot;
@@ -351,9 +372,17 @@ public:
 			}
 		}
 		for (int x = 0; x < i - 1; x++) {
-			if (pointInRect(position, windowSlots.at(true).at(x)->dim)) { potentialSlot = nullptr; break; };
+			if (pointInRect(position, active_windows.at(x)->getDim())) { potentialSlot = nullptr; break; };
 		}
 		return potentialSlot;
+	}
+
+	bool isGuiClicked(glm::vec2 position) {
+		bool guiClicked = false;
+		for (auto& window : getActiveWindows()) {
+			if (pointInRect(position, window->getDim())) return true;
+		}
+		return false;
 	}
 
 private:
@@ -362,30 +391,66 @@ private:
 			&& position.y >= dim.position.y && position.y <= dim.position.y + dim.height;
 	}
 
-	Window* windowExist(std::string windowName, bool active) {
-		auto& windows = windowSlots.at(active);
+	Window* windowExist(std::string windowName) {
 		for (auto& window : windows) {
-			if (window->name == windowName) {
+			if (window->getWindowName() == windowName) {
 				return window;
 			}
 		}
 		return nullptr;
 	}
 
-	void sortVec(uint8_t active) {
-		auto& windows = windowSlots.at(active);
+	Window* windowExist(Window* win) {
+		for (auto& window : windows) {
+			if (window == win) {
+				return window;
+			}
+		}
+		return nullptr;
+	}
+
+	Window* windowExistActive(Window* win) {
+		for (auto& window : active_windows) {
+			if (window == win) {
+				return window;
+			}
+		}
+		return nullptr;
+	}
+
+	void sortVec() {
+		auto& windows = active_windows;
 		std::sort(windows.begin(), windows.end(), [](Window* a, Window* b) {
-			return a->height > b->height;
+			return a->getWindowHeight() > b->getWindowHeight();
 			});
-		int height = 0, windowsAmount = windowSlots.at(active).size();
-		for (auto& win : windowSlots.at(active)) {
-			if (win->height != height) win->height = windowsAmount - height;
+		int height = 0, windowsAmount = active_windows.size();
+		for (auto& win : active_windows) {
+			if (win->getWindowHeight() != height) win->setWindowHeight(windowsAmount - height);
 			height++;
 		}
 	}
 
-	std::unordered_map<bool, std::vector<Window*>> windowSlots;
+	std::vector<Window*> windows;
+	std::vector<Window*> active_windows;
+	//std::unordered_map<bool, std::vector<Window*>> windowSlots;
 
 	GComponentImage* cursor_comp;
 	Item* cursor_hold;
 };
+
+void ActivateWindow(void* v1, void* v2, Inventory* inv, Inventory::Window* win) {
+	if (inv) inv->ActivateWindow(win);
+}
+
+void DisableWindow(void* v1, void* v2, Inventory* inv, Inventory::Window* win) {
+	if (inv) inv->DisableWindow(win);
+}
+
+//struct GuiWindowHoover {
+//	Inventory::Window* win;
+//	glm::vec2 offset;
+//} guiWindowHoover;
+//
+//void setHooveredWindow(void* v1, void* v2, Inventory::Window* win) {
+//	guiWindowHoover.win = win;
+//}

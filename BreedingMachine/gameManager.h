@@ -11,6 +11,7 @@
 #include "timer.h"
 #include "TextureLoader.h"
 #include "EntityBattleManager.h"
+#include <functional>
 
 #define THRESHOLD 10.0f
 
@@ -106,7 +107,7 @@ public:
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_I))
 		{
-			if (!inv.isWindowActive("party_view")) {
+		/*	if (!inv.isWindowActive("party_view")) {
 				inv.ActivateWindow("party_view");
 				std::vector<Slot*> slots = inv.getAllSlotsFromWindow("party_view");
 				auto playerComp = player->getSquadComp();
@@ -117,7 +118,7 @@ public:
 				}
 				auto z = 1;
 			}
-			else inv.DisableWindow("party_view");
+			else inv.DisableWindow("party_view");*/
 		}
 		if (instance.KeyPressed(SDL_SCANCODE_R))
 		{
@@ -125,29 +126,37 @@ public:
 			SDL_Delay(100);
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
-			
 			auto mp = getMousePosition();
-			inv.setPressedWindowOnTop(mp);
-			Slot* slot = inv.getSlot(mp);
 
-			ArmorItem item = ArmorItem();
-			item.setAsset((void*)LoadTextureFromFile("Data\\EquipmentIconsC2.png"));
-			
-			if (slot != nullptr)
-			{
-				printf("%p\n", slot->getItem());
-				if (slot->getItem() == nullptr)
+			//GUI
+			if (inv.isGuiClicked(mp)) {
+				Inventory::Window* win = inv.setPressedWindowOnTop(mp);
+				if (win->getGWindow()->CollisionCheck(mp.x, mp.y)) {
+					
+
+				};
+				Slot* slot = inv.getSlot(mp);
+
+				ArmorItem item = ArmorItem();
+				item.setAsset((void*)LoadTextureFromFile("Data\\EquipmentIconsC2.png"));
+
+				if (slot != nullptr)
 				{
-					slot->changeItem(&item);
-				}
-				else
-				{
-					slot->changeItem(nullptr);
+					printf("%p\n", slot->getItem());
+					if (slot->getItem() == nullptr)
+					{
+						slot->changeItem(&item);
+					}
+					else
+					{
+						slot->changeItem(nullptr);
+					}
 				}
 			}
-
-			auto pos = getCorrectedMousePosition();
-			movementManager.createSquadPath(Astar::point{ (int)pos.x, (int)pos.y }, player);
+			else {
+				auto pos = getCorrectedMousePosition();
+				movementManager.createSquadPath(Astar::point{ (int)pos.x, (int)pos.y }, player);
+			}
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
 			auto pos = getCorrectedMousePosition();
@@ -285,8 +294,8 @@ private:
 		int x = (MAP_WIDTH) / 4;
 		int buttonWidth = 100;
 		int offset = 10;
-		inv.AddWindow("overworld_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"));
-		auto gwin = inv.getGWindow("overworld_hud");
+		Inventory::Window* win = inv.AddWindow("overworld_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = win->getGWindow();
 		//labelka z iloœci¹ ch³opa
 		gwin->AddComponent(new GComponentLabel(glm::vec2(150, 20), glm::vec3(x, y, 1.0f), "Squad count: 0/16"));
 		x += 150;
@@ -297,7 +306,7 @@ private:
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Settings", texButton));
 		x += buttonWidth + offset;
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
-		inv.ActivateWindow("overworld_hud");
+		inv.ActivateWindow(win);
 	}
 	void initBattleHud() {
 		uint64_t texButton = LoadTextureFromFile("Data\\red.png");
@@ -307,8 +316,8 @@ private:
 		int labelWidth = 150;
 		int offsetButton = 10;
 		int offsetLabel = 50;
-		inv.AddWindow("battle_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"));
-		auto gwin = inv.getGWindow("battle_hud");
+		Inventory::Window* win = inv.AddWindow("battle_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = win->getGWindow();
 		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.01f), "Current turn: Player"));
 		x += labelWidth + offsetLabel;
 		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Turns passed: 0"));
@@ -321,12 +330,12 @@ private:
 		x += buttonWidth + offsetButton;
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
 
-		inv.ActivateWindow("battle_hud");
+		inv.ActivateWindow(win);
 	}
 	void initShopItems(int width, int height, uint64_t texItemFrame) {
-		inv.AddWindow("shop_items", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		Inventory::Window* win = inv.AddWindow("shop_items", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 
-		auto gwin = inv.getGWindow("shop_items");
+		auto gwin = win->getGWindow();
 		gwin->AddComponent(new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//labelka z napisem inventory + które okienko
 		gwin->AddComponent(new GComponentButton(glm::vec2(60, 20), glm::vec3(140, 5, 0.1f), "Shop", 0));
@@ -334,42 +343,44 @@ private:
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png")));
 		for (int i = 35; i < height - 35; i += 50) {
 			for (int j = 5; j < width - 15; j += 35) {
-				inv.AddSlotToWindow("shop_items", Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
+				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
 				//cena itemku
 				gwin->AddComponent(new GComponentLabel(glm::vec2(1, 1), glm::vec3(j, i + 30, 1.0f), "0"));
 			}
 		}
 
-		inv.ActivateWindow("shop");
+		inv.ActivateWindow(win);
 	}
 	void initShopRecruits(int width, int height, uint64_t texItemFrame) {
-		inv.AddWindow("shop_recruits", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
-		auto gwin = inv.getGWindow("shop_recruits");
-		gwin->AddComponent(new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
+		Inventory::Window* win = inv.AddWindow("shop_recruits", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = win->getGWindow();
+		GComponentButton* hoover = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"));
+		//hoover->callback = setHooveredWindow;
+		gwin->AddComponent(hoover);
 		//wyjœcie
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png")));
 		for (int i = 30; i < height - 90; i += 90) {
 			for (int j = 10; j < width - 60; j += 60) {
-				inv.AddSlotToWindow("shop_recruits", Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
+				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
 				gwin->AddComponent(new GComponentLabel(glm::vec2(20, 20), glm::vec3(j, i + 60, 0.1f), "0"));
 			}
 		}
-		inv.ActivateWindow("shop_recruits");
+		inv.ActivateWindow(win);
 	}
 	void initInteractionViewer(int width, int height) {
-		inv.AddWindow("interaction_viewer", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
-		auto gwin = inv.getGWindow("interaction_viewer");
+		Inventory::Window* win = inv.AddWindow("interaction_viewer", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = win->getGWindow();
 		gwin->AddComponent(new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 40, 0.1f), "Trade", LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 90, 0.1f), "Recruit", LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 140, 0.1f), "Wait", LoadTextureFromFile("Data\\red.png")));
-		inv.ActivateWindow("interaction_viewer");
+		inv.ActivateWindow(win);
 
 	}
 	void initPrimaryInv(int width, int height, uint64_t texItemFrame) {
-		inv.AddWindow("inventory", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
-		auto gwin = inv.getGWindow("inventory");
+		Inventory::Window* win = inv.AddWindow("inventory", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = win->getGWindow();
 		gwin->AddComponent(new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//przyciski do zmiany na kolejny panel ekwipunku
 		//gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(0, 5, 0.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
@@ -379,48 +390,56 @@ private:
 		//labelka z napisem inventory + które okienko
 		gwin->AddComponent(new GComponentButton(glm::vec2(1, 1), glm::vec3(140, 20, 0.1f), "Inventory 1", 0));
 		//przycisk do zamkniêcia okienka
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png")));
+		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
+		exit->callback = (GComponentButton_Callback)  (std::function<void(void*, void*, Inventory*, Inventory::Window*)>)std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
+		gwin->AddComponent(exit);
 		for (int i = 35; i < height - 75; i += 35) {
 			for (int j = 5; j < width - 15; j += 35) {
-				inv.AddSlotToWindow("inventory", Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
+				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
 			}
 		}
 		//labelka z szmeklami
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width / 2, height - 35, 0.5f), "szmekle zydowskie: ", LoadTextureFromFile("Data\\red.png")));
 
-		inv.ActivateWindow("inventory");
+		inv.ActivateWindow(win);
+
+		win->changeWindowPosition(200, 0);
 	}
 	void initCharInv(int width, int height, uint64_t texItemFrame, Entity entity) {
-		inv.AddWindow("char_inv", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
-		auto gwin = inv.getGWindow("char_inv");
+		Inventory::Window* win = inv.AddWindow("char_inv", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = win->getGWindow();
 		gwin->AddComponent(new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//nazwa ch³opa
 		gwin->AddComponent(new GComponentButton(glm::vec2(1, 1), glm::vec3(55, 21, 0.1f), "Ryszard drañ", LoadTextureFromFile("Data\\red.png")));
 		//wyjœcie
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png")));
 		//sloty
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 50), 30.0f, 30.0f, HELMET), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 80), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30 - 30, 80), 30.0f, 30.0f, WEAPON), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30 + 30, 80), 30.0f, 30.0f, WEAPON), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 110), 30.0f, 30.0f, LEGS), texItemFrame);
-		inv.AddSlotToWindow("char_inv", Slot(nullptr, glm::vec2(width / 2 - 30, 140), 30.0f, 30.0f, BOOTS), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, 50), 30.0f, 30.0f, HELMET), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, 80), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 - 30, 80), 30.0f, 30.0f, WEAPON), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 + 30, 80), 30.0f, 30.0f, WEAPON), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, 110), 30.0f, 30.0f, LEGS), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, 140), 30.0f, 30.0f, BOOTS), texItemFrame);
 		//staty
-		inv.ActivateWindow("char_inv");
+		inv.ActivateWindow(win);
 	}
 
 	void initSquadViewer(int width, int height, uint64_t texItemFrame) {
-		inv.AddWindow("party_view", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
-		auto gwin = inv.getGWindow("party_view");
+		Inventory::Window* win = inv.AddWindow("party_view", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = win->getGWindow();
 		//wyjœcie
 		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		for (int i = 30; i < height - 90; i += 90) {
 			for (int j = 10; j < width - 60; j += 60) {
-				inv.AddSlotToWindow("party_view", Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
+				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
 			}
 		}
-		inv.ActivateWindow("party_view");
+		inv.ActivateWindow(win);
 	}
+
+	//void setHooveredWindow(Inventory::Window* win) {
+	//	guiWindowHoover.win = win;
+	//}
 
 	void initGame(std::filesystem::path path) {
 		//DO TOTALNEJ ZMIANY
@@ -440,12 +459,11 @@ private:
 
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
-		//initShopRecruits(300, 400, texItemFrame);
+		initShopRecruits(300, 400, texItemFrame);
 		//initOverworldHud();
 		//initBattleHud();
 		//initItems();
-		//initPrimaryInv(300, 400, texItemFrame);
-		//inv.changeWindowPosition("inventory", 200, 0);
+		initPrimaryInv(300, 400, texItemFrame);
 		//initSquadViewer(300, 400, texItemFrame);
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);

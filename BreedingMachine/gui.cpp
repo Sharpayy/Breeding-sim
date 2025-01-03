@@ -247,21 +247,11 @@ void GComponentButton::Render(glm::mat4 pm)
 
 int GComponentButton::ClickCheck(float x, float y, void* window)
 {
-	float _min = -0.5f * scale_x + pos.x;
-	float _max =  0.5f * scale_x + pos.x;
-
-	if (x >= _min && x < _max)
-	{
-		_min = -0.5f * scale_y + pos.y;
-		_max =  0.5f * scale_y + pos.y;
-		if (y >= _min && y < _max)
-		{
-			val = 1.0f;
-			callback(this, window);
-			return 1;
-		}
+	if (x >= pos.x && x <= pos.x + scale_x
+		&& y >= pos.y && y <= pos.y + scale_y) {
+		callback(this, window);
+		return true;
 	}
-	val = 0.0f;
 	return 0;
 }
 

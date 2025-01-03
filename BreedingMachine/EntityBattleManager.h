@@ -42,7 +42,7 @@ public:
 		this->mapProgram = fmp;
 		this->mapVao = mapVao;
 
-		selectedEntity = nullptr; 
+		selectedEntity = nullptr;
 	}
 
 	void createBattleMap(std::string battleMapName, uint64_t texture, std::filesystem::path collisionPath, float mapSize, float tileSize) {
@@ -57,7 +57,7 @@ public:
 		currentMap = it->second;
 		entityMovementManager = EntityMovementManager{ currentMap.path, currentMap.mapSize, currentMap.tileSize, r, rect_mcd };
 		Squad::SquadComp* units = data.s1->getSquadComp();
-		
+
 		int tilesAmountX, offsetY, offsetX, tileOffset;
 		tilesAmountX = currentMap.mapSize / currentMap.tileSize;
 		offsetY = (tilesAmountX / 2) - ((tilesAmountX / 2) - (units->size / 2));
@@ -79,9 +79,16 @@ public:
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
+			auto s = e->getStats();
+			s->hp = 100.0f;
+			e->SetHp(90.0f);
+			e->setEntityPosition(glm::vec2{ -(offsetX + 1) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
+			entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
 			offsetY -= 1;
-			e->setEntityPosition(glm::vec2{ - (offsetX + 1) * currentMap.tileSize, (offsetY + 1) * currentMap.tileSize });
-			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)));
+			AiDecideEntityInitialState(e);
+			int b = e->state->MoveEntity(&data);
+			if (b == true) moveEntityNear(e->travel, e);
+			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)));
 		}
 	}
 
@@ -107,7 +114,9 @@ public:
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
-			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(-50.0f, -50.0f, 0.0f)), true);
+			AiUpdateEntityState(e);
+			//e->state->MoveEntity(&data);
+			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
 		}
 
 		mapProgram.use();
@@ -160,7 +169,7 @@ public:
 		e->state->NextState();
 	}
 
-	void AiDecideEntityInitialState(Entity* self, EntityBattleManager* battle)
+	void AiDecideEntityInitialState(Entity* self)
 	{
 		if (self->getHp() <= 0.0f)
 		{
@@ -262,7 +271,7 @@ private:
 		if (!entityMovementManager.pathExist())
 		{
 			entityMovementManager.DelCollision(entity->getPosition() + 512.0f - 32.0f);
-			r = entityMovementManager.createEntityPath(Astar::point{ (int)e.x + 512, (int)e.y  + 512}, entity);
+			r = entityMovementManager.createEntityPath(Astar::point{ (int)e.x + 512, (int)e.y + 512 }, entity);
 			e.x = ((int)((e.x + 512.0f) / currentMap.tileSize)) * currentMap.tileSize;
 			e.y = ((int)((e.y + 512.0f) / currentMap.tileSize)) * currentMap.tileSize;
 			entityMovementManager.AddCollision(e);
@@ -273,14 +282,22 @@ private:
 
 	void inputHandler() {
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
-			if (!selectedEntity) selectedEntity = getEntity();
-			else {
+			auto a = getCorrectedMousePosition();
+			printf("%f %f\n", a.x, a.y);
+			Entity* se = getEntity();
+			if (selectedEntity == nullptr)
+			{
+				selectedEntity = se;
+			}
+			else if (selectedEntity != nullptr && se != nullptr)
+			{
+				selectedEntity = se;
+			}
+			else
+			{
 				auto pos = getCorrectedMousePosition();
 				moveEntity(pos, selectedEntity);
 			}
-			selectedEntity = getEntity();
-			std::cout << selectedEntity << "\n";
-			std::cout << pos.x << " " << pos.y << "\n";
 		}
 	}
 
