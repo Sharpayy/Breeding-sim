@@ -125,6 +125,23 @@ public:
 			game_type = (!(game_type - 1) + 1);
 			SDL_Delay(100);
 		}
+		if (instance.KeyPressed(SDL_SCANCODE_LEFT)) {
+			auto mp = getMousePosition();
+			if (draggedObj.draggedWindow.win && !draggedObj.draggedWindow.wasPressed) {
+				draggedObj.draggedWindow.wasPressed = true;
+				auto dim = draggedObj.draggedWindow.win->getDim();
+				int offset = abs(dim.position.x - mp.x);
+				draggedObj.draggedWindow.offset.x = offset;
+			}
+			if (draggedObj.draggedWindow.wasPressed) {
+				//std::cout << offset << "\n";
+				draggedObj.draggedWindow.win->changeWindowPosition(mp.x - draggedObj.draggedWindow.offset.x, mp.y);
+			}
+		}
+		else {
+			draggedObj.draggedWindow = {};
+			draggedObj.draggedItem = {};
+		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
 			auto mp = getMousePosition();
 
@@ -354,11 +371,16 @@ private:
 	void initShopRecruits(int width, int height, uint64_t texItemFrame) {
 		Inventory::Window* win = inv.AddWindow("shop_recruits", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = win->getGWindow();
-		GComponentButton* hoover = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"));
-		//hoover->callback = setHooveredWindow;
-		gwin->AddComponent(hoover);
+
+		//Drag
+		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"));
+		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
+		gwin->AddComponent(drag);
 		//wyjœcie
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png")));
+		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
+		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
+		gwin->AddComponent(exit);
+
 		for (int i = 30; i < height - 90; i += 90) {
 			for (int j = 10; j < width - 60; j += 60) {
 				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
@@ -734,6 +756,11 @@ private:
 	//
 	Timer timer;
 	std::mt19937 gen;
+
+	struct DraggedObj {
+		GUI_DraggedWindow draggedWindow = {};
+		GUI_DraggedItem draggedItem = {};
+	} draggedObj;
 
 	uint32_t game_type;
 };

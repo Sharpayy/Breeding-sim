@@ -438,6 +438,18 @@ private:
 	Item* cursor_hold;
 };
 
+struct GUI_DraggedWindow {
+	bool wasPressed = false;
+	Inventory::Window* win;
+	glm::vec2 offset;
+};
+
+struct GUI_DraggedItem {
+	bool wasPressed = false;
+	Item* item;
+	glm::vec2 offset;
+};
+
 void ActivateWindow(void* v1, void* v2, Inventory* inv, Inventory::Window* win) {
 	if (inv) inv->ActivateWindow(win);
 }
@@ -446,11 +458,10 @@ void DisableWindow(void* v1, void* v2, Inventory* inv, Inventory::Window* win) {
 	if (inv) inv->DisableWindow(win);
 }
 
-//struct GuiWindowHoover {
-//	Inventory::Window* win;
-//	glm::vec2 offset;
-//} guiWindowHoover;
-//
-//void setHooveredWindow(void* v1, void* v2, Inventory::Window* win) {
-//	guiWindowHoover.win = win;
-//}
+void SetDraggedWindow(void* v1, void* v2, GUI_DraggedWindow* guiDW, Inventory::Window* win) {
+	guiDW->win = win;
+}
+
+void SetDraggedItem(void* v1, void* v2, GUI_DraggedItem* guiDI, Item* item) {
+	guiDI->item = item;
+}
