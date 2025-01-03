@@ -168,6 +168,7 @@ public:
 		else {
 			draggedObj.draggedWindow = {};
 			draggedObj.draggedItem = {};
+			inv.SetCursorItemHold(nullptr);
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
 			auto mp = getMousePosition();

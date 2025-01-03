@@ -56,10 +56,10 @@ public:
 	}
 
 	bool changeItem(Item* object) {
+		this->object = object;
 		if (object == nullptr)
 		{
 			((GComponentImage*)item_comp)->texture = 0;
-			this->object = object;
 			return false;
 		}
 
@@ -431,7 +431,8 @@ void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, In
 			auto slots = win->getAllSlots();
 			int size = items.size() < slots.size() ? items.size() : slots.size();
 			for (int idx = 0; idx < size; idx++) {
-				slots.at(idx)->changeItem(items.at(idx));
+				Item* nItem = items.at(idx);
+				slots.at(idx)->changeItem(nItem);
 			}
 		}
 	}
