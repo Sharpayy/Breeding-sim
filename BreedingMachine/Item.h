@@ -80,7 +80,7 @@ class ArmorItem : public Item {
 public:
 	struct ObjectStatistic : public Item::ObjectStatistic {
 		float armor;
-		ObjectStatistic(uint8_t armor = 0) { this->armor = armor; };
+		ObjectStatistic(float armor = 0) { this->armor = armor; };
 	};
 public:
 	//ArmorItem() = default;
@@ -115,7 +115,7 @@ class WeaponItem : public Item {
 public:
 	struct ObjectStatistic : public Item::ObjectStatistic {
 		float damage;
-		ObjectStatistic(uint8_t damage = 0) { this->damage = damage; };
+		ObjectStatistic(float damage = 0) { this->damage = damage; };
 	};
 public:
 	WeaponItem() = default;
