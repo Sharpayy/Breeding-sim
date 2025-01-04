@@ -72,7 +72,7 @@ class ArmorItem : public Item {
 public:
 	struct ObjectStatistic : public Item::ObjectStatistic {
 		float armor;
-		ObjectStatistic(uint8_t armor = 0) { this->armor = armor; };
+		ObjectStatistic(float armor = 0) { this->armor = armor; };
 	};
 public:
 	ArmorItem(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objType = ARMOR, ObjectStatistic* objStats = {}, uint32_t price = 0) {
@@ -100,7 +100,7 @@ class WeaponItem : public Item {
 public:
 	struct ObjectStatistic : public Item::ObjectStatistic {
 		float damage;
-		ObjectStatistic(uint8_t damage = 0) { this->damage = damage; };
+		ObjectStatistic(float damage = 0) { this->damage = damage; };
 	};
 public:
 	WeaponItem(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objType = WEAPON, ObjectStatistic* objStat = {}, uint32_t price = 0) {
