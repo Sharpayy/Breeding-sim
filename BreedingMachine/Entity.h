@@ -54,7 +54,7 @@ public:
 
 	};
 public:
-	Entity(uint64_t texture = 0, Stats stats = {}, EquipedItems items = {}) {
+	Entity(uint64_t texture = 0, Stats stats = {}, EquipedItems* items = {}) {
 		this->texture = texture;
 		this->stats = stats;
 		this->items = items;
@@ -115,7 +115,7 @@ public:
 		return hp;
 	}
 
-	EquipedItems getEquipedItems() {
+	EquipedItems* getEquipedItems() {
 		return items;
 	}
 
@@ -126,7 +126,7 @@ private:
 	glm::vec2 position;
 	Stats stats;
 	uint64_t texture;
-	EquipedItems items;
+	EquipedItems* items;
 	bool canMoveEnt;
 
 	float hp;
@@ -148,7 +148,7 @@ public:
 		//squadComp->size = 1;
 		squadComp->size = rand() % SQUAD_MAX_SIZE;
 		for (int i = 0; i < squadComp->size; i++) {
-			squadComp->entities[i] = new Entity();
+			squadComp->entities[i] = new Entity(0, {}, new Entity::EquipedItems{});
 		}
 		this->squadID = squadID;
 		this->position = position;

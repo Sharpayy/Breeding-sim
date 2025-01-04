@@ -16,17 +16,23 @@
 #define EVERY_ITEM	(ARMOR | WEAPON | MISC)
 #define ENTITY		(1 << 7)
 
+#define TIER_0 0
+#define TIER_1 1
+#define TIER_2 2
+#define TIER_3 3
+
 class Item {
 public:
 	struct ObjectStatistic {
 		virtual ~ObjectStatistic() = default;
 	};
 public:
-	Item(std::string itemName = "UNDEFINE", void* texture = nullptr, uint8_t objeType = UNDEFINE, uint32_t price = 0) {
+	Item(std::string itemName = "UNDEFINE", void* texture = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic* objStats = {}, uint32_t price = 0, uint8_t tier = TIER_0) {
 		this->itemName = itemName;
 		this->object = texture;
 		this->objType = objeType;
 		this->price = price;
+		this->objStat = objStats;
 	}
 
 	void setAsset(void* asset) {
@@ -50,8 +56,9 @@ public:
 	}
 
 	virtual ObjectStatistic* getObjectStatistic() {
-		return nullptr;
-	};
+		return objStat;
+	}
+
 
 	void setItemPrice(uint32_t price) {
 		this->price = price;
@@ -66,6 +73,7 @@ protected:
 	void* object;
 	uint32_t price;
 	uint8_t objType;
+	ObjectStatistic* objStat;
 };
 
 class ArmorItem : public Item {
@@ -75,13 +83,15 @@ public:
 		ObjectStatistic(uint8_t armor = 0) { this->armor = armor; };
 	};
 public:
-	ArmorItem(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objType = ARMOR, ObjectStatistic* objStats = {}, uint32_t price = 0) {
+	//ArmorItem() = default;
+	ArmorItem(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objType = ARMOR, ObjectStatistic* objStats = {}, uint32_t price = 0, uint8_t tier = TIER_0) {
 		assert(objType & ARMOR);
 		this->itemName = itemtName;
 		this->object = newItem;
 		this->objType = objType;
 		this->objStat = objStats;
 		this->price = price;
+		this->tier = tier;
 	}
 
 	void setItemStats(ObjectStatistic* objStats) {
@@ -92,7 +102,12 @@ public:
 		return objStat;
 	}
 
+	uint8_t getItemTier() {
+		return tier;
+	}
+
 private:
+	uint8_t tier;
 	ObjectStatistic* objStat;
 };
 
@@ -103,13 +118,15 @@ public:
 		ObjectStatistic(uint8_t damage = 0) { this->damage = damage; };
 	};
 public:
-	WeaponItem(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objType = WEAPON, ObjectStatistic* objStat = {}, uint32_t price = 0) {
+	WeaponItem() = default;
+	WeaponItem(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objType = WEAPON, ObjectStatistic* objStat = {}, uint32_t price = 0, uint8_t tier = TIER_0) {
 		assert(objType & WEAPON);
 		this->itemName = itemtName;
 		this->object = newItem;
 		this->objType = objType;
 		this->objStat = objStat;
 		this->price = price;
+		this->tier = tier;
 	}
 
 	void setItemStats(ObjectStatistic* objStat) {
@@ -120,7 +137,12 @@ public:
 		return objStat;
 	}
 
+	uint8_t getItemTier() {
+		return tier;
+	}
+
 private:
+	uint8_t tier;
 	ObjectStatistic* objStat;
 };
 
@@ -137,7 +159,7 @@ public:
 			itemMap[item.getItemName()] = new WeaponItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (WeaponItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
 			break;
 		default:
-			itemMap[item.getItemName()] = new Item{ item.getItemName(), item.getItemTexture(), item.getObjectType(), item.getItemPrice() };
+			itemMap[item.getItemName()] = new Item{ item.getItemName(), item.getItemTexture(), item.getObjectType(), item.getObjectStatistic(), item.getItemPrice()};
 			break;
 		}
 	}
