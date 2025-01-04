@@ -173,7 +173,7 @@ public:
 						if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) {
 							auto items = selectedItems.entity->getEntity()->getEquipedItems();
 							ArmorItem::ObjectStatistic* stat;
-							int g = 0;
+							int g = 1;
 							switch (slot->getSlotType())
 							{
 							case HELMET:
@@ -191,7 +191,6 @@ public:
 								items->Boots = (ArmorItem*)slot->getItem();
 								
 								g = items->Boots->getObjectStatistic()->armor;
-								g = 5;
 								break;
 							case WEAPON:
 

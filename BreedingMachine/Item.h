@@ -27,7 +27,7 @@ public:
 		virtual ~ObjectStatistic() = default;
 	};
 public:
-	Item(std::string itemName = "UNDEFINE", void* texture = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic* objStats = {}, uint32_t price = 0, uint8_t tier = TIER_0) {
+	Item(std::string itemName = "UNDEFINE", void* texture = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic* objStats = {}, uint32_t price = 0) {
 		this->itemName = itemName;
 		this->object = texture;
 		this->objType = objeType;
@@ -58,7 +58,6 @@ public:
 	virtual ObjectStatistic* getObjectStatistic() {
 		return objStat;
 	}
-
 
 	void setItemPrice(uint32_t price) {
 		this->price = price;
@@ -151,17 +150,13 @@ public:
 	ItemLoader() = default;
 
 	void loadItem(Item& item) {
-		switch (item.getObjectType()) {
-		case ARMOR:
+		uint8_t type = item.getObjectType();
+		if (type & ARMOR) 
 			itemMap[item.getItemName()] = new ArmorItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (ArmorItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
-			break;
-		case WEAPON:
-			itemMap[item.getItemName()] = new WeaponItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (WeaponItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
-			break;
-		default:
+		if (type & WEAPON) 
+			itemMap[item.getItemName()] = new WeaponItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (WeaponItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };		
+		else 
 			itemMap[item.getItemName()] = new Item{ item.getItemName(), item.getItemTexture(), item.getObjectType(), item.getObjectStatistic(), item.getItemPrice()};
-			break;
-		}
 	}
 
 	template <typename T = Item>
