@@ -329,7 +329,7 @@ private:
 	void initItems() {
 		//Weaponry
 		stbi_set_flip_vertically_on_load(false);
-		WeaponItem bastard_sword = {"bastard sword", (void*) LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC2.png","EquipmentIconsC2.png"), MELEE, new WeaponItem::ObjectStatistic{0}, 0, TIER_2};
+		WeaponItem bastard_sword = {"bastard sword", (void*) LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC2.png","EquipmentIconsC2.png"), MELEE, new WeaponItem::ObjectStatistic{4}, 83, TIER_2};
 		itemLoader.loadItem(bastard_sword);
 		WeaponItem spear = { "spear", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC61.png","EquipmentIconsC61"), MELEE, new WeaponItem::ObjectStatistic{3}, 80, TIER_1 };
 		itemLoader.loadItem(spear);
@@ -394,7 +394,7 @@ private:
 		itemLoader.loadItem(darkwraith_chestplate);
 		ArmorItem darkwraith_greaves = { "darkwraith greaves", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC207.png","EquipmentIconsC207"), LEGS, new ArmorItem::ObjectStatistic{4}, 104, TIER_3 };
 		itemLoader.loadItem(darkwraith_greaves);
-		ArmorItem darkwraith_boots = { "darkwraith boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC227.png","EquipmentIconsC227"), BOOTS, new ArmorItem::ObjectStatistic{0}, 0, TIER_3 };
+		ArmorItem darkwraith_boots = { "darkwraith boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC227.png","EquipmentIconsC227"), BOOTS, new ArmorItem::ObjectStatistic{3}, 74, TIER_3 };
 		itemLoader.loadItem(darkwraith_boots);
 
 		ArmorItem copper_cap = { "copper cap", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC162.png","EquipmentIconsC162"), HELMET, new ArmorItem::ObjectStatistic{2}, 31, TIER_1 };
