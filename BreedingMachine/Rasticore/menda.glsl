@@ -25,6 +25,6 @@ layout(std430, binding = 6) buffer IDX
 void main()
 {
 	// * matModel[modelIdx[gl_InstanceID]]
-	gl_Position = matProjCamera * matModel[modelIdx[gl_InstanceID]] * vec4(pos, 1.0) ;
+	gl_Position = matProjCamera * matModel[modelIdx[gl_InstanceID]] * vec4(vec3(pos.x, pos.y, pos.z + float(gl_InstanceID) / 1000.0), 1.0) ;
 	uv = uv_c;
 }
