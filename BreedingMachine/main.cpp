@@ -269,6 +269,7 @@ int main(int argc, char* argv[])
 
 	mendaprogram.use();
 
+	LoadTextureFromFile("Data\\item_frame.png");
 	stbi_set_flip_vertically_on_load(true);
 
 	float plane_vtx[] = {
@@ -331,12 +332,10 @@ int main(int argc, char* argv[])
 
 	//TESTS
 	
-	RS_ENABLE_FRATURE(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 
 	gameManager gmanager(&_r, rect_mcd, gm.rChunkVao, fightMapProgram);
 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	gameManager::CameraOffset cameraOffset;
 	float tick = 0;
 	while (1)
@@ -350,6 +349,7 @@ int main(int argc, char* argv[])
 		_r.UpdateShaderData();
 
 		
+		RS_DISABLE_FRATURE(GL_BLEND);
 		if (gmanager.getGameType() == GAMETYPE_BIGMAP)
 		{
 			_program_n.use();
@@ -369,10 +369,11 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
-		gmanager.update();
+		RS_ENABLE_FRATURE(GL_BLEND);
 		gmanager.inv.UpdateCursorPosition(gmanager.getMousePosition());
 		gmanager.inv.Render(gui_projection_matrix);
 		gmanager.inv.RenderText(gui_projection_matrix);
+		gmanager.update();
 
 
 

@@ -37,7 +37,7 @@ void GComponentSlider::RenderText(glm::mat4 pm)
 	gltBeginDraw();
 
 	glm::mat4 m = glm::mat4(1.0f);
-	m = glm::translate(m, glm::vec3(pos.x, pos.y + scale_y / 2.0f, pos.z + 1.01f));
+	m = glm::translate(m, glm::vec3(pos.x + gltGetTextWidth(text, 1.0f) / 2.0f, pos.y + scale_y / 2.0f - gltGetTextHeight(text, 1.0f) / 2.0f, pos.z + 1.01f));
 	//m = glm::scale(m, glm::vec3(1.0f, scale_y, 1.0f));
 
 	m = pm * m;
@@ -49,7 +49,6 @@ void GComponentSlider::RenderText(glm::mat4 pm)
 void GComponentSlider::Render(glm::mat4 pm)
 {
 	gui_main_program->use();
-	stbi_set_flip_vertically_on_load(true);
 
 	GSHADERRENDERDATA_SLIDER data{};
 	data.d.gui_element = GUI_ELEMENT_SLIDER;
@@ -207,7 +206,7 @@ void GComponentButton::RenderText(glm::mat4 pm)
 	gltBeginDraw();
 
 	glm::mat4 m = glm::mat4(1.0f);
-	m = glm::translate(m, glm::vec3(pos.x, pos.y + scale_y / 2.0f, pos.z + 1.01f));
+	m = glm::translate(m, glm::vec3(pos.x + scale_x / 2.0f - gltGetTextWidth(text, 1.0f) / 2.0f, pos.y + scale_y / 2.0f - gltGetTextHeight(text, 1.0f) / 2.0f, pos.z + 1.01f));
 	//m = glm::scale(m, glm::vec3(1.0f, scale_y, 1.0f));
 
 	m = pm * m;
@@ -434,7 +433,7 @@ void GComponentLabel::RenderText(glm::mat4 pm)
 	gltBeginDraw();
 
 	glm::mat4 m = glm::mat4(1.0f);
-	m = glm::translate(m, glm::vec3(pos.x, pos.y + scale_y / 2.0f, pos.z + 1.01f));
+	m = glm::translate(m, glm::vec3(pos.x + gltGetTextWidth(text, 1.0f) / 2.0f, pos.y + scale_y / 2.0f - gltGetTextHeight(text, 1.0f) / 2.0f, pos.z + 1.01f));
 	//m = glm::scale(m, glm::vec3(1.0f, scale_y, 1.0f));
 
 	m = pm * m;
