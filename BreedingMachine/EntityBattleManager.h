@@ -58,7 +58,7 @@ public:
 	};
 public:
 	EntityBattleManager() = default;
-	EntityBattleManager(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails rect_mcd, rasticore::Program fmp, rasticore::VertexBuffer mapVao) : instance(InputHandler::getInstance()) {
+	EntityBattleManager(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails rect_mcd, rasticore::Program fmp, rasticore::VertexBuffer mapVao, CameraOffset* cameraOffset) : instance(InputHandler::getInstance()) {
 		this->r = r;
 		this->rect_mcd = rect_mcd;
 		LoadTextureFromFile("Data\\mongo.png", "pilgrim");
@@ -89,6 +89,8 @@ public:
 		this->mapVao = mapVao;
 
 		selectedEntity = nullptr;
+
+		this->cameraOffset = cameraOffset;
 	}
 
 	void createBattleMap(std::string battleMapName, uint64_t texture, std::filesystem::path collisionPath, float mapSize, float tileSize) {
@@ -421,6 +423,24 @@ private:
 	}
 
 	void inputHandler() {
+		if (instance.KeyPressed(SDL_SCANCODE_W)) {
+			cameraOffset->y += 20;
+		}
+		if (instance.KeyPressed(SDL_SCANCODE_S)) {
+			cameraOffset->y -= 20;
+		}
+		if (instance.KeyPressed(SDL_SCANCODE_A)) {
+			cameraOffset->x -= 20;
+		}
+		if (instance.KeyPressed(SDL_SCANCODE_D)) {
+			cameraOffset->x += 20;
+		}
+		if (instance.KeyPressed(SDL_SCANCODE_Q)) {
+			cameraOffset->z *= 0.9f;
+		}
+		if (instance.KeyPressed(SDL_SCANCODE_E)) {
+			cameraOffset->z *= 1.1f;
+		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
 			auto a = getCorrectedMousePosition();
 			printf("%f %f\n", a.x, a.y);
@@ -481,6 +501,8 @@ private:
 	uint32_t fightMapTil;
 	uint32_t fightMapVisn;
 	uint32_t fightFp;
+
+	CameraOffset* cameraOffset;
 
 	rasticore::VertexBuffer mapVao;
 	rasticore::Program mapProgram;

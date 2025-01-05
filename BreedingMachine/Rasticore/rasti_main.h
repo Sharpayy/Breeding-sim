@@ -36,6 +36,10 @@ typedef uint32_t RENDER_MODEL_ID;
 
 #define SIZEOF_MAT4 sizeof(glm::mat4)
 
+struct CameraOffset {
+	float x = 0, y = 0, z = 0;
+};
+
 namespace rasticore
 {
 	class GBuffer

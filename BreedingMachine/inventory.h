@@ -100,12 +100,13 @@ public:
 	class Window {
 	public:
 		Window() = default;
-		Window(std::string name, ObjectDim dim, uint8_t height, std::vector<Slot*> slots, GWindow* gwin) {
+		Window(std::string name, ObjectDim dim, uint8_t height, std::vector<Slot*> slots, GWindow* gwin, uint8_t flag = 0) {
 			this->name = name;
 			this->dim = dim;
 			this->height = height;
 			this->slots = slots;
 			this->gwin = gwin;
+			this->alwaysOnTop = flag == 1 ? true : false;
 		}
 
 		Slot* AddSlotToWindow(Slot slot, uint64_t tex) {
@@ -160,12 +161,17 @@ public:
 			gwin->ChangeComponentPosition(x, y);
 		}
 
+		bool onTop() {
+			return alwaysOnTop;
+		}
+
 	private:
 		std::string name;
 		ObjectDim dim;
 		uint8_t height;
 		std::vector<Slot*> slots;
 		GWindow* gwin;
+		bool alwaysOnTop;
 	};
 
 	void SetCursorPosition(glm::vec2 pos)
@@ -269,8 +275,8 @@ public:
 		return false;
 	}
 
-	Window* AddWindow(std::string windowName, ObjectDim dim, uint8_t height, uint64_t tex) {
-		Window* win = new Window{ windowName, dim, height, {}, new GWindow{ dim.position, glm::vec2{ dim.width, dim.height }, tex } };
+	Window* AddWindow(std::string windowName, ObjectDim dim, uint8_t height, uint64_t tex, uint8_t flag = 0) {
+		Window* win = new Window{ windowName, dim, height, {}, new GWindow{ dim.position, glm::vec2{ dim.width, dim.height }, tex }, flag };
 		windows.push_back(win);
 		return win;
 	}
@@ -417,6 +423,9 @@ private:
 		std::sort(windows.begin(), windows.end(), [](Window* a, Window* b) {
 			return a->getWindowHeight() > b->getWindowHeight();
 			});
+		std::sort(windows.begin(), windows.end(), [](Window* a, Window* b) {
+			return a->onTop() > b->onTop();
+			});
 		int height = 0, windowsAmount = active_windows.size();
 		for (auto& win : active_windows) {
 			if (win->getWindowHeight() != height) win->setWindowHeight(windowsAmount - height);
@@ -461,12 +470,16 @@ void SetDraggedItem(void* v1, void* v2, GUI_DraggedItem* guiDI, Item* item) {
 	guiDI->item = item;
 }
 
+
 void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, Inventory::Window* win) {
 	if (inv) {
 		if (inv->ActivateWindow(win) && (*building)) {
 			auto items = (*building)->getItemsRotation();
 			auto slots = win->getAllSlots();
 			int size = items.size() < slots.size() ? items.size() : slots.size();
+			for (int idx = 0; idx < slots.size(); idx++) {
+				slots.at(idx)->changeItem(nullptr);
+			}
 			for (int idx = 0; idx < size; idx++) {
 				Item* nItem = items.at(idx);
 				slots.at(idx)->changeItem(nItem);
@@ -475,6 +488,8 @@ void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, In
 	}
 }
 
+
+//PRAWDOPODOBNIE ZLE DZIALA
 void setParty(void* v1, void* v2, Squad** squad, Inventory* inv, Inventory::Window* win) {
 	if (inv) {
 		if (inv->ActivateWindow(win) && (*squad)) {
