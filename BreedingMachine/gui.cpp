@@ -295,6 +295,11 @@ void GComponentButton::SetOffset(glm::vec3 of)
 	pos += of;
 }
 
+void GComponentButton::SetText(const char* t)
+{
+	gltSetText(text, t);
+}
+
 GWindow::GWindow(glm::vec2 pos, glm::vec2 scale, uint64_t tex)
 {
 	this->position = glm::vec2(pos.x, pos.y);
@@ -448,6 +453,11 @@ void GComponentImage::SetOffset(glm::vec3 of)
 	pos += of;
 }
 
+void GComponentImage::SetText(const char* t)
+{
+
+}
+
 GComponentLabel::GComponentLabel(glm::vec2 scale, glm::vec3 pos, const char* text, bool textCenter)
 {
 	scale_x = scale.x;
@@ -495,6 +505,11 @@ int GComponentLabel::GetType()
 void GComponentLabel::SetOffset(glm::vec3 of)
 {
 	pos += of;
+}
+
+void GComponentLabel::SetText(const char* t)
+{
+	gltSetText(text, t);
 }
 
 void GWindow::ChangeComponentPosition(int x, int y) {
