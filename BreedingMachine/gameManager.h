@@ -418,7 +418,7 @@ private:
 		int x = (MAP_WIDTH) / 4;
 		int buttonWidth = 100;
 		int offset = 10;
-		Inventory::Window* win = inv.AddWindow("overworld_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"));
+		Inventory::Window* win = inv.AddWindow("overworld_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"), 1);
 		auto gwin = win->getGWindow();
 		//labelka z iloœci¹ ch³opa
 		gwin->AddComponent(new GComponentLabel(glm::vec2(150, 20), glm::vec3(x, y, 1.0f), "Squad count: 0/16"));
@@ -442,7 +442,7 @@ private:
 		int labelWidth = 150;
 		int offsetButton = 10;
 		int offsetLabel = 50;
-		Inventory::Window* win = inv.AddWindow("battle_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"));
+		Inventory::Window* win = inv.AddWindow("battle_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"), 1);
 		auto gwin = win->getGWindow();
 		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.01f), "Current turn: Player"));
 		x += labelWidth + offsetLabel;
