@@ -100,9 +100,11 @@ public:
 	uint64_t base_tex_id;
 	uint64_t fill_tex_id;
 
+	bool textCenter;
+
 	float value;
 
-	GComponentSlider(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t base, uint64_t fill);
+	GComponentSlider(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t base, uint64_t fill, bool textCenter = false);
 	void SetText(const char* text_);
 	const char* GetText();
 
@@ -125,10 +127,12 @@ public:
 
 	float val;
 
+	bool textCenter = false;
+
 	uint64_t texture;
 	std::function<void(void*, void*)> callback;
 
-	GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t tex);
+	GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t tex, bool textCenter = false);
 	void SetCallback(std::function<void(void*, void*)> func);
 
 	virtual void RenderText(glm::mat4 pm);
@@ -164,7 +168,8 @@ public:
 	float scale_x, scale_y;
 	GLTtext* text;
 
-	GComponentLabel(glm::vec2 scale, glm::vec3 pos, const char* text);
+	bool textCenter;
+	GComponentLabel(glm::vec2 scale, glm::vec3 pos, const char* text, bool textCenter = false);
 
 	virtual void RenderText(glm::mat4 pm);
 	virtual void Render(glm::mat4 pm);

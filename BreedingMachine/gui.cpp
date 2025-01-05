@@ -13,10 +13,12 @@ uint32_t gui_tex_1_loc;
 #endif
 
 
-GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t base, uint64_t fill)
+GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t base, uint64_t fill, bool textCenter)
 {
 	scale_x = scale.x;
 	scale_y = scale.y;
+
+	this->textCenter = textCenter;
 
 	text = gltCreateText();
 	gltSetText(text, text_);
@@ -39,7 +41,11 @@ void GComponentSlider::RenderText(glm::mat4 pm)
 	gltBeginDraw();
 
 	glm::mat4 m = glm::mat4(1.0f);
-	m = glm::translate(m, glm::vec3(pos.x + gltGetTextWidth(text, 1.0f) / 2.0f, pos.y + scale_y / 2.0f - gltGetTextHeight(text, 1.0f) / 2.0f, pos.z + 1.01f));
+
+	int center = 0;
+	if (textCenter) center = scale_x / 2.0f - gltGetTextWidth(text, 1.0f) / 2.0f;
+
+	m = glm::translate(m, glm::vec3(pos.x + center, pos.y + scale_y / 2.0f - gltGetTextHeight(text, 1.0f) / 2.0f, pos.z + 1.01f));
 	//m = glm::scale(m, glm::vec3(1.0f, scale_y, 1.0f));
 
 	m = pm * m;
@@ -196,10 +202,12 @@ void pfnBasicButtonCallback(void* button, void* window)
 	printf("chij");
 }
 
-GComponentButton::GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t tex)
+GComponentButton::GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t tex, bool textCenter)
 {
 	scale_x = scale.x;
 	scale_y = scale.y;
+
+	this->textCenter = textCenter;
 
 	text = gltCreateText();
 	gltSetText(text, text_);
@@ -225,8 +233,11 @@ void GComponentButton::RenderText(glm::mat4 pm)
 
 	gltBeginDraw();
 
+	int center = 0;
+	if (textCenter) center = scale_x / 2.0f - gltGetTextWidth(text, 1.0f) / 2.0f;
+
 	glm::mat4 m = glm::mat4(1.0f);
-	m = glm::translate(m, glm::vec3(pos.x + scale_x / 2.0f - gltGetTextWidth(text, 1.0f) / 2.0f, pos.y + scale_y / 2.0f - gltGetTextHeight(text, 1.0f) / 2.0f, pos.z + 1.01f));
+	m = glm::translate(m, glm::vec3(pos.x + center, pos.y + scale_y / 2.0f - gltGetTextHeight(text, 1.0f) / 2.0f, pos.z + 1.01f));
 	//m = glm::scale(m, glm::vec3(1.0f, scale_y, 1.0f));
 
 	m = pm * m;
@@ -437,10 +448,12 @@ void GComponentImage::SetOffset(glm::vec3 of)
 	pos += of;
 }
 
-GComponentLabel::GComponentLabel(glm::vec2 scale, glm::vec3 pos, const char* text)
+GComponentLabel::GComponentLabel(glm::vec2 scale, glm::vec3 pos, const char* text, bool textCenter)
 {
 	scale_x = scale.x;
 	scale_y = scale.y;
+
+	this->textCenter = textCenter;
 
 	this->pos = pos;
 	depth = pos.z;
@@ -452,8 +465,11 @@ void GComponentLabel::RenderText(glm::mat4 pm)
 {
 	gltBeginDraw();
 
+	int center = 0;
+	if (textCenter) center = scale_x / 2.0f - gltGetTextWidth(text, 1.0f) / 2.0f;
+
 	glm::mat4 m = glm::mat4(1.0f);
-	m = glm::translate(m, glm::vec3(pos.x + gltGetTextWidth(text, 1.0f) / 2.0f, pos.y + scale_y / 2.0f - gltGetTextHeight(text, 1.0f) / 2.0f, pos.z + 1.01f));
+	m = glm::translate(m, glm::vec3(pos.x + center, pos.y + scale_y / 2.0f - gltGetTextHeight(text, 1.0f) / 2.0f, pos.z + 1.01f));
 	//m = glm::scale(m, glm::vec3(1.0f, scale_y, 1.0f));
 
 	m = pm * m;
