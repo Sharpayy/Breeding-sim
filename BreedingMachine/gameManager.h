@@ -522,7 +522,7 @@ private:
 		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, 110), 30.0f, 30.0f, LEGS), texItemFrame);
 		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, 140), 30.0f, 30.0f, BOOTS), texItemFrame);
 		//staty
-		//inv.ActivateWindow(win);
+		//inv.ActivateWindow(win);w
 	}
 
 	void initSquadViewer(int width, int height, uint64_t texItemFrame) {
