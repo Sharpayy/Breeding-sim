@@ -24,7 +24,7 @@ public:
 
 	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd, rasticore::VertexBuffer mapVao, rasticore::Program mapPrg) :
 		instance(InputHandler::getInstance()),
-		battleManager(r_, rect_mcd, mapPrg, mapVao)
+		battleManager(r_, rect_mcd, mapPrg, mapVao, &cameraOffset)
 	{
 		this->rect_mcd = rect_mcd;
 		this->r = r_;
@@ -38,8 +38,15 @@ public:
 		factionManager = FactionManager{r_, rect_mcd, 16};
 		cameraOffset = CameraOffset{ 0, 0, 1.0f };
 		initGame(path);
+		// wioski getRandomNumber(5,11)
+		// zamki getRandomNumber(11, 20)
+		// miasta getRandomNumber(18, 30)
+		int amount = 0;
 		for (auto& building : buildingManager.getAllBuildings()) {
-			building->setRandomItemsRotation(&itemLoader, 10);
+			if (building->getBuildingType() == BUILDING_TYPE_VILLAGE) amount = getRandomNumber(5, 11);
+			else if (building->getBuildingType() == BUILDING_TYPE_CASTLE) amount = getRandomNumber(11, 20);
+			else if (building->getBuildingType() == BUILDING_TYPE_CITY) amount = getRandomNumber(18, 30);
+			building->setRandomItemsRotation(&itemLoader, amount);
 		}
 
 		game_type = GAMETYPE_BIGMAP;
@@ -184,14 +191,10 @@ public:
 								break;
 							case LEGS:
 								items->Legs = (ArmorItem*)slot->getItem();
-								stat = items->Legs->getObjectStatistic();
-								g = stat->armor;
 								break;
 							case BOOTS:
 								items->Boots = (ArmorItem*)slot->getItem();
-								
-								g = items->Boots->getObjectStatistic()->armor;
-								g = 5;
+							
 								break;
 							case WEAPON:
 
@@ -203,7 +206,7 @@ public:
 						}
 					}
 					else
-						if (!(draggedObj.draggedItem.win == gui_windows.shop && win == gui_windows.characterWindow))
+						if (!(draggedObj.draggedItem.win == gui_windows.itemShop && win == gui_windows.characterWindow))
 							inv.swapItems(slot, draggedObj.draggedItem.previousSlot);
 				}
 			}
@@ -322,10 +325,6 @@ public:
 		return glm::vec2(nds.x, nds.y);
 	}
 
-	struct CameraOffset {
-		float x = 0, y = 0, z = 0;
-	};
-
 	CameraOffset getCameraOffset() {
 		return cameraOffset;
 	}
@@ -431,7 +430,9 @@ private:
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Settings", texButton));
 		x += buttonWidth + offset;
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
+	
 		inv.ActivateWindow(win);
+		gui_windows.OverworldHud = win;
 	}
 	void initBattleHud() {
 		uint64_t texButton = LoadTextureFromFile("Data\\red.png");
@@ -456,6 +457,7 @@ private:
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
 
 		//inv.ActivateWindow(win);
+		gui_windows.BattleHud = win;
 	}
 	void initShopItems(int width, int height, uint64_t texItemFrame) {
 		Inventory::Window* win = inv.AddWindow("shop_items", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
@@ -478,7 +480,7 @@ private:
 			}
 		}
 
-		gui_windows.shop = win;
+		gui_windows.itemShop = win;
 		//inv.ActivateWindow(win);
 	}
 	void initShopRecruits(int width, int height, uint64_t texItemFrame) {
@@ -512,7 +514,7 @@ private:
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
 		GComponentButton* trade = new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 40, 0.1f), "Trade", LoadTextureFromFile("Data\\red.png"));
-		trade->callback = std::bind(setShopRotation, std::placeholders::_1, std::placeholders::_2, &selectedItems.building, &inv, gui_windows.shop);
+		trade->callback = std::bind(setShopRotation, std::placeholders::_1, std::placeholders::_2, &selectedItems.building, &inv, gui_windows.itemShop);
 		gwin->AddComponent(trade);
 		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 90, 0.1f), "Recruit", LoadTextureFromFile("Data\\red.png")));
 		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 140, 0.1f), "Wait", LoadTextureFromFile("Data\\red.png")));
@@ -573,7 +575,7 @@ private:
 	}
 
 	void initSquadViewer(int width, int height, uint64_t texItemFrame) {
-		Inventory::Window* win = inv.AddWindow("party_view", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\guii.png"));
+		Inventory::Window* win = inv.AddWindow("party_view", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = win->getGWindow();
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, 0);
 		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
@@ -591,7 +593,7 @@ private:
 			}
 		}
 		gui_windows.partyView = win;
-		inv.ActivateWindow(win);
+		//inv.ActivateWindow(win);
 	}
 
 	//void setHooveredWindow(Inventory::Window* win) {
@@ -616,9 +618,9 @@ private:
 
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
-		//initShopRecruits(300, 400, texItemFrame);
+		initShopRecruits(300, 400, texItemFrame);
 		initOverworldHud();
-		//initBattleHud();
+		initBattleHud();
 		initShopItems(300, 300, texItemFrame);
 		initInteractionViewer(200, 200);
 		initCharInv(300, 400, texItemFrame);
@@ -792,6 +794,16 @@ private:
 					r->UpdateShaderData();
 					cameraOffset.x = 0.0f;
 					cameraOffset.y = 0.0f;
+
+					inv.DisableWindow(gui_windows.characterWindow);
+					inv.DisableWindow(gui_windows.interaction);
+					inv.DisableWindow(gui_windows.inventory);
+					inv.DisableWindow(gui_windows.partyView);
+					inv.DisableWindow(gui_windows.itemShop);
+					inv.DisableWindow(gui_windows.recruitShop);
+					inv.DisableWindow(gui_windows.OverworldHud);
+
+					inv.ActivateWindow(gui_windows.BattleHud);
 					battleManager.startBattle(battleData);
 					return;
 				}
@@ -897,8 +909,11 @@ private:
 		Inventory::Window* partyView;
 		Inventory::Window* inventory;
 		Inventory::Window* interaction;
-		Inventory::Window* shop;
+		Inventory::Window* itemShop;
+		Inventory::Window* recruitShop;
 		Inventory::Window* characterWindow;
+		Inventory::Window* OverworldHud;
+		Inventory::Window* BattleHud;
 	} gui_windows;
 
 	struct SelectedItems {

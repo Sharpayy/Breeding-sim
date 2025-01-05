@@ -461,12 +461,16 @@ void SetDraggedItem(void* v1, void* v2, GUI_DraggedItem* guiDI, Item* item) {
 	guiDI->item = item;
 }
 
+
 void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, Inventory::Window* win) {
 	if (inv) {
 		if (inv->ActivateWindow(win) && (*building)) {
 			auto items = (*building)->getItemsRotation();
 			auto slots = win->getAllSlots();
 			int size = items.size() < slots.size() ? items.size() : slots.size();
+			for (int idx = 0; idx < slots.size(); idx++) {
+				slots.at(idx)->changeItem(nullptr);
+			}
 			for (int idx = 0; idx < size; idx++) {
 				Item* nItem = items.at(idx);
 				slots.at(idx)->changeItem(nItem);
@@ -475,6 +479,8 @@ void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, In
 	}
 }
 
+
+//PRAWDOPODOBNIE ZLE DZIALA
 void setParty(void* v1, void* v2, Squad** squad, Inventory* inv, Inventory::Window* win) {
 	if (inv) {
 		if (inv->ActivateWindow(win) && (*squad)) {

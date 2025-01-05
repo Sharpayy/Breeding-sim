@@ -23,13 +23,33 @@ public:
 	}
 
 	void setRandomItemsRotation(ItemLoader* itm, int size) {
+		uint8_t type = 0;
+		switch (buildingType) {
+		case BUILDING_TYPE_VILLAGE:
+			type = TIER_1;
+			break;
+		case BUILDING_TYPE_CASTLE:
+			type = TIER_2;
+			break;
+		case BUILDING_TYPE_CITY:
+			type = TIER_ALL;
+			break;
+		default:
+			type = TIER_ALL;
+			break;
+		}
 		for (int i = 0; i < size; i++) {
-			items_rotation.push_back(itm->getRandomItem());
+
+			items_rotation.push_back(itm->getRandomItem(type));
 		}
 	}
 
 	std::vector<Item*> getItemsRotation() {
 		return items_rotation;
+	}
+
+	uint8_t getBuildingType() {
+		return buildingType;
 	}
 
 private:

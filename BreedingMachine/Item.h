@@ -16,10 +16,11 @@
 #define EVERY_ITEM	(ARMOR | WEAPON | MISC)
 #define ENTITY		(1 << 7)
 
-#define TIER_0 0
-#define TIER_1 1
-#define TIER_2 2
-#define TIER_3 3
+#define TIER_0		(1 << 0)
+#define TIER_1		(1 << 1)
+#define TIER_2		(1 << 2)
+#define TIER_3		(1 << 3)
+#define TIER_ALL	(TIER_0 | TIER_1 | TIER_2 | TIER_3)
 
 class Item {
 public:
@@ -27,12 +28,13 @@ public:
 		virtual ~ObjectStatistic() = default;
 	};
 public:
-	Item(std::string itemName = "UNDEFINE", void* texture = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic* objStats = {}, uint32_t price = 0) {
+	Item(std::string itemName = "UNDEFINE", void* texture = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic* objStats = {}, uint32_t price = 0, uint8_t tier = TIER_0) {
 		this->itemName = itemName;
 		this->object = texture;
 		this->objType = objeType;
-		this->price = price;
 		this->objStat = objStats;
+		this->price = price;
+		this->tier = tier;
 	}
 
 	void setAsset(void* asset) {
@@ -67,12 +69,17 @@ public:
 		return price;
 	}
 
+	uint8_t getItemTier() {
+		return tier;
+	}
+
 protected:
 	std::string itemName;
 	void* object;
-	uint32_t price;
 	uint8_t objType;
 	ObjectStatistic* objStat;
+	uint32_t price;
+	uint8_t tier;
 };
 
 class ArmorItem : public Item {
@@ -101,12 +108,7 @@ public:
 		return objStat;
 	}
 
-	uint8_t getItemTier() {
-		return tier;
-	}
-
 private:
-	uint8_t tier;
 	ObjectStatistic* objStat;
 };
 
@@ -136,27 +138,37 @@ public:
 		return objStat;
 	}
 
-	uint8_t getItemTier() {
-		return tier;
-	}
-
 private:
-	uint8_t tier;
 	ObjectStatistic* objStat;
 };
 
 class ItemLoader {
 public:
-	ItemLoader() = default;
+	ItemLoader() {
+		tierItemMap[TIER_0] = {};
+		tierItemMap[TIER_1] = {};
+		tierItemMap[TIER_2] = {};
+		tierItemMap[TIER_3] = {};
+	}
 
 	void loadItem(Item& item) {
 		uint8_t type = item.getObjectType();
-		if (type & ARMOR) 
-			itemMap[item.getItemName()] = new ArmorItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (ArmorItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
-		if (type & WEAPON) 
-			itemMap[item.getItemName()] = new WeaponItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (WeaponItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };		
-		else 
-			itemMap[item.getItemName()] = new Item{ item.getItemName(), item.getItemTexture(), item.getObjectType(), item.getObjectStatistic(), item.getItemPrice()};
+		assert(!(item.getItemTier() == TIER_ALL));
+		if (type & ARMOR) {
+			auto armor = new ArmorItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (ArmorItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			itemMap[item.getItemName()] = armor;
+			tierItemMap.at(item.getItemTier()).push_back(armor);
+		}
+		if (type & WEAPON) {
+			auto weapon = new WeaponItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (WeaponItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			itemMap[item.getItemName()] = weapon;
+			tierItemMap.at(item.getItemTier()).push_back(weapon);
+		}
+		else {
+			auto nitem = new Item{ item.getItemName(), item.getItemTexture(), item.getObjectType(), item.getObjectStatistic(), item.getItemPrice(), item.getItemTier() };
+			itemMap[item.getItemName()] = nitem;
+			tierItemMap.at(item.getItemTier()).push_back(nitem);
+		}
 	}
 
 	template <typename T = Item>
@@ -186,13 +198,19 @@ public:
 		return nullptr;
 	}
 
-	Item* getRandomItem() {
-		int idx = rand() % itemMap.size();
-		auto it = itemMap.begin();
-		std::advance(it, idx);
-		return it->second;
+	Item* getRandomItem(uint8_t tier = TIER_ALL) {
+		int idx = 0;
+		if (tier == TIER_ALL) {
+			uint8_t availableTiers[] = { TIER_1, TIER_2, TIER_3 };
+			tier = availableTiers[rand() % 3];
+		}		
+		idx = rand() % tierItemMap.at(tier).size();
+		auto it = tierItemMap.at(tier).at(idx);
+
+		return it;
 	}
 
 private:
 	std::unordered_map<std::string, Item*> itemMap;
+	std::unordered_map<uint8_t, std::vector<Item*>> tierItemMap;
 };
