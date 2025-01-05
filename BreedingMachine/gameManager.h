@@ -118,7 +118,7 @@ public:
 			if (!inv.isWindowActive(gui_windows.inventory)) {
 				inv.ActivateWindow(gui_windows.inventory);
 				std::vector<Slot*> slots = gui_windows.inventory->getAllSlots();
-				auto playerComp = player->getSquadComp();
+				auto playerComp = playerData.player->getSquadComp();
 				for (int i = 0; i < playerComp->size; i++) {
 					EntityItem* eitm = new EntityItem(playerComp->entities[i]);
 					eitm->setAsset((void*)LoadTextureFromFile("Data\\Goblin.png"));
@@ -131,7 +131,7 @@ public:
 		if (instance.KeyPressedOnce(SDL_SCANCODE_V))
 		{
 			if (!inv.isWindowActive(gui_windows.partyView)) {
-				setParty(nullptr, nullptr, (&player), &inv, gui_windows.partyView);
+				setParty(nullptr, nullptr, (&playerData.player), &inv, gui_windows.partyView);
 				//inv.ActivateWindow(gui_windows.partyView);
 			}
 			else inv.DisableWindow(gui_windows.partyView);
@@ -265,7 +265,7 @@ public:
 				}
 				else {
 
-					movementManager.createSquadPath(Astar::point{ (int)mousePos.x, (int)mousePos.y }, player);
+					movementManager.createSquadPath(Astar::point{ (int)mousePos.x, (int)mousePos.y }, playerData.player);
 				}
 			}
 		}
@@ -273,10 +273,10 @@ public:
 			auto pos = getCorrectedMousePosition();
 			pos.x = (int)(pos.x / 16) * 16;
 			pos.y = (int)(pos.y / 16) * 16;
-			player->setSquadPosition(pos);
-			uint64_t id = player->getSquadID();
+			playerData.player->setSquadPosition(pos);
+			uint64_t id = playerData.player->getSquadID();
 			r->BindActiveModel(LONG_GET_MODEL(id));
-			r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ player->getSquadPosition(), 1.1f}), true);
+			r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ playerData.player->getSquadPosition(), 1.1f}), true);
 
 		}
 	}
@@ -487,9 +487,9 @@ private:
 		for (int i = 35; i < height - 35; i += 50) {
 			for (int j = 5; j < width - 15; j += 35) {
 				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
-				c = new GComponentLabel(glm::vec2(40, 10), glm::vec3(j, i + 35, 1.0f), "0", false);
-				std::string ch = "shop"+std::to_string(counter++);
-				AddNamedComponent(c, ch.c_str());
+				c = new GComponentLabel(glm::vec2(30, 10), glm::vec3(j, i + 35, 1.0f), "0");
+				auto labelName = std::string("shopItem") + std::to_string(counter++);
+				AddNamedComponent(c, labelName.c_str());
 				gwin->AddComponent(c);
 			}
 		}
@@ -645,10 +645,6 @@ private:
 		//inv.ActivateWindow(win);
 	}
 
-	//void setHooveredWindow(Inventory::Window* win) {
-	//	guiWindowHoover.win = win;
-	//}
-
 	void initGame(std::filesystem::path path) {
 		//DO TOTALNEJ ZMIANY
 		path = path.append("Data\\buildings.txt");
@@ -717,12 +713,12 @@ private:
 
 		factionManager.setFactionsRelationships(MODEL_HUMANS, MODEL_BANDITS, ENEMY);
 
-		player = factionManager.CreateNewSquad(MODEL_PLAYER, glm::vec2(-1000.0f));
-		player->force = 1.0f;
+		playerData.player = factionManager.CreateNewSquad(MODEL_PLAYER, glm::vec2(-1000.0f));
+		playerData.player->force = 1.0f;
 
 		Squad* squad;
 		srand(time(NULL));
-		player->setSquadState(STAND);
+		playerData.player->setSquadState(STAND);
 		int amount = 0;
 		for (int i = 0; i < 32; i++) {
 			auto buildings = buildingManager.getRaceBuildings(i % 8);
@@ -746,7 +742,7 @@ private:
 		uint64_t id;
 		float dist;
 		for (auto& squadF : factionManager.getAllSquads()) {
-			if (squadF == player) continue;
+			if (squadF == playerData.player) continue;
 			id = squadF->getSquadID();
 			for (auto& squadS : factionManager.getAllSquads()) {
 				if (squadF != squadS) {
@@ -833,10 +829,10 @@ private:
 		float distance = calculateSquadViewDistance(squadF);
 		if (factionManager.getFactionsRelationships(squadS->getSquadFactionID(), squadF->getSquadFactionID()) == ENEMY) {
 			if (glm::distance(squadF->getSquadPosition(), squadS->getSquadPosition()) <= distance) {
-				if (glm::distance(squadF->getSquadPosition(), player->getSquadPosition()) <= 4.0f) {
+				if (glm::distance(squadF->getSquadPosition(), playerData.player->getSquadPosition()) <= 4.0f) {
 					game_type = GAMETYPE_FIGHT;
 					EntityBattleManager::BattleData battleData = {
-						player,
+						playerData.player,
 						squadF
 					};
 					r->setCameraMatrix(glm::lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), (glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(0.0f, 1.0f, 0.0f)));
@@ -940,7 +936,6 @@ private:
 	rasticore::RastiCoreRender* r;
 	rasticore::ModelCreationDetails rect_mcd;
 	ItemLoader itemLoader;
-	Squad* player;
 	SquadMovementManager movementManager;
 	BuildingManager buildingManager;
 	FactionManager factionManager;
@@ -953,6 +948,11 @@ private:
 	//
 	Timer timer;
 	std::mt19937 gen;
+
+	struct PlayerData {
+		Squad* player;
+		uint32_t money;
+	} playerData;
 
 	struct GUI_Windows {
 		Inventory::Window* partyView;

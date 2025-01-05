@@ -82,9 +82,10 @@ public:
 
 	virtual void SetOffset(glm::vec3 of) = 0;
 	virtual void RenderText(glm::mat4 pm) = 0;
+	virtual void SetText(const char* t) = 0;
 };
 
-extern std::unordered_map<const char*, GComponent*> named_comps;
+extern std::unordered_map<std::string, GComponent*> named_comps;
 
 void AddNamedComponent(GComponent* comp, const char* name);
 void DelNamedComponent(const char* name);
@@ -105,7 +106,6 @@ public:
 	float value;
 
 	GComponentSlider(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t base, uint64_t fill, bool textCenter = false);
-	void SetText(const char* text_);
 	const char* GetText();
 
 	void SetPosition(glm::vec3 new_pos);
@@ -115,6 +115,7 @@ public:
 	virtual int ClickCheck(float x, float y, void* window = NULL);
 	virtual int GetType();
 	virtual void SetOffset(glm::vec3 of);
+	virtual void SetText(const char* t);
 
 };
 
@@ -140,8 +141,7 @@ public:
 	virtual int ClickCheck(float x, float y, void* window = NULL);
 	virtual int GetType();
 	virtual void SetOffset(glm::vec3 of);
-
-
+	virtual void SetText(const char* t);
 };
 
 class GComponentImage : public GComponent
@@ -159,6 +159,7 @@ public:
 	virtual int ClickCheck(float x, float y, void* window = NULL);
 	virtual int GetType();
 	virtual void SetOffset(glm::vec3 of);
+	virtual void SetText(const char* t);
 };
 
 class GComponentLabel : public GComponent
@@ -176,6 +177,7 @@ public:
 	virtual int ClickCheck(float x, float y, void* window = NULL);
 	virtual int GetType();
 	virtual void SetOffset(glm::vec3 of);
+	virtual void SetText(const char* t);
 };
 
 #define GUI_WINDOW_ACTIVE		1

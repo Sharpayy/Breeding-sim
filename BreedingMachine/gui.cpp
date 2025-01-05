@@ -5,7 +5,7 @@ rasticore::Program* gui_main_program;
 rasticore::VertexBuffer* gui_square;
 uint32_t gui_program_mat_loc;
 rasticore::UniformBufferObject* gui_prog_ubo;
-std::unordered_map<const char*, GComponent*> named_comps;
+std::unordered_map<std::string, GComponent*> named_comps;
 
 #ifdef ENABLE_GROOMING
 uint32_t gui_tex_0_loc;
@@ -181,7 +181,7 @@ void gui_init()
 
 void AddNamedComponent(GComponent* comp, const char* name)
 {
-	named_comps.insert({ name, comp });
+	named_comps[name] = comp;//.insert({ name, comp });
 }
 
 void DelNamedComponent(const char* name)
@@ -235,7 +235,7 @@ void GComponentButton::RenderText(glm::mat4 pm)
 
 	int center = 0;
 	if (textCenter) center = scale_x / 2.0f - gltGetTextWidth(text, 1.0f) / 2.0f;
-
+	
 	glm::mat4 m = glm::mat4(1.0f);
 	m = glm::translate(m, glm::vec3(pos.x + center, pos.y + scale_y / 2.0f - gltGetTextHeight(text, 1.0f) / 2.0f, pos.z + 1.01f));
 	//m = glm::scale(m, glm::vec3(1.0f, scale_y, 1.0f));
@@ -293,6 +293,11 @@ int GComponentButton::GetType()
 void GComponentButton::SetOffset(glm::vec3 of)
 {
 	pos += of;
+}
+
+void GComponentButton::SetText(const char* t)
+{
+	gltSetText(text, t);
 }
 
 GWindow::GWindow(glm::vec2 pos, glm::vec2 scale, uint64_t tex)
@@ -448,6 +453,11 @@ void GComponentImage::SetOffset(glm::vec3 of)
 	pos += of;
 }
 
+void GComponentImage::SetText(const char* t)
+{
+
+}
+
 GComponentLabel::GComponentLabel(glm::vec2 scale, glm::vec3 pos, const char* text, bool textCenter)
 {
 	scale_x = scale.x;
@@ -495,6 +505,11 @@ int GComponentLabel::GetType()
 void GComponentLabel::SetOffset(glm::vec3 of)
 {
 	pos += of;
+}
+
+void GComponentLabel::SetText(const char* t)
+{
+	gltSetText(text, t);
 }
 
 void GWindow::ChangeComponentPosition(int x, int y) {

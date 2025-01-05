@@ -254,12 +254,12 @@ public:
 
 class EntityItem : public Item {
 public:
-	EntityItem(Entity* entity = nullptr) {
+	EntityItem(Entity* entity = nullptr, uint32_t price = 0) {
 		this->itemName = "SOME ENTITY";
 		this->object = (void*)entity->getTexture();
 		this->entity = entity;
 		this->objType = ENTITY;
-		this->price = 0;
+		this->price = price;
 	}
 
 	Entity* getEntity() {
