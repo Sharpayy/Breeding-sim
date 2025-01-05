@@ -155,12 +155,12 @@ public:
 		uint8_t type = item.getObjectType();
 		assert(!(item.getItemTier() == TIER_ALL));
 		if (type & ARMOR) {
-			auto armor = new ArmorItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (ArmorItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			auto armor = new ArmorItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (ArmorItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice(), item.getItemTier() };
 			itemMap[item.getItemName()] = armor;
 			tierItemMap.at(item.getItemTier()).push_back(armor);
 		}
 		if (type & WEAPON) {
-			auto weapon = new WeaponItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (WeaponItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice() };
+			auto weapon = new WeaponItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (WeaponItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice(), item.getItemTier() };
 			itemMap[item.getItemName()] = weapon;
 			tierItemMap.at(item.getItemTier()).push_back(weapon);
 		}
