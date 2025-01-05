@@ -418,7 +418,7 @@ private:
 		auto gwin = win->getGWindow();
 		//labelka z iloœci¹ ch³opa
 		gwin->AddComponent(new GComponentLabel(glm::vec2(150, 20), glm::vec3(x, y, 1.0f), "Squad count: 0/16"));
-		x += 150;
+		x += 150 + 50;
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Party", texButton));
 		x += buttonWidth + offset;
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Inventory", texButton));
@@ -464,22 +464,23 @@ private:
 	}
 	void initShopItems(int width, int height, uint64_t texItemFrame) {
 		Inventory::Window* win = inv.AddWindow("shop_items", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
-
+		
 		auto gwin = win->getGWindow();
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), "Shop", LoadTextureFromFile("Data\\red.png"));
 		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
 		gwin->AddComponent(drag);
-		//labelka z napisem inventory + które okienko
-		//gwin->AddComponent(new GComponentButton(glm::vec2(60, 20), glm::vec3(140, 5, 0.1f), "Shop", 0));
-		//przycisk do zamkniêcia okienka
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
+		GComponent* c;
+		int counter = 0;
 		for (int i = 35; i < height - 35; i += 50) {
 			for (int j = 5; j < width - 15; j += 35) {
 				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
-				//cena itemku
-				gwin->AddComponent(new GComponentLabel(glm::vec2(1, 1), glm::vec3(j, i + 30, 1.0f), "0"));
+				c = new GComponentLabel(glm::vec2(40, 10), glm::vec3(j - 7, i + 35, 1.0f), "031");
+				std::string ch = "shop"+std::to_string(counter++);
+				AddNamedComponent(c, ch.c_str());
+				gwin->AddComponent(c);
 			}
 		}
 
@@ -549,8 +550,12 @@ private:
 				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
 			}
 		}
-		//labelka z szmeklami
-		gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(width / 2, height - 35, 0.5f), "szmekle zydowskie: ", LoadTextureFromFile("Data\\red.png")));
+		//labelka z szmeklamis
+		GComponent* c;
+		gwin->AddComponent(new GComponentLabel(glm::vec2(70, 20), glm::vec3(width / 2 - 90, height - 35, 0.5f), "Denars: 100"));
+		//c = new GComponentLabel(glm::vec2(1, 20), glm::vec3(width / 2, height - 35, 0.5f), "100");
+		//AddNamedComponent(c, "playerMoney");
+		//gwin->AddComponent(c);
 		gui_windows.inventory = win;
 		//inv.ActivateWindow(win);
 
@@ -580,7 +585,7 @@ private:
 	}
 
 	void initSquadViewer(int width, int height, uint64_t texItemFrame) {
-		Inventory::Window* win = inv.AddWindow("party_view", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\guii.png"));
+		Inventory::Window* win = inv.AddWindow("party_view", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = win->getGWindow();
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, 0);
 		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
