@@ -477,7 +477,7 @@ private:
 		for (int i = 35; i < height - 35; i += 50) {
 			for (int j = 5; j < width - 15; j += 35) {
 				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
-				c = new GComponentLabel(glm::vec2(40, 10), glm::vec3(j - 7, i + 35, 1.0f), "031");
+				c = new GComponentLabel(glm::vec2(40, 10), glm::vec3(j, i + 35, 1.0f), "0", false);
 				std::string ch = "shop"+std::to_string(counter++);
 				AddNamedComponent(c, ch.c_str());
 				gwin->AddComponent(c);
@@ -552,11 +552,10 @@ private:
 		}
 		//labelka z szmeklamis
 		GComponent* c;
-		gwin->AddComponent(new GComponentLabel(glm::vec2(70, 20), glm::vec3(width / 2 - 90, height - 35, 0.5f), "Denars: "));
-		c = new GComponentLabel(glm::vec2(1, 20), glm::vec3(width / 2, height - 35, 0.5f), "100");
-		AddNamedComponent(c, "playerMoney");
-		
-		//gwin->AddComponent(c);
+		gwin->AddComponent(new GComponentLabel(glm::vec2(70, 20), glm::vec3(width / 2 - 70, height - 35, 0.5f), "Denars: "));
+		c = new GComponentLabel(glm::vec2(1, 20), glm::vec3(width / 2, height - 35, 0.5f), "0", false);
+		AddNamedComponent(c, "playerMoney");		
+		gwin->AddComponent(c);
 		gui_windows.inventory = win;
 		//inv.ActivateWindow(win);
 
