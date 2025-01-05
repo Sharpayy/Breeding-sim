@@ -235,7 +235,7 @@ void GComponentButton::RenderText(glm::mat4 pm)
 
 	int center = 0;
 	if (textCenter) center = scale_x / 2.0f - gltGetTextWidth(text, 1.0f) / 2.0f;
-
+	
 	glm::mat4 m = glm::mat4(1.0f);
 	m = glm::translate(m, glm::vec3(pos.x + center, pos.y + scale_y / 2.0f - gltGetTextHeight(text, 1.0f) / 2.0f, pos.z + 1.01f));
 	//m = glm::scale(m, glm::vec3(1.0f, scale_y, 1.0f));

@@ -483,6 +483,8 @@ void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, In
 			for (int idx = 0; idx < size; idx++) {
 				Item* nItem = items.at(idx);
 				slots.at(idx)->changeItem(nItem);
+				std::string labelName = "shopItem" + std::to_string(idx);
+				auto label = GetNamedComponent(labelName.c_str());
 			}
 		}
 	}
