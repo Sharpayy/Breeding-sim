@@ -84,6 +84,12 @@ public:
 	virtual void RenderText(glm::mat4 pm) = 0;
 };
 
+extern std::unordered_map<const char*, GComponent*> named_comps;
+
+void AddNamedComponent(GComponent* comp, const char* name);
+void DelNamedComponent(const char* name);
+GComponent* GetNamedComponent(const char* name);
+
 class GComponentSlider : public GComponent
 {
 public:

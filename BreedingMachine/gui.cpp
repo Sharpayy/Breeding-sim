@@ -5,11 +5,13 @@ rasticore::Program* gui_main_program;
 rasticore::VertexBuffer* gui_square;
 uint32_t gui_program_mat_loc;
 rasticore::UniformBufferObject* gui_prog_ubo;
+std::unordered_map<const char*, GComponent*> named_comps;
 
 #ifdef ENABLE_GROOMING
 uint32_t gui_tex_0_loc;
 uint32_t gui_tex_1_loc;
 #endif
+
 
 GComponentSlider::GComponentSlider(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t base, uint64_t fill)
 {
@@ -169,6 +171,24 @@ void gui_init()
 	gui_prog_ubo = new rasticore::UniformBufferObject();
 	gui_prog_ubo->data(sizeof(GSHADERRENDERDATA) + 64, NULL, GL_DYNAMIC_DRAW);
 
+}
+
+void AddNamedComponent(GComponent* comp, const char* name)
+{
+	named_comps.insert({ name, comp });
+}
+
+void DelNamedComponent(const char* name)
+{
+	named_comps.erase(name);
+}
+
+GComponent* GetNamedComponent(const char* name)
+{
+	auto f = named_comps.find(name);
+	if (f == named_comps.end())
+		return 0;
+	return f->second;
 }
 
 void pfnBasicButtonCallback(void* button, void* window)

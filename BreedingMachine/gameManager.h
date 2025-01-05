@@ -426,7 +426,7 @@ private:
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Settings", texButton));
 		x += buttonWidth + offset;
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
-		inv.ActivateWindow(win);
+		//inv.ActivateWindow(win);
 	}
 	void initBattleHud() {
 		uint64_t texButton = LoadTextureFromFile("Data\\red.png");
@@ -438,11 +438,18 @@ private:
 		int offsetLabel = 50;
 		Inventory::Window* win = inv.AddWindow("battle_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = win->getGWindow();
-		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.01f), "Current turn: Player"));
+		GComponent* c;
+		c = new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.01f), "Current turn: Player");
+		AddNamedComponent(c, "current_turn_label");
+		gwin->AddComponent(c);
 		x += labelWidth + offsetLabel;
-		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Turns passed: 0"));
+		c = new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Turns passed: 0");
+		AddNamedComponent(c, "turns_passed_label");
+		gwin->AddComponent(c);
 		x += labelWidth + offsetLabel;
-		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Enemy units : 0"));
+		c = new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Enemy units : 0");
+		AddNamedComponent(c, "enemy_units_label");
+		gwin->AddComponent(c);
 		x += labelWidth + offsetLabel;
 		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Player units : 0"));
 		x += labelWidth + offsetButton;
@@ -450,7 +457,7 @@ private:
 		x += buttonWidth + offsetButton;
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
 
-		//inv.ActivateWindow(win);
+		inv.ActivateWindow(win);
 	}
 	void initShopItems(int width, int height, uint64_t texItemFrame) {
 		Inventory::Window* win = inv.AddWindow("shop_items", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
@@ -586,7 +593,7 @@ private:
 			}
 		}
 		gui_windows.partyView = win;
-		inv.ActivateWindow(win);
+		//inv.ActivateWindow(win);
 	}
 
 	//void setHooveredWindow(Inventory::Window* win) {
