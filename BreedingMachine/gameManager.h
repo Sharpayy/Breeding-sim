@@ -552,11 +552,10 @@ private:
 		}
 		//labelka z szmeklamis
 		GComponent* c;
-		gwin->AddComponent(new GComponentLabel(glm::vec2(70, 20), glm::vec3(width / 2 - 90, height - 35, 0.5f), "Denars: "));
-		c = new GComponentLabel(glm::vec2(1, 20), glm::vec3(width / 2, height - 35, 0.5f), "100");
+		gwin->AddComponent(new GComponentLabel(glm::vec2(70, 20), glm::vec3(width / 2 - 70, height - 35, 0.5f), "Denars: "));
+		c = new GComponentLabel(glm::vec2(1, 20), glm::vec3(width / 2, height - 35, 0.5f), "0", false);
+		AddNamedComponent(c, "playerMoney");		
 		gwin->AddComponent(c);
-		AddNamedComponent(c, "playerMoney");
-		
 		gui_windows.inventory = win;
 		//inv.ActivateWindow(win);
 
