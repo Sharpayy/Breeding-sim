@@ -154,7 +154,7 @@ public:
 		//squadComp->size = 1;
 		squadComp->size = rand() % SQUAD_MAX_SIZE;
 		for (int i = 0; i < squadComp->size; i++) {
-			squadComp->entities[i] = new Entity(0, {}, new Entity::EquipedItems{});
+			squadComp->entities[i] = new Entity( "Some chujstwo", 0, {}, new Entity::EquipedItems{});
 		}
 		this->squadID = squadID;
 		this->position = position;
