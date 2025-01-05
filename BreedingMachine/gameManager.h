@@ -38,8 +38,12 @@ public:
 		factionManager = FactionManager{r_, rect_mcd, 16};
 		cameraOffset = CameraOffset{ 0, 0, 1.0f };
 		initGame(path);
+		int size = 0;
 		for (auto& building : buildingManager.getAllBuildings()) {
-			building->setRandomItemsRotation(&itemLoader, 10);
+			if (building->getBuildingType() == BUILDING_TYPE_VILLAGE) size = getRandomNumber(5, 11);
+			if (building->getBuildingType() == BUILDING_TYPE_CASTLE) size = getRandomNumber(10, 20);
+			if (building->getBuildingType() == BUILDING_TYPE_CITY) size = getRandomNumber(18, 30);
+			building->setRandomItemsRotation(&itemLoader, size);
 		}
 
 		game_type = GAMETYPE_BIGMAP;
