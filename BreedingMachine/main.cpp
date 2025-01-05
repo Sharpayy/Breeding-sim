@@ -268,6 +268,8 @@ int main(int argc, char* argv[])
 	mendaprogram.programCompile();
 
 	mendaprogram.use();
+	uint32_t lfp = glGetUniformLocation(mendaprogram.id, "fp");
+	glUniform1i(lfp, 0);
 
 	LoadTextureFromFile("Data\\item_frame.png");
 	stbi_set_flip_vertically_on_load(true);

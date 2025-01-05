@@ -14,11 +14,11 @@ layout(std140, binding = 1) uniform MVP_DATA
 out vec4 FragColor;
 
 in vec2 uv;
+uniform int fp;
 
 void main()
 {
-	int mirror_flip = 0;
-	if (mirror_flip == 1)
+	if (fp == 1)
 		FragColor = texture(TEXTURE_HANDLE, vec2(1.0 - uv.x, uv.y));
 	else
 		FragColor = texture(TEXTURE_HANDLE, uv);

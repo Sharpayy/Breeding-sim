@@ -4,7 +4,44 @@
 #include "inputHandler.h"
 #include "Define.h"
 
-#define DUPA_CYCE_WADOWICE	15
+#define MODEL_ORKS 0
+#define MODEL_HUMANS 1
+#define MODEL_NOMADS 2
+#define MODEL_EVIL_HUMANS 3
+#define MODEL_GOBLINS 4
+#define MODEL_PLAYER 5
+#define MODEL_BANDITS 6
+#define MODEL_ANIMALS 7
+
+typedef struct _LDR_MODELS
+{
+	const char** models;
+	uint32_t amount;
+} LDR_MODELS;
+
+const char* LDR_ORC_TEXTURE[] = {
+	"Data\\bt_orc_0.png",
+	"Data\\bt_orc_1.png"
+};
+
+const char* LDR_HUMAN_TEXTURE[] = {
+	"Data\\bt_human_0.png",
+	"Data\\bt_human_1.png",
+	"Data\\bt_human_2.png"
+};
+
+LDR_MODELS LDR_FACTION_TEXTURE_MAP[] = {
+	LDR_MODELS{LDR_ORC_TEXTURE, sizeof(LDR_ORC_TEXTURE) / sizeof(LDR_ORC_TEXTURE[0])},
+	LDR_MODELS{LDR_HUMAN_TEXTURE, sizeof(LDR_HUMAN_TEXTURE) / sizeof(LDR_HUMAN_TEXTURE[0])},
+	LDR_MODELS{nullptr, 0},
+	LDR_MODELS{nullptr, 0},
+	LDR_MODELS{nullptr, 0},
+	LDR_MODELS{LDR_HUMAN_TEXTURE, sizeof(LDR_HUMAN_TEXTURE) / sizeof(LDR_HUMAN_TEXTURE[0])}
+};
+
+#define MODEL_ENEMY_FACTION_BASE		20
+#define MODEL_PLAYER_FACTION_BASE		40
+#define LDR_MAX_FACTION_MODELS 16
 
 class EntityBattleManager {
 public:
@@ -25,7 +62,15 @@ public:
 		this->r = r;
 		this->rect_mcd = rect_mcd;
 		LoadTextureFromFile("Data\\mongo.png", "pilgrim");
-		r->newModel(DUPA_CYCE_WADOWICE, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, GetTextureFullInfo("pilgrim")->txb, 50);
+	
+		for (int i = 0; i < LDR_MAX_FACTION_MODELS; i++)
+		{
+			r->newModel(MODEL_ENEMY_FACTION_BASE + i, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, rasticore::Texture2DBindless(), 20);
+			r->newModel(MODEL_PLAYER_FACTION_BASE + i, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, rasticore::Texture2DBindless(), 20);
+		}
+
+		cLoadedFactionTexturesEnemy = -1;
+		cLoadedFactionTexturesPlayer = -1;
 
 		mapProgram = fmp;
 		mapProgram.use();
@@ -38,6 +83,7 @@ public:
 		fightMapDim = glGetUniformLocation(pid, "MapDimensions");
 		fightMapTil = glGetUniformLocation(pid, "MapTiles");
 		fightMapVisn = glGetUniformLocation(pid, "visn");
+		fightFp = glGetUniformLocation(pid, "fp");
 
 		this->mapProgram = fmp;
 		this->mapVao = mapVao;
@@ -47,6 +93,41 @@ public:
 
 	void createBattleMap(std::string battleMapName, uint64_t texture, std::filesystem::path collisionPath, float mapSize, float tileSize) {
 		battleMaps[battleMapName] = BattleMap{ texture, collisionPath, mapSize, tileSize };
+	}
+
+	void LoadPlayerFactionTextures(uint8_t id)
+	{
+		if (cLoadedFactionTexturesPlayer == id)
+			return;
+
+		cLoadedFactionTexturesPlayer = id;
+		
+		LDR_MODELS* models = LDR_FACTION_TEXTURE_MAP + id;
+		texturesPlayerAmount = models->amount;
+
+		for (int i = 0; i < models->amount; i++)
+		{
+			LoadTextureFromFile(models->models[i]);
+			r->getModel(MODEL_PLAYER_FACTION_BASE + i)->std_texture2d = GetTextureFullInfo(models->models[i])->txb;
+		}
+
+	}
+
+	void LoadEnemyFactionTextures(uint8_t id)
+	{
+		if (cLoadedFactionTexturesEnemy == id)
+			return;
+
+		cLoadedFactionTexturesEnemy = id;
+
+		LDR_MODELS* models = LDR_FACTION_TEXTURE_MAP + id;
+		texturesEnemyAmount = models->amount;
+
+		for (int i = 0; i < models->amount; i++)
+		{
+			LoadTextureFromFile(models->models[i]);
+			r->getModel(MODEL_ENEMY_FACTION_BASE + i)->std_texture2d = GetTextureFullInfo(models->models[i])->txb;
+		}
 	}
 
 	void startBattle(BattleData& battleData) {
@@ -59,6 +140,9 @@ public:
 		currentMap = it->second;
 		entityMovementManager = EntityMovementManager{ currentMap.path, currentMap.mapSize, currentMap.tileSize, r, rect_mcd };
 		Squad::SquadComp* units = data.s1->getSquadComp();
+
+		LoadPlayerFactionTextures(data.s1->getSquadFactionID());
+		LoadEnemyFactionTextures(data.s2->getSquadFactionID());
 
 		int tilesAmountX, offsetY, offsetX, tileOffset;
 		tilesAmountX = currentMap.mapSize / currentMap.tileSize;
@@ -75,7 +159,7 @@ public:
 			e->EntityClearMove();
 			//entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
 			offsetY -= 1;
-			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)));
+			r->newObject(MODEL_PLAYER_FACTION_BASE + rand() % texturesPlayerAmount, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), &e->id);
 		}
 		units = data.s2->getSquadComp();
 		offsetY = (tilesAmountX / 2) - ((tilesAmountX / 2) - (units->size / 2));
@@ -92,7 +176,7 @@ public:
 			AiDecideEntityInitialState(e);
 			//int b = e->state->MoveEntity(&data);
 			//if (b == true) moveEntityNear(e->travel, e);
-			e->id = r->newObject(DUPA_CYCE_WADOWICE, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)));
+			r->newObject(MODEL_ENEMY_FACTION_BASE + rand() % texturesEnemyAmount, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), &e->id);
 		}
 	}
 
@@ -121,11 +205,11 @@ public:
 
 
 		Entity* e = nullptr;
-		r->BindActiveModel(DUPA_CYCE_WADOWICE);
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
-			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
+			r->BindActiveModel(LONG_GET_MODEL(e->id));
+			r->SetObjectMatrix(LONG_GET_OBJECT(e->id), glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
 		}
 
 		units = data.s2->getSquadComp();
@@ -134,7 +218,8 @@ public:
 			e = units->entities[i];
 			AiUpdateEntityState(e);
 			//e->state->MoveEntity(&data);
-			r->SetObjectMatrix(e->id, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
+			r->BindActiveModel(LONG_GET_MODEL(e->id));
+			r->SetObjectMatrix(LONG_GET_OBJECT(e->id), glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
 		}
 
 		mapProgram.use();
@@ -151,7 +236,7 @@ public:
 
 		if (selectedEntity != nullptr)
 		{
-			mp = selectedEntity->getPosition() - glm::vec2(32.0f, 32.0f);
+			mp = selectedEntity->getPosition();// - glm::vec2(32.0f, 32.0f);
 			vision = selectedEntity->getStats()->stamina;
 		}
 		else
@@ -169,7 +254,18 @@ public:
 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		r->RenderSelectedModel(DUPA_CYCE_WADOWICE);
+		glUniform1i(fightFp, 0);
+		for (int i = 0; i < LDR_MAX_FACTION_MODELS; i++)
+		{
+			r->RenderSelectedModel(MODEL_PLAYER_FACTION_BASE + i);
+		}
+
+		glUniform1i(fightFp, 1);
+		for (int i = 0; i < LDR_MAX_FACTION_MODELS; i++)
+		{
+			r->RenderSelectedModel(MODEL_ENEMY_FACTION_BASE + i);
+		}
+		glUniform1i(fightFp, 0);
 	}
 
 	Entity* AiGetNextMoveableEntity()
@@ -350,7 +446,14 @@ private:
 		}
 	}
 
-	uint32_t aiNextUnitCounter;
+	uint8_t cLoadedFactionTexturesPlayer;
+	uint32_t texturesPlayerAmount;
+
+	uint8_t cLoadedFactionTexturesEnemy;
+	uint32_t texturesEnemyAmount;
+
+	
+
 	uint32_t tour;
 
 	EntityMovementManager entityMovementManager;
@@ -377,6 +480,7 @@ private:
 	uint32_t fightMapDim;
 	uint32_t fightMapTil;
 	uint32_t fightMapVisn;
+	uint32_t fightFp;
 
 	rasticore::VertexBuffer mapVao;
 	rasticore::Program mapProgram;

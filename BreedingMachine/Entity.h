@@ -43,7 +43,7 @@ public:
 		//virtual int AttackEntity(void* battleContext) = 0;
 	};
 
-	uint32_t id;
+	uint64_t id;
 	struct EquipedItems {
 		ArmorItem* helmet = nullptr;
 		ArmorItem* Chestplate = nullptr;
