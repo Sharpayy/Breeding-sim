@@ -524,6 +524,29 @@ void getCharacterInventory(void* v1, void* v2, EntityItem** entityItem, Inventor
 			slots.at(3)->changeItem(entityItems->weapon_secondary);
 			slots.at(4)->changeItem(entityItems->Legs);
 			slots.at(5)->changeItem(entityItems->Boots);
+
+			std::string componentName = "Vname";
+			GComponent* component;
+			component = GetNamedComponent(componentName.c_str());
+			component->SetText(ent->getName().c_str());
+
+			componentName = "Vhp";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vstamina";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vbravery";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vmelee";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vranged";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vdefense";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
 		}
 	}
 }

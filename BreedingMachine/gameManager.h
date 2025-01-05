@@ -579,7 +579,7 @@ private:
 		gwin->AddComponent(drag);
 		//nazwa ch³opa
 		c = new GComponentLabel(glm::vec2(20, 1), glm::vec3(width/2 - 20, 10, 0.1f), "null", true);
-		AddNamedComponent(c, "name");
+		AddNamedComponent(c, "Vname");
 		gwin->AddComponent(c);
 		//wyjœcie
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
@@ -600,24 +600,24 @@ private:
 		auto texBase = LoadTextureFromFile("Data\\blue.png");
 		auto texFill = LoadTextureFromFile("Data\\purple.png");
 		y += 40;
-		c = new GComponentSlider(glm::vec2(80, 30), glm::vec3(10, y, 0.5f), "amongus", texBase, texFill);
-		AddNamedComponent(c, "hp");
+		c = new GComponentSlider(glm::vec2(80, 30), glm::vec3(10, y, 0.5f), "hp", texBase, texFill);
+		AddNamedComponent(c, "Vhp");
 		gwin->AddComponent(c);
 		c = new GComponentSlider(glm::vec2(80, 30), glm::vec3(10 + 90, y, 0.5f), "stamina", texBase, texFill);
-		AddNamedComponent(c, "stamina");
+		AddNamedComponent(c, "Vstamina");
 		gwin->AddComponent(c);
 		c = new GComponentSlider(glm::vec2(80, 30), glm::vec3(100 + 90, y, 0.5f), "bravery", texBase, texFill);
-		AddNamedComponent(c, "bravery");
+		AddNamedComponent(c, "Vbravery");
 		gwin->AddComponent(c);
 		y += 40;
 		c = new GComponentSlider(glm::vec2(80, 30), glm::vec3(10, y, 0.5f), "melee", texBase, texFill);
-		AddNamedComponent(c, "melee");
+		AddNamedComponent(c, "Vmelee");
 		gwin->AddComponent(c);
 		c = new GComponentSlider(glm::vec2(80, 30), glm::vec3(10 + 90, y, 0.5f), "ranged", texBase, texFill);
-		AddNamedComponent(c, "ranged");
+		AddNamedComponent(c, "Vranged");
 		gwin->AddComponent(c);
 		c = new GComponentSlider(glm::vec2(80, 30), glm::vec3(100 + 90, y, 0.5f), "defense", texBase, texFill);
-		AddNamedComponent(c, "defense");
+		AddNamedComponent(c, "Vdefense");
 		gwin->AddComponent(c);
 		//inv.ActivateWindow(win);
 		gui_windows.characterWindow = win;

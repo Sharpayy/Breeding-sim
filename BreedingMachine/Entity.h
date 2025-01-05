@@ -54,13 +54,18 @@ public:
 
 	};
 public:
-	Entity(uint64_t texture = 0, Stats stats = {}, EquipedItems* items = {}) {
+	Entity(std::string name = "", uint64_t texture = 0, Stats stats = {}, EquipedItems * items = {}) {
+		this->name = name;
 		this->texture = texture;
 		this->stats = stats;
 		this->items = items;
 
 		hp = stats.hp;
 		state = 0;
+	}
+
+	std::string getName() {
+		return name;
 	}
 
 	void SetHp(float hp)
@@ -123,6 +128,7 @@ public:
 	glm::vec2 travel;
 	//IMPL
 private:
+	std::string name;
 	glm::vec2 position;
 	Stats stats;
 	uint64_t texture;
