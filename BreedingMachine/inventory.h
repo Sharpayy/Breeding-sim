@@ -99,6 +99,7 @@ public:
 
 	class Window {
 	public:
+		Window() = default;
 		Window(std::string name, ObjectDim dim, uint8_t height, std::vector<Slot*> slots, GWindow* gwin) {
 			this->name = name;
 			this->dim = dim;
@@ -286,6 +287,12 @@ public:
 
 	bool swapItems(Slot* slot1, Slot* slot2) {
 		if (!(slot1->getSlotType() & slot2->getSlotType())) return false;
+		if (slot1->getItem()) {
+			if (!(slot1->getItem()->getObjectType() & slot2->getSlotType())) return false;
+		}
+		if (slot2->getItem()) {
+			if (!(slot2->getItem()->getObjectType() & slot1->getSlotType())) return false;
+		}
 		Item* itemTemp = slot1->getItem();
 		slot1->changeItem(slot2->getItem());
 		slot2->changeItem(itemTemp);
@@ -308,6 +315,35 @@ public:
 		return nullptr;
 	}
 
+	Slot* getSlot(glm::vec2 position, Window*& win) {
+		uint8_t windowsAmount = getActiveWindows().size();
+		uint8_t height = 0;
+		Slot* potentialSlot = nullptr;
+		int i = 0;
+		for (auto& window : getActiveWindows()) {
+			if (potentialSlot) break;
+			i++;
+			if (pointInRect(position, window->getDim())) {
+				for (auto& slot : window->getAllSlots()) {
+					if (pointInRect(position, slot->getDim())) {
+						height = i - 1;
+						win = window;
+						potentialSlot = slot;
+						break;
+					}
+				}
+			}
+		}
+		for (int x = 0; x < i - 1; x++) {
+			if (pointInRect(position, active_windows.at(x)->getDim())) { 
+				potentialSlot = nullptr; 
+				win = nullptr;
+				break; 
+			};
+		}
+		return potentialSlot;
+	}
+
 	Slot* getSlot(glm::vec2 position) {
 		uint8_t windowsAmount = getActiveWindows().size();
 		uint8_t height = 0;
@@ -327,9 +363,9 @@ public:
 			}
 		}
 		for (int x = 0; x < i - 1; x++) {
-			if (pointInRect(position, active_windows.at(x)->getDim())) { 
-				potentialSlot = nullptr; 
-				break; 
+			if (pointInRect(position, active_windows.at(x)->getDim())) {
+				potentialSlot = nullptr;
+				break;
 			};
 		}
 		return potentialSlot;
@@ -405,6 +441,7 @@ struct GUI_DraggedWindow {
 struct GUI_DraggedItem {
 	bool wasPressed = false;
 	Item* item;
+	Inventory::Window* win;
 	Slot* previousSlot;
 };
 
@@ -448,6 +485,24 @@ void setParty(void* v1, void* v2, Squad** squad, Inventory* inv, Inventory::Wind
 				EntityItem* eitm = new EntityItem(squadComp->entities[idx]);
 				slots.at(idx)->changeItem(eitm);
 			}
+		}
+	}
+}
+
+
+void getCharacterInventory(void* v1, void* v2, EntityItem** entityItem, Inventory* inv, Inventory::Window* win) {
+	if (inv) {
+		if (*entityItem) {
+			inv->ActivateWindow(win);
+			auto slots = win->getAllSlots();
+			Entity* ent = (*entityItem)->getEntity();
+			auto entityItems = ent->getEquipedItems();
+			slots.at(0)->changeItem(entityItems->helmet);
+			slots.at(1)->changeItem(entityItems->Chestplate);
+			slots.at(2)->changeItem(entityItems->weapon_primary);
+			slots.at(3)->changeItem(entityItems->weapon_secondary);
+			slots.at(4)->changeItem(entityItems->Legs);
+			slots.at(5)->changeItem(entityItems->Boots);
 		}
 	}
 }

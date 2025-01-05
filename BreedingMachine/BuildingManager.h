@@ -18,7 +18,7 @@ public:
 		std::cout << "chujowyBuioldingManager\n";
 	}
 	BuildingManager(std::filesystem::path path) {
-		int id, race, size;
+		int id, race, size, buildingType;
 		glm::vec2 position;
 		std::ifstream file;
 		file.open(path.string());
@@ -28,8 +28,8 @@ public:
 		};
 		file >> size;
 		for (int i = 0; i < size; i++) {
-			file >> position.x >> position.y >> id >> race;
-			Building* building = new Building{ position };
+			file >> position.x >> position.y >> id >> race >> buildingType;
+			Building* building = new Building{ position, (uint8_t)buildingType };
 			fBuildings[race].push_back(building);
 			allBuildings.push_back(building);
 		}
