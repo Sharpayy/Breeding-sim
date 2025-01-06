@@ -85,7 +85,7 @@ public:
 	virtual void SetText(const char* t) = 0;
 };
 
-extern std::unordered_map<const char*, GComponent*> named_comps;
+extern std::unordered_map<std::string, GComponent*> named_comps;
 
 void AddNamedComponent(GComponent* comp, const char* name);
 void DelNamedComponent(const char* name);

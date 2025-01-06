@@ -56,21 +56,24 @@ public:
 	}
 
 	bool changeItem(Item* object) {
-		this->object = object;
 		if (object == nullptr)
 		{
 			((GComponentImage*)item_comp)->texture = 0;
 			return false;
 		}
+		else if (type & object->getObjectType()) {
+			this->object = object;
 
-		uint64_t tx = (uint64_t)object->getItemTexture();
+			uint64_t tx = (uint64_t)object->getItemTexture();
 
-		if (tx == -1)
-			((GComponentImage*)item_comp)->texture = 0;
-		else
-			((GComponentImage*)item_comp)->texture = tx;
-		
-		return true;
+			if (tx == -1)
+				((GComponentImage*)item_comp)->texture = 0;
+			else
+				((GComponentImage*)item_comp)->texture = tx;
+
+			return true;
+		}
+		return false;
 	}
 
 	bool pointInRect(glm::vec2 point) {
@@ -485,6 +488,7 @@ void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, In
 				slots.at(idx)->changeItem(nItem);
 				std::string labelName = "shopItem" + std::to_string(idx);
 				auto label = GetNamedComponent(labelName.c_str());
+				label->SetText(std::to_string(nItem->getItemPrice()).c_str());
 			}
 		}
 	}
@@ -520,6 +524,29 @@ void getCharacterInventory(void* v1, void* v2, EntityItem** entityItem, Inventor
 			slots.at(3)->changeItem(entityItems->weapon_secondary);
 			slots.at(4)->changeItem(entityItems->Legs);
 			slots.at(5)->changeItem(entityItems->Boots);
+
+			std::string componentName = "Vname";
+			GComponent* component;
+			component = GetNamedComponent(componentName.c_str());
+			component->SetText(ent->getName().c_str());
+
+			componentName = "Vhp";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vstamina";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vbravery";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vmelee";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vranged";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vdefense";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
 		}
 	}
 }

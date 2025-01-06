@@ -118,7 +118,7 @@ public:
 			if (!inv.isWindowActive(gui_windows.inventory)) {
 				inv.ActivateWindow(gui_windows.inventory);
 				std::vector<Slot*> slots = gui_windows.inventory->getAllSlots();
-				auto playerComp = player->getSquadComp();
+				auto playerComp = playerData.player->getSquadComp();
 				for (int i = 0; i < playerComp->size; i++) {
 					EntityItem* eitm = new EntityItem(playerComp->entities[i]);
 					eitm->setAsset((void*)LoadTextureFromFile("Data\\Goblin.png"));
@@ -131,7 +131,7 @@ public:
 		if (instance.KeyPressedOnce(SDL_SCANCODE_V))
 		{
 			if (!inv.isWindowActive(gui_windows.partyView)) {
-				setParty(nullptr, nullptr, (&player), &inv, gui_windows.partyView);
+				setParty(nullptr, nullptr, (&playerData.player), &inv, gui_windows.partyView);
 				//inv.ActivateWindow(gui_windows.partyView);
 			}
 			else inv.DisableWindow(gui_windows.partyView);
@@ -265,7 +265,7 @@ public:
 				}
 				else {
 
-					movementManager.createSquadPath(Astar::point{ (int)mousePos.x, (int)mousePos.y }, player);
+					movementManager.createSquadPath(Astar::point{ (int)mousePos.x, (int)mousePos.y }, playerData.player);
 				}
 			}
 		}
@@ -273,10 +273,10 @@ public:
 			auto pos = getCorrectedMousePosition();
 			pos.x = (int)(pos.x / 16) * 16;
 			pos.y = (int)(pos.y / 16) * 16;
-			player->setSquadPosition(pos);
-			uint64_t id = player->getSquadID();
+			playerData.player->setSquadPosition(pos);
+			uint64_t id = playerData.player->getSquadID();
 			r->BindActiveModel(LONG_GET_MODEL(id));
-			r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ player->getSquadPosition(), 1.1f}), true);
+			r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ playerData.player->getSquadPosition(), 1.1f}), true);
 
 		}
 	}
@@ -416,8 +416,12 @@ private:
 		int offset = 10;
 		Inventory::Window* win = inv.AddWindow("overworld_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"), 1);
 		auto gwin = win->getGWindow();
+		GComponent* c;
 		//labelka z iloœci¹ ch³opa
-		gwin->AddComponent(new GComponentLabel(glm::vec2(150, 20), glm::vec3(x, y, 1.0f), "Squad count: 0/16"));
+		gwin->AddComponent(new GComponentLabel(glm::vec2(100, 20), glm::vec3(x, y, 1.0f), "Squad count:"));
+		c = new GComponentLabel(glm::vec2(10, 20), glm::vec3(x + 105, y, 1.0f), "0/16");
+		AddNamedComponent(c, "squad_count");
+		gwin->AddComponent(c);
 		x += 150 + 50;
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Party", texButton));
 		x += buttonWidth + offset;
@@ -435,26 +439,32 @@ private:
 		int y = MAP_HEIGHT - 40;
 		int x = (MAP_WIDTH) / 6;
 		int buttonWidth = 100;
-		int labelWidth = 150;
-		int offsetButton = 10;
-		int offsetLabel = 50;
+		int labelWidth = 115;
+		int offsetButton = 5;
+		int offsetLabel = 80;
 		Inventory::Window* win = inv.AddWindow("battle_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"), 1);
 		auto gwin = win->getGWindow();
 		GComponent* c;
-		c = new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.01f), "Current turn: Player");
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 1.0f), "Current turn: "));
+		c = new GComponentLabel(glm::vec2(50, 20), glm::vec3(x + labelWidth, y, 0.01f), "Player");
 		AddNamedComponent(c, "current_turn_label");
 		gwin->AddComponent(c);
 		x += labelWidth + offsetLabel;
-		c = new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Turns passed: 0");
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Turns passed: "));
+		c = new GComponentLabel(glm::vec2(50, 20), glm::vec3(x + labelWidth, y, 0.01f), "0");
 		AddNamedComponent(c, "turns_passed_label");
 		gwin->AddComponent(c);
-		x += labelWidth + offsetLabel;
-		c = new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Enemy units : 0");
+		x += labelWidth + offsetLabel - 40;
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Enemy units: "));
+		c = new GComponentLabel(glm::vec2(50, 20), glm::vec3(x + labelWidth, y, 0.01f), "0");
 		AddNamedComponent(c, "enemy_units_label");
 		gwin->AddComponent(c);
-		x += labelWidth + offsetLabel;
-		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Player units : 0"));
-		x += labelWidth + offsetButton;
+		x += labelWidth + offsetLabel - 40;
+		gwin->AddComponent(new GComponentLabel(glm::vec2(labelWidth, 20), glm::vec3(x, y, 0.1f), "Player units: "));
+		c = new GComponentLabel(glm::vec2(50, 20), glm::vec3(x + labelWidth, y, 0.01f), "0");
+		AddNamedComponent(c, "player_units_label");
+		gwin->AddComponent(c);
+		x += labelWidth + offsetButton + 30;
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Settings", texButton));
 		x += buttonWidth + offsetButton;
 		gwin->AddComponent(new GComponentButton(glm::vec2(buttonWidth, 20), glm::vec3(x, y, 0.1f), "Exit", texButton));
@@ -477,9 +487,9 @@ private:
 		for (int i = 35; i < height - 35; i += 50) {
 			for (int j = 5; j < width - 15; j += 35) {
 				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 30.0f, 30.0f, EVERY_ITEM), texItemFrame);
-				c = new GComponentLabel(glm::vec2(40, 10), glm::vec3(j - 7, i + 35, 1.0f), "0");
-				std::string ch = "shopItem"+std::to_string(counter++);
-				AddNamedComponent(c, ch.c_str());
+				c = new GComponentLabel(glm::vec2(30, 10), glm::vec3(j, i + 35, 1.0f), "0");
+				auto labelName = std::string("shopItem") + std::to_string(counter++);
+				AddNamedComponent(c, labelName.c_str());
 				gwin->AddComponent(c);
 			}
 		}
@@ -554,32 +564,61 @@ private:
 		GComponent* c;
 		gwin->AddComponent(new GComponentLabel(glm::vec2(70, 20), glm::vec3(width / 2 - 70, height - 35, 0.5f), "Denars: "));
 		c = new GComponentLabel(glm::vec2(1, 20), glm::vec3(width / 2, height - 35, 0.5f), "0", false);
-		AddNamedComponent(c, "playerMoney");		
+		AddNamedComponent(c, "playerMoney");
 		gwin->AddComponent(c);
 		gui_windows.inventory = win;
 		//inv.ActivateWindow(win);
 
 	}
 	void initCharInv(int width, int height, uint64_t texItemFrame) {
+		GComponent* c;
 		Inventory::Window* win = inv.AddWindow("char_inv", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = win->getGWindow();
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"));
 		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
 		gwin->AddComponent(drag);
 		//nazwa ch³opa
-		gwin->AddComponent(new GComponentButton(glm::vec2(1, 1), glm::vec3(55, 21, 0.1f), "Ryszard drañ", LoadTextureFromFile("Data\\red.png")));
+		c = new GComponentLabel(glm::vec2(20, 1), glm::vec3(width/2 - 20, 10, 0.1f), "null", true);
+		AddNamedComponent(c, "Vname");
+		gwin->AddComponent(c);
 		//wyjœcie
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
+		int y = 30;
 		//sloty
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, 50), 30.0f, 30.0f, HELMET), texItemFrame);
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, 80), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 - 30, 80), 30.0f, 30.0f, WEAPON), texItemFrame);
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 + 30, 80), 30.0f, 30.0f, WEAPON), texItemFrame);
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, 110), 30.0f, 30.0f, LEGS), texItemFrame);
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, 140), 30.0f, 30.0f, BOOTS), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, HELMET), texItemFrame);
+		y += 30;
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 - 30, y), 30.0f, 30.0f, WEAPON), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 + 30, y), 30.0f, 30.0f, WEAPON), texItemFrame);
+		y += 30;
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, LEGS), texItemFrame);
+		y += 30;
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, BOOTS), texItemFrame);
 		//staty
+		auto texBase = LoadTextureFromFile("Data\\blue.png");
+		auto texFill = LoadTextureFromFile("Data\\purple.png");
+		y += 40;
+		c = new GComponentSlider(glm::vec2(80, 30), glm::vec3(10, y, 0.5f), "hp", texBase, texFill);
+		AddNamedComponent(c, "Vhp");
+		gwin->AddComponent(c);
+		c = new GComponentSlider(glm::vec2(80, 30), glm::vec3(10 + 90, y, 0.5f), "stamina", texBase, texFill);
+		AddNamedComponent(c, "Vstamina");
+		gwin->AddComponent(c);
+		c = new GComponentSlider(glm::vec2(80, 30), glm::vec3(100 + 90, y, 0.5f), "bravery", texBase, texFill);
+		AddNamedComponent(c, "Vbravery");
+		gwin->AddComponent(c);
+		y += 40;
+		c = new GComponentSlider(glm::vec2(80, 30), glm::vec3(10, y, 0.5f), "melee", texBase, texFill);
+		AddNamedComponent(c, "Vmelee");
+		gwin->AddComponent(c);
+		c = new GComponentSlider(glm::vec2(80, 30), glm::vec3(10 + 90, y, 0.5f), "ranged", texBase, texFill);
+		AddNamedComponent(c, "Vranged");
+		gwin->AddComponent(c);
+		c = new GComponentSlider(glm::vec2(80, 30), glm::vec3(100 + 90, y, 0.5f), "defense", texBase, texFill);
+		AddNamedComponent(c, "Vdefense");
+		gwin->AddComponent(c);
 		//inv.ActivateWindow(win);
 		gui_windows.characterWindow = win;
 	}
@@ -606,10 +645,6 @@ private:
 		//inv.ActivateWindow(win);
 	}
 
-	//void setHooveredWindow(Inventory::Window* win) {
-	//	guiWindowHoover.win = win;
-	//}
-
 	void initGame(std::filesystem::path path) {
 		//DO TOTALNEJ ZMIANY
 		path = path.append("Data\\buildings.txt");
@@ -633,7 +668,7 @@ private:
 		initBattleHud();
 		initShopItems(300, 300, texItemFrame);
 		initInteractionViewer(200, 200);
-		initCharInv(300, 400, texItemFrame);
+		initCharInv(300, 250, texItemFrame);
 		initSquadViewer(300, 400, texItemFrame);
 		initPrimaryInv(300, 400, texItemFrame);
 
@@ -678,12 +713,12 @@ private:
 
 		factionManager.setFactionsRelationships(MODEL_HUMANS, MODEL_BANDITS, ENEMY);
 
-		player = factionManager.CreateNewSquad(MODEL_PLAYER, glm::vec2(-1000.0f));
-		player->force = 1.0f;
+		playerData.player = factionManager.CreateNewSquad(MODEL_PLAYER, glm::vec2(-1000.0f));
+		playerData.player->force = 1.0f;
 
 		Squad* squad;
 		srand(time(NULL));
-		player->setSquadState(STAND);
+		playerData.player->setSquadState(STAND);
 		int amount = 0;
 		for (int i = 0; i < 32; i++) {
 			auto buildings = buildingManager.getRaceBuildings(i % 8);
@@ -707,7 +742,7 @@ private:
 		uint64_t id;
 		float dist;
 		for (auto& squadF : factionManager.getAllSquads()) {
-			if (squadF == player) continue;
+			if (squadF == playerData.player) continue;
 			id = squadF->getSquadID();
 			for (auto& squadS : factionManager.getAllSquads()) {
 				if (squadF != squadS) {
@@ -794,10 +829,10 @@ private:
 		float distance = calculateSquadViewDistance(squadF);
 		if (factionManager.getFactionsRelationships(squadS->getSquadFactionID(), squadF->getSquadFactionID()) == ENEMY) {
 			if (glm::distance(squadF->getSquadPosition(), squadS->getSquadPosition()) <= distance) {
-				if (glm::distance(squadF->getSquadPosition(), player->getSquadPosition()) <= 4.0f) {
+				if (glm::distance(squadF->getSquadPosition(), playerData.player->getSquadPosition()) <= 4.0f) {
 					game_type = GAMETYPE_FIGHT;
 					EntityBattleManager::BattleData battleData = {
-						player,
+						playerData.player,
 						squadF
 					};
 					r->setCameraMatrix(glm::lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), (glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(0.0f, 1.0f, 0.0f)));
@@ -901,7 +936,6 @@ private:
 	rasticore::RastiCoreRender* r;
 	rasticore::ModelCreationDetails rect_mcd;
 	ItemLoader itemLoader;
-	Squad* player;
 	SquadMovementManager movementManager;
 	BuildingManager buildingManager;
 	FactionManager factionManager;
@@ -914,6 +948,11 @@ private:
 	//
 	Timer timer;
 	std::mt19937 gen;
+
+	struct PlayerData {
+		Squad* player;
+		uint32_t money;
+	} playerData;
 
 	struct GUI_Windows {
 		Inventory::Window* partyView;

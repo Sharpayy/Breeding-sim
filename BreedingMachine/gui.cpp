@@ -5,7 +5,7 @@ rasticore::Program* gui_main_program;
 rasticore::VertexBuffer* gui_square;
 uint32_t gui_program_mat_loc;
 rasticore::UniformBufferObject* gui_prog_ubo;
-std::unordered_map<const char*, GComponent*> named_comps;
+std::unordered_map<std::string, GComponent*> named_comps;
 
 #ifdef ENABLE_GROOMING
 uint32_t gui_tex_0_loc;
@@ -181,7 +181,7 @@ void gui_init()
 
 void AddNamedComponent(GComponent* comp, const char* name)
 {
-	named_comps.insert({ name, comp });
+	named_comps[name] = comp;//.insert({ name, comp });
 }
 
 void DelNamedComponent(const char* name)

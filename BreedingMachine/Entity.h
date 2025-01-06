@@ -54,13 +54,18 @@ public:
 
 	};
 public:
-	Entity(uint64_t texture = 0, Stats stats = {}, EquipedItems* items = {}) {
+	Entity(std::string name = "", uint64_t texture = 0, Stats stats = {}, EquipedItems * items = {}) {
+		this->name = name;
 		this->texture = texture;
 		this->stats = stats;
 		this->items = items;
 
 		hp = stats.hp;
 		state = 0;
+	}
+
+	std::string getName() {
+		return name;
 	}
 
 	void SetHp(float hp)
@@ -123,6 +128,7 @@ public:
 	glm::vec2 travel;
 	//IMPL
 private:
+	std::string name;
 	glm::vec2 position;
 	Stats stats;
 	uint64_t texture;
@@ -148,7 +154,7 @@ public:
 		//squadComp->size = 1;
 		squadComp->size = rand() % SQUAD_MAX_SIZE;
 		for (int i = 0; i < squadComp->size; i++) {
-			squadComp->entities[i] = new Entity(0, {}, new Entity::EquipedItems{});
+			squadComp->entities[i] = new Entity( "Some chujstwo", 0, {}, new Entity::EquipedItems{});
 		}
 		this->squadID = squadID;
 		this->position = position;
@@ -254,12 +260,12 @@ public:
 
 class EntityItem : public Item {
 public:
-	EntityItem(Entity* entity = nullptr) {
+	EntityItem(Entity* entity = nullptr, uint32_t price = 0) {
 		this->itemName = "SOME ENTITY";
 		this->object = (void*)entity->getTexture();
 		this->entity = entity;
 		this->objType = ENTITY;
-		this->price = 0;
+		this->price = price;
 	}
 
 	Entity* getEntity() {
