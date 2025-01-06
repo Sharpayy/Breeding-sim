@@ -14,9 +14,9 @@
 #define MODEL_BANDITS 6
 #define MODEL_ANIMALS 7
 
-#define ALLY 1
-#define ENEMY 2
-#define ALL 3
+#define ENTITY_ALLY 1
+#define ENTITY_ENEMY 2
+#define ENTITY_WHATEVER 3
 
 typedef struct _LDR_MODELS
 {
@@ -47,7 +47,7 @@ LDR_MODELS LDR_FACTION_TEXTURE_MAP[] = {
 	LDR_MODELS{LDR_HUMAN_TEXTURE, sizeof(LDR_HUMAN_TEXTURE) / sizeof(LDR_HUMAN_TEXTURE[0])},
 	LDR_MODELS{LDR_NOMAD_TEXTURE, sizeof(LDR_NOMAD_TEXTURE) / sizeof(LDR_NOMAD_TEXTURE[0])},
 	LDR_MODELS{LDR_EVILHUMAN_TEXTURE, sizeof(LDR_EVILHUMAN_TEXTURE) / sizeof(LDR_EVILHUMAN_TEXTURE[0])},
-		LDR_MODELS{LDR_GOBLIN_TEXTURE, sizeof(LDR_GOBLIN_TEXTURE) / sizeof(LDR_GOBLIN_TEXTURE[0])},
+	LDR_MODELS{LDR_GOBLIN_TEXTURE, sizeof(LDR_GOBLIN_TEXTURE) / sizeof(LDR_GOBLIN_TEXTURE[0])},
 	LDR_MODELS{LDR_HUMAN_TEXTURE, sizeof(LDR_HUMAN_TEXTURE) / sizeof(LDR_HUMAN_TEXTURE[0])}
 };
 
@@ -147,8 +147,7 @@ public:
 	}
 
 	void startBattle(BattleData& battleData) {
-		gui_windows.inventory = inv->GetWindow("inventory");
-		gui_windows.characterWindow = inv->GetWindow("char_inv");
+		characterWindow = inv->GetWindow("char_inv");
 
 		tour = BT_TOUR_AI;
 		printf("Bitka!\n");
@@ -356,17 +355,17 @@ public:
 	}
 
 private:
-	Entity* getEntity(uint8_t flag = ALLY) {
+	Entity* getEntity(uint8_t flag = ENTITY_ALLY) {
 		Entity* entityItem;
 		glm::vec2 entityPos, mousePos;
 		mousePos = getCorrectedMousePosition();
 		
 		Squad::SquadComp* squadComp = nullptr;
-		if(flag == ALLY) squadComp = data.s1->getSquadComp();
-		else if(flag == ENEMY) squadComp = data.s2->getSquadComp();
+		if(flag == ENTITY_ALLY) squadComp = data.s1->getSquadComp();
+		else if(flag == ENTITY_ENEMY) squadComp = data.s2->getSquadComp();
 
 		int tileOffset = currentMap.tileSize / 2.0f;
-		if (flag == ENEMY || flag == ALLY) {
+		if (flag == ENTITY_ENEMY || flag == ENTITY_ALLY) {
 			for (int idx = 0; idx < squadComp->size; idx++) {
 				entityItem = squadComp->entities[idx];
 				entityPos = entityItem->getPosition();
@@ -481,13 +480,6 @@ private:
 		if (instance.KeyPressed(SDL_SCANCODE_E)) {
 			cameraOffset->z *= 1.1f;
 		}
-		if (instance.KeyPressedOnce(SDL_SCANCODE_I))
-		{
-			if (!inv->isWindowActive(gui_windows.inventory)) {
-				inv->ActivateWindow(gui_windows.inventory);
-			}
-			else inv->DisableWindow(gui_windows.inventory);
-		}
 		if (instance.KeyPressed(SDL_SCANCODE_LEFT)) {
 			//GUI
 			glm::vec2 mp = getMousePosition();
@@ -542,9 +534,9 @@ private:
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
 			auto a = getCorrectedMousePosition();
-			Entity* se = getEntity(0);
+			Entity* se = getEntity(ENTITY_WHATEVER);
 			if (se) {
-				getCharacterInventory_E(nullptr, nullptr, &se, inv, gui_windows.characterWindow);
+				getCharacterInventory_E(nullptr, nullptr, &se, inv, characterWindow);
 			}
 		}
 	}
@@ -568,10 +560,7 @@ private:
 	Entity* selectedEntity;
 	Inventory* inv;
 
-	struct GUI_Windows {
-		Inventory::Window* inventory;
-		Inventory::Window* characterWindow;
-	} gui_windows;
+	Inventory::Window* characterWindow;
 
 	DraggedObj* draggedObj;
 
