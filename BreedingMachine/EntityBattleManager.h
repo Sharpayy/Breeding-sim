@@ -3,6 +3,46 @@
 #include "MovementManager.h"
 #include "inputHandler.h"
 #include "Define.h"
+#include "inventory.h"
+
+#define MODEL_ORKS 0
+#define MODEL_HUMANS 1
+#define MODEL_NOMADS 2
+#define MODEL_EVIL_HUMANS 3
+#define MODEL_GOBLINS 4
+#define MODEL_PLAYER 5
+#define MODEL_BANDITS 6
+#define MODEL_ANIMALS 7
+
+typedef struct _LDR_MODELS
+{
+	const char** models;
+	uint32_t amount;
+} LDR_MODELS;
+
+const char* LDR_ORC_TEXTURE[] = {
+	"Data\\bt_orc_0.png",
+	"Data\\bt_orc_1.png"
+};
+
+const char* LDR_HUMAN_TEXTURE[] = {
+	"Data\\bt_human_0.png",
+	"Data\\bt_human_1.png",
+	"Data\\bt_human_2.png"
+};
+
+LDR_MODELS LDR_FACTION_TEXTURE_MAP[] = {
+	LDR_MODELS{LDR_ORC_TEXTURE, sizeof(LDR_ORC_TEXTURE) / sizeof(LDR_ORC_TEXTURE[0])},
+	LDR_MODELS{LDR_HUMAN_TEXTURE, sizeof(LDR_HUMAN_TEXTURE) / sizeof(LDR_HUMAN_TEXTURE[0])},
+	LDR_MODELS{nullptr, 0},
+	LDR_MODELS{nullptr, 0},
+	LDR_MODELS{nullptr, 0},
+	LDR_MODELS{LDR_HUMAN_TEXTURE, sizeof(LDR_HUMAN_TEXTURE) / sizeof(LDR_HUMAN_TEXTURE[0])}
+};
+
+#define MODEL_ENEMY_FACTION_BASE		20
+#define MODEL_PLAYER_FACTION_BASE		40
+#define LDR_MAX_FACTION_MODELS 16
 
 class EntityBattleManager {
 public:
@@ -19,7 +59,7 @@ public:
 	};
 public:
 	EntityBattleManager() = default;
-	EntityBattleManager(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails rect_mcd, rasticore::Program fmp, rasticore::VertexBuffer mapVao, CameraOffset* cameraOffset) : instance(InputHandler::getInstance()) {
+	EntityBattleManager(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails rect_mcd, rasticore::Program fmp, rasticore::VertexBuffer mapVao, Inventory* inv, DraggedObj* dragObj, CameraOffset* cameraOffset) : instance(InputHandler::getInstance()) {
 		this->r = r;
 		this->rect_mcd = rect_mcd;
 	
@@ -59,7 +99,9 @@ public:
 		this->mapVao = mapVao;
 
 		selectedEntity = nullptr;
+		this->inv = inv;
 
+		this->draggedObj = dragObj;
 		this->cameraOffset = cameraOffset;
 	}
 
@@ -118,6 +160,8 @@ public:
 	}
 
 	void startBattle(BattleData& battleData) {
+		characterWindow = inv->GetWindow("char_inv");
+
 		tour = BT_TOUR_AI;
 		printf("Bitka!\n");
 		data = battleData;
@@ -337,18 +381,41 @@ public:
 	}
 
 private:
-	Entity* getEntity() {
-		auto squadComp = data.s1->getSquadComp();
-		//glm::vec4 entityDim{5,10,15,20};
-		Entity* entity;
+	Entity* getEntity(uint8_t flag = ENTITY_ALLY) {
+		Entity* entityItem;
 		glm::vec2 entityPos, mousePos;
 		mousePos = getCorrectedMousePosition();
+		
+		Squad::SquadComp* squadComp = nullptr;
+		if(flag == ENTITY_ALLY) squadComp = data.s1->getSquadComp();
+		else if(flag == ENTITY_ENEMY) squadComp = data.s2->getSquadComp();
+
 		int tileOffset = currentMap.tileSize / 2.0f;
-		for (int idx = 0; idx < squadComp->size; idx++) {
-			entity = squadComp->entities[idx];
-			entityPos = entity->getPosition();
-			if (pointInRect(mousePos, glm::vec4{ entityPos.x - tileOffset, entityPos.y - tileOffset, currentMap.tileSize, currentMap.tileSize })) {
-				return entity;
+		if (flag == ENTITY_ENEMY || flag == ENTITY_ALLY) {
+			for (int idx = 0; idx < squadComp->size; idx++) {
+				entityItem = squadComp->entities[idx];
+				entityPos = entityItem->getPosition();
+				if (pointInRect(mousePos, glm::vec4{ entityPos.x - tileOffset, entityPos.y - tileOffset, currentMap.tileSize, currentMap.tileSize })) {
+					return entityItem;
+				}
+			}
+		}
+		else {
+			squadComp = data.s1->getSquadComp();
+			for (int idx = 0; idx < squadComp->size; idx++) {
+				entityItem = squadComp->entities[idx];
+				entityPos = entityItem->getPosition();
+				if (pointInRect(mousePos, glm::vec4{ entityPos.x - tileOffset, entityPos.y - tileOffset, currentMap.tileSize, currentMap.tileSize })) {
+					return entityItem;
+				}
+			}
+			squadComp = data.s2->getSquadComp();
+			for (int idx = 0; idx < squadComp->size; idx++) {
+				entityItem = squadComp->entities[idx];
+				entityPos = entityItem->getPosition();
+				if (pointInRect(mousePos, glm::vec4{ entityPos.x - tileOffset, entityPos.y - tileOffset, currentMap.tileSize, currentMap.tileSize })) {
+					return entityItem;
+				}
 			}
 		}
 		return nullptr;
@@ -439,31 +506,63 @@ private:
 		if (instance.KeyPressed(SDL_SCANCODE_E)) {
 			cameraOffset->z *= 1.1f;
 		}
+		if (instance.KeyPressed(SDL_SCANCODE_LEFT)) {
+			//GUI
+			glm::vec2 mp = getMousePosition();
+			if (draggedObj->draggedWindow.win && !draggedObj->draggedWindow.wasPressed) {
+				draggedObj->draggedWindow.wasPressed = true;
+				auto dim = draggedObj->draggedWindow.win->getDim();
+				int offsetX = abs(dim.position.x - mp.x);
+				int offsetY = abs(dim.position.y - mp.y);
+				draggedObj->draggedWindow.offset.x = offsetX;
+				draggedObj->draggedWindow.offset.y = offsetY;
+			}
+			else if (draggedObj->draggedWindow.wasPressed) {
+				draggedObj->draggedWindow.win->changeWindowPosition(mp.x - draggedObj->draggedWindow.offset.x, mp.y - draggedObj->draggedWindow.offset.y);
+			}
+		}
+		else {
+			//GUI
+			draggedObj->draggedWindow = {};
+			draggedObj->draggedItem = {};
+		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
-			auto a = getCorrectedMousePosition();
-			printf("%f %f\n", a.x, a.y);
-			Entity* se = getEntity();
-			if (selectedEntity == nullptr)
-			{
-				selectedEntity = se;
+			glm::vec2 mp = getMousePosition();
+			//GUI
+			if (inv->isGuiClicked(mp)) {
+				Inventory::Window* win = inv->setPressedWindowOnTop(mp);
+				win->getGWindow()->CollisionCheck(mp.x, mp.y);
 			}
-			else if (selectedEntity != nullptr && se != nullptr)
-			{
-				selectedEntity = se;
-			}
-			else
-			{
-				//&& selectedEntity->canMove() == true
-				if (tour == BT_TOUR_PLAYER && entityMovementManager.pathExist() == false && selectedEntity->state->CanMoveEntity() == true)
+			//GAME LOGIC
+			else {
+				mp = getCorrectedMousePosition();
+				printf("%f %f\n", mp.x, mp.y);
+				Entity* se = getEntity();
+				if (selectedEntity == nullptr)
 				{
-					auto pos = getCorrectedMousePosition();
-					if (distance(pos, selectedEntity->getPosition()) <= 64.0f * selectedEntity->getStats()->stamina)
+					selectedEntity = se;
+				}
+				else if (selectedEntity != nullptr && se != nullptr)
+				{
+					selectedEntity = se;
+				}
+				else
+				{
+					if (tour == BT_TOUR_PLAYER && selectedEntity->canMove() == true)
 					{
+						auto pos = getCorrectedMousePosition();
 						moveEntity(pos, selectedEntity);
 						selectedEntity->EntitySetMove();
 						tour = BT_TOUR_AI;
 					}
 				}
+			}
+		}
+		if (instance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
+			auto a = getCorrectedMousePosition();
+			Entity* se = getEntity(ENTITY_WHATEVER);
+			if (se) {
+				getCharacterInventory_E(nullptr, nullptr, &se, inv, characterWindow);
 			}
 		}
 	}
@@ -485,6 +584,11 @@ private:
 	BattleMap currentMap;
 
 	Entity* selectedEntity;
+	Inventory* inv;
+
+	Inventory::Window* characterWindow;
+
+	DraggedObj* draggedObj;
 
 	InputHandler& instance;
 	//std::vector<>

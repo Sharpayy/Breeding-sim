@@ -57,7 +57,7 @@ public:
 	
 	void update() {
 		moveSquads();
-		SDL_Delay(10);
+		//SDL_Delay(10);
 	}
 
 	uint8_t getMapTileSize() {
@@ -188,8 +188,8 @@ public:
 		this->tileSize = tileSize;
 	}
 
-	int createEntityPath(Astar::point e, Entity* entity) {
-		auto position = entity->getPosition() + (mapSize / 2.0f);
+	int createEntityPath(Astar::point e, Entity* entityItem) {
+		auto position = entityItem->getPosition() + (mapSize / 2.0f);
 		float offset = tileSize / 2.0f;
 		position.x = ((int)((position.x) / tileSize)) * tileSize;
 		position.y = ((int)((position.y) / tileSize)) * tileSize;
@@ -200,7 +200,7 @@ public:
 		}
 		entityMovementData.path = movement.findPath(Astar::point{ (int)position.x, (int)position.y }, e, tileSize);
 		entityMovementData.dt = 0;
-		entityMovementData.entity = entity;
+		entityMovementData.entityItem = entityItem;
 	}
 
 	bool pass(glm::vec2 p)
@@ -237,7 +237,7 @@ public:
 
 private:
 	void moveEntity() {
-		if (!entityMovementData.entity) return;
+		if (!entityMovementData.entityItem) return;
 
 		Astar::point prevAP, nextAP;
 		glm::vec2 prevPosition, nextPosition, currentPosition;
@@ -252,7 +252,7 @@ private:
 			float speed = 0.05f;
 			entityMovementData.dt = glm::clamp(0.0f, 1.0f, speed + entityMovementData.dt);
 			currentPosition = lerp(prevPosition, nextPosition, entityMovementData.dt);
-			entityMovementData.entity->setEntityPosition(currentPosition);
+			entityMovementData.entityItem->setEntityPosition(currentPosition);
 			if (currentPosition == nextPosition) {
 				entityMovementData.path.erase(entityMovementData.path.begin());
 				entityMovementData.dt = 0;
@@ -300,7 +300,7 @@ private:
 
 	//time = current time;
 	struct EntityMovementInfo {
-		Entity* entity = nullptr;
+		Entity* entityItem = nullptr;
 		std::vector<Astar::point> path;
 		float dt;
 	};

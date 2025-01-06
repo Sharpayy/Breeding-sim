@@ -59,6 +59,7 @@ public:
 	bool changeItem(Item* object) {
 		if (object == nullptr)
 		{
+			this->object = object;
 			((GComponentImage*)item_comp)->texture = 0;
 			return false;
 		}
@@ -167,6 +168,16 @@ public:
 
 		bool onTop() {
 			return alwaysOnTop;
+		}
+
+		int getSlotIndex(Slot* slot) {
+			auto it = std::find(slots.begin(), slots.end(), slot);
+
+			if (it != slots.end()) {
+				return std::distance(slots.begin(), it);
+			}
+
+			return -1;
 		}
 
 	private:
@@ -283,6 +294,10 @@ public:
 		Window* win = new Window{ windowName, dim, height, {}, new GWindow{ dim.position, glm::vec2{ dim.width, dim.height }, tex }, flag };
 		windows.push_back(win);
 		return win;
+	}
+
+	Window* GetWindow(std::string windowName) {
+		return windowExist(windowName);
 	}
 
 	std::vector<Window*> getActiveWindows() {
@@ -458,6 +473,12 @@ struct GUI_DraggedItem {
 	Slot* previousSlot;
 };
 
+
+struct DraggedObj {
+	GUI_DraggedWindow draggedWindow = {};
+	GUI_DraggedItem draggedItem = {};
+};
+
 void ActivateWindow(void* v1, void* v2, Inventory* inv, Inventory::Window* win) {
 	if (inv) inv->ActivateWindow(win);
 }
@@ -474,6 +495,11 @@ void SetDraggedItem(void* v1, void* v2, GUI_DraggedItem* guiDI, Item* item) {
 	guiDI->item = item;
 }
 
+void setInventory(void* v1, void* v2, int* money, Inventory* inv, Inventory::Window* win) {
+	std::string labelName = "playerMoney";
+	auto label = GetNamedComponent(labelName.c_str());
+	label->SetText(std::to_string(*money).c_str());
+}
 
 void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, Inventory::Window* win) {
 	if (inv) {
@@ -481,13 +507,17 @@ void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, In
 			auto items = (*building)->getItemsRotation();
 			auto slots = win->getAllSlots();
 			int size = items.size() < slots.size() ? items.size() : slots.size();
+			std::string labelName;
 			for (int idx = 0; idx < slots.size(); idx++) {
 				slots.at(idx)->changeItem(nullptr);
+				labelName = "shopItem" + std::to_string(idx);
+				auto label = GetNamedComponent(labelName.c_str());
+				label->SetText(std::string("0").c_str());
 			}
 			for (int idx = 0; idx < size; idx++) {
 				Item* nItem = items.at(idx);
 				slots.at(idx)->changeItem(nItem);
-				std::string labelName = "shopItem" + std::to_string(idx);
+				labelName = "shopItem" + std::to_string(idx);
 				auto label = GetNamedComponent(labelName.c_str());
 				label->SetText(std::to_string(nItem->getItemPrice()).c_str());
 			}
@@ -512,7 +542,7 @@ void setParty(void* v1, void* v2, Squad** squad, Inventory* inv, Inventory::Wind
 }
 
 
-void getCharacterInventory(void* v1, void* v2, EntityItem** entityItem, Inventory* inv, Inventory::Window* win) {
+void getCharacterInventory_EI(void* v1, void* v2, EntityItem** entityItem, Inventory* inv, Inventory::Window* win) {
 	if (inv) {
 		if (*entityItem) {
 			inv->ActivateWindow(win);
@@ -552,4 +582,50 @@ void getCharacterInventory(void* v1, void* v2, EntityItem** entityItem, Inventor
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
 		}
 	}
+}
+
+void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv, Inventory::Window* win) {
+	if (inv) {
+		if (*entity) {
+			inv->ActivateWindow(win);
+			auto slots = win->getAllSlots();
+			auto entityItems = (*entity)->getEquipedItems();
+			slots.at(0)->changeItem(entityItems->helmet);
+			slots.at(1)->changeItem(entityItems->Chestplate);
+			slots.at(2)->changeItem(entityItems->weapon_primary);
+			slots.at(3)->changeItem(entityItems->weapon_secondary);
+			slots.at(4)->changeItem(entityItems->Legs);
+			slots.at(5)->changeItem(entityItems->Boots);
+
+			std::string componentName = "Vname";
+			GComponent* component;
+			component = GetNamedComponent(componentName.c_str());
+			component->SetText((*entity)->getName().c_str());
+
+			componentName = "Vhp";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vstamina";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vbravery";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vmelee";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vranged";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vdefense";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+		}
+	}
+}
+
+void setSquadCompSize(void* v1, void* v2, uint8_t* squadSize) {
+	std::string text, componentName = "squad_count";
+	GComponent* component = GetNamedComponent(componentName.c_str());
+	text = std::to_string((int)(*squadSize)) + "/" + std::to_string((int)SQUAD_MAX_SIZE);
+	component->SetText(text.c_str());
 }

@@ -299,21 +299,21 @@ public:
 
 class EntityItem : public Item {
 public:
-	EntityItem(Entity* entity = nullptr, uint32_t price = 0) {
+	EntityItem(Entity* entityItem = nullptr, uint32_t price = 0) {
 		this->itemName = "SOME ENTITY";
-		this->object = (void*)entity->getTexture();
-		this->entity = entity;
+		this->object = (void*)entityItem->getTexture();
+		this->entityItem = entityItem;
 		this->objType = ENTITY;
 		this->price = price;
 	}
 
 	Entity* getEntity() {
-		return entity;
+		return entityItem;
 	}
 
 	void* getItemTexture() {
 		return object;
 	}
 private:
-	Entity* entity;
+	Entity* entityItem;
 };
