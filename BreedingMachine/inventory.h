@@ -9,6 +9,7 @@
 #include "Entity.h"
 #include "Building.h"
 #include "gui.h"
+#include "Define.h"
 
 struct ObjectDim {
 	glm::vec2 position;
@@ -526,12 +527,14 @@ void getCharacterInventory(void* v1, void* v2, EntityItem** entityItem, Inventor
 			slots.at(5)->changeItem(entityItems->Boots);
 
 			std::string componentName = "Vname";
-			GComponent* component;
-			component = GetNamedComponent(componentName.c_str());
-			component->SetText(ent->getName().c_str());
+			GComponentSlider* component;
+			GComponent* cmp;
+			cmp = GetNamedComponent(componentName.c_str());
+			cmp->SetText(ent->getName().c_str());
 
 			componentName = "Vhp";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = 0.2f;//ent->getStats()->hp / ENTITY_MAX_HEALTH;
 
 			componentName = "Vstamina";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));

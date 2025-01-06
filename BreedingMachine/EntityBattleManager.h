@@ -1,47 +1,8 @@
 #pragma once
-#include "Squad.h"
+#include "Entity.h"
 #include "MovementManager.h"
 #include "inputHandler.h"
 #include "Define.h"
-
-#define MODEL_ORKS 0
-#define MODEL_HUMANS 1
-#define MODEL_NOMADS 2
-#define MODEL_EVIL_HUMANS 3
-#define MODEL_GOBLINS 4
-#define MODEL_PLAYER 5
-#define MODEL_BANDITS 6
-#define MODEL_ANIMALS 7
-
-typedef struct _LDR_MODELS
-{
-	const char** models;
-	uint32_t amount;
-} LDR_MODELS;
-
-const char* LDR_ORC_TEXTURE[] = {
-	"Data\\bt_orc_0.png",
-	"Data\\bt_orc_1.png"
-};
-
-const char* LDR_HUMAN_TEXTURE[] = {
-	"Data\\bt_human_0.png",
-	"Data\\bt_human_1.png",
-	"Data\\bt_human_2.png"
-};
-
-LDR_MODELS LDR_FACTION_TEXTURE_MAP[] = {
-	LDR_MODELS{LDR_ORC_TEXTURE, sizeof(LDR_ORC_TEXTURE) / sizeof(LDR_ORC_TEXTURE[0])},
-	LDR_MODELS{LDR_HUMAN_TEXTURE, sizeof(LDR_HUMAN_TEXTURE) / sizeof(LDR_HUMAN_TEXTURE[0])},
-	LDR_MODELS{nullptr, 0},
-	LDR_MODELS{nullptr, 0},
-	LDR_MODELS{nullptr, 0},
-	LDR_MODELS{LDR_HUMAN_TEXTURE, sizeof(LDR_HUMAN_TEXTURE) / sizeof(LDR_HUMAN_TEXTURE[0])}
-};
-
-#define MODEL_ENEMY_FACTION_BASE		20
-#define MODEL_PLAYER_FACTION_BASE		40
-#define LDR_MAX_FACTION_MODELS 16
 
 class EntityBattleManager {
 public:
@@ -61,7 +22,6 @@ public:
 	EntityBattleManager(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails rect_mcd, rasticore::Program fmp, rasticore::VertexBuffer mapVao, CameraOffset* cameraOffset) : instance(InputHandler::getInstance()) {
 		this->r = r;
 		this->rect_mcd = rect_mcd;
-		LoadTextureFromFile("Data\\mongo.png", "pilgrim");
 	
 		for (int i = 0; i < LDR_MAX_FACTION_MODELS; i++)
 		{
@@ -79,7 +39,7 @@ public:
 				continue;
 
 			for (int l = 0; l < model->amount; l++)
-				LoadTextureFromFile(model->models[i]);
+				LoadTextureFromFile(model->models[l]);
 		}
 
 		mapProgram = fmp;
@@ -142,6 +102,21 @@ public:
 		}
 	}
 
+	void EndBattle()
+	{
+		Squad::SquadComp* units = data.s1->getSquadComp();
+		for (int i = 0; i < units->size; i++)
+		{
+			r->deleteObject(LONG_GET_MODEL(units->entities[i]->id), LONG_GET_OBJECT(units->entities[i]->id));
+		}
+
+		units = data.s2->getSquadComp();
+		for (int i = 0; i < units->size; i++)
+		{
+			r->deleteObject(LONG_GET_MODEL(units->entities[i]->id), LONG_GET_OBJECT(units->entities[i]->id));
+		}
+	}
+
 	void startBattle(BattleData& battleData) {
 		tour = BT_TOUR_AI;
 		printf("Bitka!\n");
@@ -166,12 +141,17 @@ public:
 		{
 			e = units->entities[i];
 			Stats* st = e->getStats();
-			st->stamina = i + 0.1f;
+			st->stamina = 3.1f;
+			st->hp = 100.0f;
+			st->defense = 2.4f;
+			st->melee = 8.1f;
+			e->SetHp(99.0f);
 			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
 			e->EntityClearMove();
+			AiDecideEntityInitialState(e);
 			//entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
 			offsetY -= 1;
-			r->newObject(MODEL_PLAYER_FACTION_BASE + rand() % texturesPlayerAmount, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), &e->id);
+			r->newObject(MODEL_PLAYER_FACTION_BASE + e->GetIndex(), glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), &e->id);
 		}
 		units = data.s2->getSquadComp();
 		offsetY = (tilesAmountX / 2) - ((tilesAmountX / 2) - (units->size / 2));
@@ -180,6 +160,10 @@ public:
 			e = units->entities[i];
 			auto s = e->getStats();
 			s->hp = 100.0f;
+			s->ranged = 4.0f;
+			s->stamina = 7.1f;
+			s->bravery = 50.0f;
+			e->SetBravery(50.0f);
 			e->SetHp(90.0f);
 			e->setEntityPosition(glm::vec2{ -(offsetX + 1) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
 			entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
@@ -188,7 +172,7 @@ public:
 			AiDecideEntityInitialState(e);
 			//int b = e->state->MoveEntity(&data);
 			//if (b == true) moveEntityNear(e->travel, e);
-			r->newObject(MODEL_ENEMY_FACTION_BASE + rand() % texturesEnemyAmount, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), &e->id);
+			r->newObject(MODEL_ENEMY_FACTION_BASE + e->GetIndex(), glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), &e->id);
 		}
 	}
 
@@ -211,8 +195,14 @@ public:
 				ent->EntitySetMove();
 				if (b == true)
 					moveEntityNear(ent->travel, ent);
+				ent->state->AttackEntity(&data);
+				AiGainUnitStdBravery(ent);
 				tour = BT_TOUR_PLAYER;
 			}
+		}
+		else
+		{
+			EndBattle();
 		}
 
 
@@ -220,6 +210,7 @@ public:
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
+			AiUpdateEntityState(e);
 			r->BindActiveModel(LONG_GET_MODEL(e->id));
 			r->SetObjectMatrix(LONG_GET_OBJECT(e->id), glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
 		}
@@ -284,6 +275,7 @@ public:
 	{
 		Entity* found = NULL;
 		Squad::SquadComp* units = data.s2->getSquadComp();
+		//return units->entities[0];
 		for (int i = 0; i < units->size; i++)
 		{
 			if (units->entities[i]->state->CanMoveEntity() == true && units->entities[i]->canMove() == true)
@@ -303,17 +295,13 @@ public:
 
 	bool AiCanBattle()
 	{
-		return true;
-	}
-
-	float AiGetUnitArmor(Entity* e)
-	{
-		return 1.6f;
-	}
-
-	float AiGetAttackAfterArmor(Entity* e, float atk)
-	{
-		return 1.0f / pow(AiGetUnitArmor(e), 0.1f) * atk;
+		Squad::SquadComp* units = data.s2->getSquadComp();
+		for (int i = 0; i < units->size; i++)
+		{
+			if (units->entities[i]->state->EntityCanBattle() == true)
+				return true;
+		}
+		return false;
 	}
 
 	void AiUpdateEntityState(Entity* e)
@@ -404,9 +392,9 @@ private:
 
 	bool moveEntityNear(glm::vec2 e, Entity* entity)
 	{
-		for (int a = 1; a > -1; a--)
+		for (int a = 1; a >= -1; a--)
 		{
-			for (int b = 1; b > -1; b--)
+			for (int b = 1; b >= -1; b--)
 			{
 				if (entityMovementManager.pass(e + glm::vec2(64.0f * a, 64.0f * b) + 512.0f - 32.0f) == false)
 				{
@@ -465,12 +453,16 @@ private:
 			}
 			else
 			{
-				if (tour == BT_TOUR_PLAYER && selectedEntity->canMove() == true)
+				//&& selectedEntity->canMove() == true
+				if (tour == BT_TOUR_PLAYER && entityMovementManager.pathExist() == false && selectedEntity->state->CanMoveEntity() == true)
 				{
 					auto pos = getCorrectedMousePosition();
-					moveEntity(pos, selectedEntity);
-					selectedEntity->EntitySetMove();
-					tour = BT_TOUR_AI;
+					if (distance(pos, selectedEntity->getPosition()) <= 64.0f * selectedEntity->getStats()->stamina)
+					{
+						moveEntity(pos, selectedEntity);
+						selectedEntity->EntitySetMove();
+						tour = BT_TOUR_AI;
+					}
 				}
 			}
 		}

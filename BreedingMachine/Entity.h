@@ -4,6 +4,8 @@
 #include "EntityStatistics.h"
 #include "Item.h"
 #include <filesystem>
+#include "textures.h"
+#include "EntityTextures.h"
 
 struct BattleMap {
 	uint64_t texture;
@@ -40,7 +42,8 @@ public:
 		virtual int MoveEntity(void* battleContext) = 0;
 		virtual int NextState() = 0;
 		virtual int CanMoveEntity() = 0;
-		//virtual int AttackEntity(void* battleContext) = 0;
+		virtual int AttackEntity(void* battleContext) = 0;
+		virtual int EntityCanBattle() = 0;
 	};
 
 	uint64_t id;
@@ -124,6 +127,33 @@ public:
 		return items;
 	}
 
+	uint64_t GetIndex()
+	{
+		return index;
+	}
+
+	float GetBravery()
+	{
+		return bravery;
+	}
+
+	void SetBravery(float b)
+	{
+		bravery = b;
+	}
+
+	void SetEntityTextureIndex(uint64_t tex, uint64_t ind)
+	{
+		texture = tex;
+		index = ind;
+	}
+
+	void SetBaseStats()
+	{
+		hp = stats.hp;
+		bravery = stats.bravery;
+	}
+
 	IEntityState* state;
 	glm::vec2 travel;
 	//IMPL
@@ -132,10 +162,12 @@ private:
 	glm::vec2 position;
 	Stats stats;
 	uint64_t texture;
+	uint64_t index;
 	EquipedItems* items;
 	bool canMoveEnt;
 
 	float hp;
+	float bravery;
 };
 
 class Squad {
@@ -148,19 +180,7 @@ public:
 	Squad() {
 		std::cout << "CHUJOWY SQUAD error \n";
 	};
-	Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position) {
-		squadComp = new SquadComp{};
-		//squadComp->entities[0] = new Entity{};
-		//squadComp->size = 1;
-		squadComp->size = rand() % SQUAD_MAX_SIZE;
-		for (int i = 0; i < squadComp->size; i++) {
-			squadComp->entities[i] = new Entity( "Some chujstwo", 0, {}, new Entity::EquipedItems{});
-		}
-		this->squadID = squadID;
-		this->position = position;
-		this->factionID = factionID;
-		this->squadState = STAND;
-	}
+	Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position);
 
 	void setSquadPosition(glm::vec2 position) {
 		this->position = position;
@@ -196,8 +216,6 @@ public:
 		return squadComp;
 	}
 
-	
-
 private:
 	glm::vec2 position;
 
@@ -207,6 +225,17 @@ private:
 	SquadState squadState;
 	SquadComp* squadComp;
 };
+
+float AiGetEntityScaryFactor(Entity* e);
+float AiGetEntityAdvanceFactor(Entity* e);
+float AiGetEntityAttackFactor(Entity* e);
+
+float AiGetUnitArmor(Entity* e);
+float AiGetAttackAfterArmor(Entity* e, float atk);
+float AiGetUnitAttack(Entity* e);
+
+float AiGetUnitBraveryDamage(Entity* e);
+void AiGainUnitStdBravery(Entity* e);
 
 typedef struct _BattleData {
 	Squad* s1;
@@ -220,6 +249,8 @@ public:
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
 	virtual int CanMoveEntity();
+	virtual int AttackEntity(void* battleContext);
+	virtual int EntityCanBattle();
 };
 
 class EntityCombatLongRange : public Entity::IEntityState
@@ -229,6 +260,8 @@ public:
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
 	virtual int CanMoveEntity();
+	virtual int AttackEntity(void* battleContext);
+	virtual int EntityCanBattle();
 };
 
 class EntityCombatDead : public Entity::IEntityState
@@ -238,6 +271,8 @@ public:
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
 	virtual int CanMoveEntity();
+	virtual int AttackEntity(void* battleContext);
+	virtual int EntityCanBattle();
 };
 
 class EntityCombatEscape : public Entity::IEntityState
@@ -247,6 +282,8 @@ public:
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
 	virtual int CanMoveEntity();
+	virtual int AttackEntity(void* battleContext);
+	virtual int EntityCanBattle();
 };
 
 class EntityCombatStand : public Entity::IEntityState
@@ -256,6 +293,8 @@ public:
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
 	virtual int CanMoveEntity();
+	virtual int AttackEntity(void* battleContext);
+	virtual int EntityCanBattle();
 };
 
 class EntityItem : public Item {
