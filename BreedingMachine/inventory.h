@@ -295,6 +295,10 @@ public:
 		return win;
 	}
 
+	Window* GetWindow(std::string windowName) {
+		return windowExist(windowName);
+	}
+
 	std::vector<Window*> getActiveWindows() {
 		return active_windows;
 	}
@@ -468,6 +472,12 @@ struct GUI_DraggedItem {
 	Slot* previousSlot;
 };
 
+
+struct DraggedObj {
+	GUI_DraggedWindow draggedWindow = {};
+	GUI_DraggedItem draggedItem = {};
+};
+
 void ActivateWindow(void* v1, void* v2, Inventory* inv, Inventory::Window* win) {
 	if (inv) inv->ActivateWindow(win);
 }
@@ -531,7 +541,7 @@ void setParty(void* v1, void* v2, Squad** squad, Inventory* inv, Inventory::Wind
 }
 
 
-void getCharacterInventory(void* v1, void* v2, EntityItem** entityItem, Inventory* inv, Inventory::Window* win) {
+void getCharacterInventory_EI(void* v1, void* v2, EntityItem** entityItem, Inventory* inv, Inventory::Window* win) {
 	if (inv) {
 		if (*entityItem) {
 			inv->ActivateWindow(win);
@@ -549,6 +559,45 @@ void getCharacterInventory(void* v1, void* v2, EntityItem** entityItem, Inventor
 			GComponent* component;
 			component = GetNamedComponent(componentName.c_str());
 			component->SetText(ent->getName().c_str());
+
+			componentName = "Vhp";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vstamina";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vbravery";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vmelee";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vranged";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+
+			componentName = "Vdefense";
+			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+		}
+	}
+}
+
+void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv, Inventory::Window* win) {
+	if (inv) {
+		if (*entity) {
+			inv->ActivateWindow(win);
+			auto slots = win->getAllSlots();
+			auto entityItems = (*entity)->getEquipedItems();
+			slots.at(0)->changeItem(entityItems->helmet);
+			slots.at(1)->changeItem(entityItems->Chestplate);
+			slots.at(2)->changeItem(entityItems->weapon_primary);
+			slots.at(3)->changeItem(entityItems->weapon_secondary);
+			slots.at(4)->changeItem(entityItems->Legs);
+			slots.at(5)->changeItem(entityItems->Boots);
+
+			std::string componentName = "Vname";
+			GComponent* component;
+			component = GetNamedComponent(componentName.c_str());
+			component->SetText((*entity)->getName().c_str());
 
 			componentName = "Vhp";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));

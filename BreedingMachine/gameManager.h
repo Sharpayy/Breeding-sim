@@ -24,7 +24,7 @@ public:
 
 	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd, rasticore::VertexBuffer mapVao, rasticore::Program mapPrg) :
 		instance(InputHandler::getInstance()),
-		battleManager(r_, rect_mcd, mapPrg, mapVao, &cameraOffset)
+		battleManager(r_, rect_mcd, mapPrg, mapVao, &inv, &draggedObj, &cameraOffset)
 	{
 		this->rect_mcd = rect_mcd;
 		this->r = r_;
@@ -224,32 +224,14 @@ public:
 				if (slot) {
 					if (slot->getItem()) {
 						if (slot->getItem()->getObjectType() & ENTITY) {
-							selectedItems.entity = (EntityItem*)slot->getItem();
+							selectedItems.entityItem = (EntityItem*)slot->getItem();
 						}
 					}
 					draggedObj.draggedItem.item = slot->getItem();
 					slot->changeItem(nullptr);
 					draggedObj.draggedItem.previousSlot = slot;
 				}
-				if (win->getGWindow()->CollisionCheck(mp.x, mp.y)) {
-					//
-					int g = 1;
-				};
-				//ArmorItem item = ArmorItem();
-				////item.setAsset((void*)LoadTextureFromFile("Data\\EquipmentIconsC2.png"));
-
-				//if (slot != nullptr)
-				//{
-				//	printf("%p\n", slot->getItem());
-				//	if (slot->getItem() == nullptr)
-				//	{
-				//		slot->changeItem(&item);
-				//	}
-				//	else
-				//	{
-				//		slot->changeItem(nullptr);
-				//	}
-				//}
+				if (win->getGWindow()->CollisionCheck(mp.x, mp.y)) {};
 			}
 			else {
 				auto mousePos = getCorrectedMousePosition();
@@ -350,7 +332,7 @@ public:
 
 	void equip_deequipItem(Slot* slot) {
 		int idx;
-		auto items = selectedItems.entity->getEntity()->getEquipedItems();
+		auto items = selectedItems.entityItem->getEntity()->getEquipedItems();
 		switch (slot->getSlotType())
 		{
 		case HELMET:
@@ -733,7 +715,7 @@ private:
 			for (int j = 10; j < width - 60; j += 60) {
 				GComponentButton* button = new GComponentButton(glm::vec2(60.0f, 60.0f), glm::vec3(j, i, 0.0f), "", 0);
 				gwin->AddComponent(button);
-				button->callback = std::bind(getCharacterInventory, std::placeholders::_1, std::placeholders::_2, &selectedItems.entity, &inv, gui_windows.characterWindow);
+				button->callback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedItems.entityItem, &inv, gui_windows.characterWindow);
 				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
 			}
 		}
@@ -1066,13 +1048,10 @@ private:
 
 	struct SelectedItems {
 		Building* building;
-		EntityItem* entity;
+		EntityItem* entityItem;
 	} selectedItems;
 
-	struct DraggedObj {
-		GUI_DraggedWindow draggedWindow = {};
-		GUI_DraggedItem draggedItem = {};
-	} draggedObj;
+	 DraggedObj draggedObj;
 
 	uint32_t game_type;
 };

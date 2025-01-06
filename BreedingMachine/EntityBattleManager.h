@@ -3,6 +3,7 @@
 #include "MovementManager.h"
 #include "inputHandler.h"
 #include "Define.h"
+#include "inventory.h"
 
 #define MODEL_ORKS 0
 #define MODEL_HUMANS 1
@@ -12,6 +13,10 @@
 #define MODEL_PLAYER 5
 #define MODEL_BANDITS 6
 #define MODEL_ANIMALS 7
+
+#define ALLY 1
+#define ENEMY 2
+#define ALL 3
 
 typedef struct _LDR_MODELS
 {
@@ -65,7 +70,7 @@ public:
 	};
 public:
 	EntityBattleManager() = default;
-	EntityBattleManager(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails rect_mcd, rasticore::Program fmp, rasticore::VertexBuffer mapVao, CameraOffset* cameraOffset) : instance(InputHandler::getInstance()) {
+	EntityBattleManager(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails rect_mcd, rasticore::Program fmp, rasticore::VertexBuffer mapVao, Inventory* inv, DraggedObj* dragObj, CameraOffset* cameraOffset) : instance(InputHandler::getInstance()) {
 		this->r = r;
 		this->rect_mcd = rect_mcd;
 		LoadTextureFromFile("Data\\mongo.png", "pilgrim");
@@ -96,7 +101,9 @@ public:
 		this->mapVao = mapVao;
 
 		selectedEntity = nullptr;
+		this->inv = inv;
 
+		this->draggedObj = dragObj;
 		this->cameraOffset = cameraOffset;
 	}
 
@@ -140,6 +147,9 @@ public:
 	}
 
 	void startBattle(BattleData& battleData) {
+		gui_windows.inventory = inv->GetWindow("inventory");
+		gui_windows.characterWindow = inv->GetWindow("char_inv");
+
 		tour = BT_TOUR_AI;
 		printf("Bitka!\n");
 		data = battleData;
@@ -346,18 +356,41 @@ public:
 	}
 
 private:
-	Entity* getEntity() {
-		auto squadComp = data.s1->getSquadComp();
-		//glm::vec4 entityDim{5,10,15,20};
-		Entity* entity;
+	Entity* getEntity(uint8_t flag = ALLY) {
+		Entity* entityItem;
 		glm::vec2 entityPos, mousePos;
 		mousePos = getCorrectedMousePosition();
+		
+		Squad::SquadComp* squadComp = nullptr;
+		if(flag == ALLY) squadComp = data.s1->getSquadComp();
+		else if(flag == ENEMY) squadComp = data.s2->getSquadComp();
+
 		int tileOffset = currentMap.tileSize / 2.0f;
-		for (int idx = 0; idx < squadComp->size; idx++) {
-			entity = squadComp->entities[idx];
-			entityPos = entity->getPosition();
-			if (pointInRect(mousePos, glm::vec4{ entityPos.x - tileOffset, entityPos.y - tileOffset, currentMap.tileSize, currentMap.tileSize })) {
-				return entity;
+		if (flag == ENEMY || flag == ALLY) {
+			for (int idx = 0; idx < squadComp->size; idx++) {
+				entityItem = squadComp->entities[idx];
+				entityPos = entityItem->getPosition();
+				if (pointInRect(mousePos, glm::vec4{ entityPos.x - tileOffset, entityPos.y - tileOffset, currentMap.tileSize, currentMap.tileSize })) {
+					return entityItem;
+				}
+			}
+		}
+		else {
+			squadComp = data.s1->getSquadComp();
+			for (int idx = 0; idx < squadComp->size; idx++) {
+				entityItem = squadComp->entities[idx];
+				entityPos = entityItem->getPosition();
+				if (pointInRect(mousePos, glm::vec4{ entityPos.x - tileOffset, entityPos.y - tileOffset, currentMap.tileSize, currentMap.tileSize })) {
+					return entityItem;
+				}
+			}
+			squadComp = data.s2->getSquadComp();
+			for (int idx = 0; idx < squadComp->size; idx++) {
+				entityItem = squadComp->entities[idx];
+				entityPos = entityItem->getPosition();
+				if (pointInRect(mousePos, glm::vec4{ entityPos.x - tileOffset, entityPos.y - tileOffset, currentMap.tileSize, currentMap.tileSize })) {
+					return entityItem;
+				}
 			}
 		}
 		return nullptr;
@@ -399,7 +432,7 @@ private:
 		return glm::vec2(nds.x, nds.y);
 	}
 
-	bool moveEntityNear(glm::vec2 e, Entity* entity)
+	bool moveEntityNear(glm::vec2 e, Entity* entityItem)
 	{
 		for (int a = 1; a > -1; a--)
 		{
@@ -407,7 +440,7 @@ private:
 			{
 				if (entityMovementManager.pass(e + glm::vec2(64.0f * a, 64.0f * b) + 512.0f) == false)
 				{
-					moveEntity(e + glm::vec2(64.0f * a, 64.0f * b), entity);
+					moveEntity(e + glm::vec2(64.0f * a, 64.0f * b), entityItem);
 					return true;
 				}
 			}
@@ -415,12 +448,12 @@ private:
 		return false;
 	}
 
-	bool moveEntity(glm::vec2 e, Entity* entity) {
+	bool moveEntity(glm::vec2 e, Entity* entityItem) {
 		bool r = false;
 		if (!entityMovementManager.pathExist())
 		{
-			entityMovementManager.DelCollision(entity->getPosition() + 512.0f - 32.0f);
-			r = entityMovementManager.createEntityPath(Astar::point{ (int)e.x + 512, (int)e.y + 512 }, entity);
+			entityMovementManager.DelCollision(entityItem->getPosition() + 512.0f - 32.0f);
+			r = entityMovementManager.createEntityPath(Astar::point{ (int)e.x + 512, (int)e.y + 512 }, entityItem);
 			e.x = ((int)((e.x + 512.0f) / currentMap.tileSize)) * currentMap.tileSize;
 			e.y = ((int)((e.y + 512.0f) / currentMap.tileSize)) * currentMap.tileSize;
 			entityMovementManager.AddCollision(e);
@@ -448,27 +481,67 @@ private:
 		if (instance.KeyPressed(SDL_SCANCODE_E)) {
 			cameraOffset->z *= 1.1f;
 		}
+		if (instance.KeyPressedOnce(SDL_SCANCODE_I))
+		{
+			if (!inv->isWindowActive(gui_windows.inventory)) {
+				inv->ActivateWindow(gui_windows.inventory);
+			}
+			else inv->DisableWindow(gui_windows.inventory);
+		}
+		if (instance.KeyPressed(SDL_SCANCODE_LEFT)) {
+			glm::vec2 mp = getMousePosition();
+			if (draggedObj->draggedWindow.win && !draggedObj->draggedWindow.wasPressed) {
+				draggedObj->draggedWindow.wasPressed = true;
+				auto dim = draggedObj->draggedWindow.win->getDim();
+				int offsetX = abs(dim.position.x - mp.x);
+				int offsetY = abs(dim.position.y - mp.y);
+				draggedObj->draggedWindow.offset.x = offsetX;
+				draggedObj->draggedWindow.offset.y = offsetY;
+			}
+			else if (draggedObj->draggedWindow.wasPressed) {
+				//std::cout << offset << "\n";
+				draggedObj->draggedWindow.win->changeWindowPosition(mp.x - draggedObj->draggedWindow.offset.x, mp.y - draggedObj->draggedWindow.offset.y);
+			}
+		}
+		else {
+			draggedObj->draggedWindow = {};
+			draggedObj->draggedItem = {};
+		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
-			auto a = getCorrectedMousePosition();
-			printf("%f %f\n", a.x, a.y);
-			Entity* se = getEntity();
-			if (selectedEntity == nullptr)
-			{
-				selectedEntity = se;
+			glm::vec2 mp = getMousePosition();
+			if (inv->isGuiClicked(mp)) {
+				Inventory::Window* win = inv->setPressedWindowOnTop(mp);
+				win->getGWindow()->CollisionCheck(mp.x, mp.y);
 			}
-			else if (selectedEntity != nullptr && se != nullptr)
-			{
-				selectedEntity = se;
-			}
-			else
-			{
-				if (tour == BT_TOUR_PLAYER && selectedEntity->canMove() == true)
+			else {
+				mp = getCorrectedMousePosition();
+				printf("%f %f\n", mp.x, mp.y);
+				Entity* se = getEntity();
+				if (selectedEntity == nullptr)
 				{
-					auto pos = getCorrectedMousePosition();
-					moveEntity(pos, selectedEntity);
-					selectedEntity->EntitySetMove();
-					tour = BT_TOUR_AI;
+					selectedEntity = se;
 				}
+				else if (selectedEntity != nullptr && se != nullptr)
+				{
+					selectedEntity = se;
+				}
+				else
+				{
+					if (tour == BT_TOUR_PLAYER && selectedEntity->canMove() == true)
+					{
+						auto pos = getCorrectedMousePosition();
+						moveEntity(pos, selectedEntity);
+						selectedEntity->EntitySetMove();
+						tour = BT_TOUR_AI;
+					}
+				}
+			}
+		}
+		if (instance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
+			auto a = getCorrectedMousePosition();
+			Entity* se = getEntity(0);
+			if (se) {
+				getCharacterInventory_E(nullptr, nullptr, &se, inv, gui_windows.characterWindow);
 			}
 		}
 	}
@@ -490,6 +563,14 @@ private:
 	BattleMap currentMap;
 
 	Entity* selectedEntity;
+	Inventory* inv;
+
+	struct GUI_Windows {
+		Inventory::Window* inventory;
+		Inventory::Window* characterWindow;
+	} gui_windows;
+
+	DraggedObj* draggedObj;
 
 	InputHandler& instance;
 	//std::vector<>
