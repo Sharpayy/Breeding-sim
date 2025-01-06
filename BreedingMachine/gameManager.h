@@ -689,7 +689,7 @@ private:
 		factionManager.setFactionsRelationships(MODEL_ORKS, MODEL_NOMADS, ENEMY);
 
 
-		factionManager.setFactionsRelationships(MODEL_EVIL_HUMANS, MODEL_PLAYER, NEUTRAL);
+		factionManager.setFactionsRelationships(MODEL_EVIL_HUMANS, MODEL_PLAYER, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_EVIL_HUMANS, MODEL_ANIMALS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_EVIL_HUMANS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_EVIL_HUMANS, MODEL_BANDITS, ENEMY);
