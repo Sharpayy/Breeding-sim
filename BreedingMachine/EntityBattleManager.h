@@ -1,59 +1,11 @@
 #pragma once
-#include "Squad.h"
+#include "Entity.h"
 #include "MovementManager.h"
 #include "inputHandler.h"
 #include "Define.h"
 #include "inventory.h"
+#include "EntityTextures.h"
 
-#define MODEL_ORKS 0
-#define MODEL_HUMANS 1
-#define MODEL_NOMADS 2
-#define MODEL_EVIL_HUMANS 3
-#define MODEL_GOBLINS 4
-#define MODEL_PLAYER 5
-#define MODEL_BANDITS 6
-#define MODEL_ANIMALS 7
-
-#define ENTITY_ALLY 1
-#define ENTITY_ENEMY 2
-#define ENTITY_WHATEVER 3
-
-typedef struct _LDR_MODELS
-{
-	const char** models;
-	uint32_t amount;
-} LDR_MODELS;
-
-const char* LDR_ORC_TEXTURE[] = {
-	"Data\\bt_orc_0.png"
-};
-const char* LDR_GOBLIN_TEXTURE[] = {
-	"Data\\bt_goblin_0.png"
-};
-const char* LDR_NOMAD_TEXTURE[] = {
-	"Data\\bt_nomad_0.png"
-};
-const char* LDR_HUMAN_TEXTURE[] = {
-	"Data\\bt_human_0.png",
-	"Data\\bt_human_1.png",
-	"Data\\bt_human_2.png"
-};
-const char* LDR_EVILHUMAN_TEXTURE[] = {
-	"Data\\bt_evilhuman_0.png",
-	"Data\\bt_evilhuman_1.png"
-};
-LDR_MODELS LDR_FACTION_TEXTURE_MAP[] = {
-	LDR_MODELS{LDR_ORC_TEXTURE, sizeof(LDR_ORC_TEXTURE) / sizeof(LDR_ORC_TEXTURE[0])},
-	LDR_MODELS{LDR_HUMAN_TEXTURE, sizeof(LDR_HUMAN_TEXTURE) / sizeof(LDR_HUMAN_TEXTURE[0])},
-	LDR_MODELS{LDR_NOMAD_TEXTURE, sizeof(LDR_NOMAD_TEXTURE) / sizeof(LDR_NOMAD_TEXTURE[0])},
-	LDR_MODELS{LDR_EVILHUMAN_TEXTURE, sizeof(LDR_EVILHUMAN_TEXTURE) / sizeof(LDR_EVILHUMAN_TEXTURE[0])},
-	LDR_MODELS{LDR_GOBLIN_TEXTURE, sizeof(LDR_GOBLIN_TEXTURE) / sizeof(LDR_GOBLIN_TEXTURE[0])},
-	LDR_MODELS{LDR_HUMAN_TEXTURE, sizeof(LDR_HUMAN_TEXTURE) / sizeof(LDR_HUMAN_TEXTURE[0])}
-};
-
-#define MODEL_ENEMY_FACTION_BASE		20
-#define MODEL_PLAYER_FACTION_BASE		40
-#define LDR_MAX_FACTION_MODELS 16
 
 class EntityBattleManager {
 public:
@@ -73,7 +25,6 @@ public:
 	EntityBattleManager(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails rect_mcd, rasticore::Program fmp, rasticore::VertexBuffer mapVao, Inventory* inv, DraggedObj* dragObj, CameraOffset* cameraOffset) : instance(InputHandler::getInstance()) {
 		this->r = r;
 		this->rect_mcd = rect_mcd;
-		LoadTextureFromFile("Data\\mongo.png", "pilgrim");
 	
 		for (int i = 0; i < LDR_MAX_FACTION_MODELS; i++)
 		{
@@ -83,6 +34,16 @@ public:
 
 		cLoadedFactionTexturesEnemy = -1;
 		cLoadedFactionTexturesPlayer = -1;
+
+		for (int i = 0; i < sizeof(LDR_FACTION_TEXTURE_MAP) / sizeof(LDR_FACTION_TEXTURE_MAP[0]); i++)
+		{
+			LDR_MODELS* model = LDR_FACTION_TEXTURE_MAP + i;
+			if (model->models == nullptr || model->amount == 0)
+				continue;
+
+			for (int l = 0; l < model->amount; l++)
+				LoadTextureFromFile(model->models[l]);
+		}
 
 		mapProgram = fmp;
 		mapProgram.use();
@@ -146,6 +107,21 @@ public:
 		}
 	}
 
+	void EndBattle()
+	{
+		Squad::SquadComp* units = data.s1->getSquadComp();
+		for (int i = 0; i < units->size; i++)
+		{
+			r->deleteObject(LONG_GET_MODEL(units->entities[i]->id), LONG_GET_OBJECT(units->entities[i]->id));
+		}
+
+		units = data.s2->getSquadComp();
+		for (int i = 0; i < units->size; i++)
+		{
+			r->deleteObject(LONG_GET_MODEL(units->entities[i]->id), LONG_GET_OBJECT(units->entities[i]->id));
+		}
+	}
+
 	void startBattle(BattleData& battleData) {
 		characterWindow = inv->GetWindow("char_inv");
 
@@ -172,12 +148,17 @@ public:
 		{
 			e = units->entities[i];
 			Stats* st = e->getStats();
-			st->stamina = i + 0.1f;
+			st->stamina = 3.1f;
+			st->hp = 100.0f;
+			st->defense = 2.4f;
+			st->melee = 8.1f;
+			e->SetHp(99.0f);
 			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
 			e->EntityClearMove();
+			AiDecideEntityInitialState(e);
 			//entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
 			offsetY -= 1;
-			r->newObject(MODEL_PLAYER_FACTION_BASE + rand() % texturesPlayerAmount, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), &e->id);
+			r->newObject(MODEL_PLAYER_FACTION_BASE + e->GetIndex(), glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), &e->id);
 		}
 		units = data.s2->getSquadComp();
 		offsetY = (tilesAmountX / 2) - ((tilesAmountX / 2) - (units->size / 2));
@@ -186,6 +167,10 @@ public:
 			e = units->entities[i];
 			auto s = e->getStats();
 			s->hp = 100.0f;
+			s->ranged = 4.0f;
+			s->stamina = 7.1f;
+			s->bravery = 50.0f;
+			e->SetBravery(50.0f);
 			e->SetHp(90.0f);
 			e->setEntityPosition(glm::vec2{ -(offsetX + 1) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
 			entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
@@ -194,7 +179,7 @@ public:
 			AiDecideEntityInitialState(e);
 			//int b = e->state->MoveEntity(&data);
 			//if (b == true) moveEntityNear(e->travel, e);
-			r->newObject(MODEL_ENEMY_FACTION_BASE + rand() % texturesEnemyAmount, glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), &e->id);
+			r->newObject(MODEL_ENEMY_FACTION_BASE + e->GetIndex(), glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), &e->id);
 		}
 	}
 
@@ -217,8 +202,14 @@ public:
 				ent->EntitySetMove();
 				if (b == true)
 					moveEntityNear(ent->travel, ent);
+				ent->state->AttackEntity(&data);
+				AiGainUnitStdBravery(ent);
 				tour = BT_TOUR_PLAYER;
 			}
+		}
+		else
+		{
+			EndBattle();
 		}
 
 
@@ -226,6 +217,7 @@ public:
 		for (int i = 0; i < units->size; i++)
 		{
 			e = units->entities[i];
+			AiUpdateEntityState(e);
 			r->BindActiveModel(LONG_GET_MODEL(e->id));
 			r->SetObjectMatrix(LONG_GET_OBJECT(e->id), glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
 		}
@@ -290,6 +282,7 @@ public:
 	{
 		Entity* found = NULL;
 		Squad::SquadComp* units = data.s2->getSquadComp();
+		//return units->entities[0];
 		for (int i = 0; i < units->size; i++)
 		{
 			if (units->entities[i]->state->CanMoveEntity() == true && units->entities[i]->canMove() == true)
@@ -309,17 +302,13 @@ public:
 
 	bool AiCanBattle()
 	{
-		return true;
-	}
-
-	float AiGetUnitArmor(Entity* e)
-	{
-		return 1.6f;
-	}
-
-	float AiGetAttackAfterArmor(Entity* e, float atk)
-	{
-		return 1.0f / pow(AiGetUnitArmor(e), 0.1f) * atk;
+		Squad::SquadComp* units = data.s2->getSquadComp();
+		for (int i = 0; i < units->size; i++)
+		{
+			if (units->entities[i]->state->EntityCanBattle() == true)
+				return true;
+		}
+		return false;
 	}
 
 	void AiUpdateEntityState(Entity* e)
@@ -431,15 +420,15 @@ private:
 		return glm::vec2(nds.x, nds.y);
 	}
 
-	bool moveEntityNear(glm::vec2 e, Entity* entityItem)
+	bool moveEntityNear(glm::vec2 e, Entity* entity)
 	{
-		for (int a = 1; a > -1; a--)
+		for (int a = 1; a >= -1; a--)
 		{
-			for (int b = 1; b > -1; b--)
+			for (int b = 1; b >= -1; b--)
 			{
-				if (entityMovementManager.pass(e + glm::vec2(64.0f * a, 64.0f * b) + 512.0f) == false)
+				if (entityMovementManager.pass(e + glm::vec2(64.0f * a, 64.0f * b) + 512.0f - 32.0f) == false)
 				{
-					moveEntity(e + glm::vec2(64.0f * a, 64.0f * b), entityItem);
+					moveEntity(e + glm::vec2(64.0f * a, 64.0f * b), entity);
 					return true;
 				}
 			}
@@ -447,12 +436,12 @@ private:
 		return false;
 	}
 
-	bool moveEntity(glm::vec2 e, Entity* entityItem) {
+	bool moveEntity(glm::vec2 e, Entity* entity) {
 		bool r = false;
 		if (!entityMovementManager.pathExist())
 		{
-			entityMovementManager.DelCollision(entityItem->getPosition() + 512.0f - 32.0f);
-			r = entityMovementManager.createEntityPath(Astar::point{ (int)e.x + 512, (int)e.y + 512 }, entityItem);
+			entityMovementManager.DelCollision(entity->getPosition() + 512.0f - 32.0f);
+			r = entityMovementManager.createEntityPath(Astar::point{ (int)e.x + 512, (int)e.y + 512 }, entity);
 			e.x = ((int)((e.x + 512.0f) / currentMap.tileSize)) * currentMap.tileSize;
 			e.y = ((int)((e.y + 512.0f) / currentMap.tileSize)) * currentMap.tileSize;
 			entityMovementManager.AddCollision(e);
@@ -522,12 +511,15 @@ private:
 				}
 				else
 				{
-					if (tour == BT_TOUR_PLAYER && selectedEntity->canMove() == true)
+					if (tour == BT_TOUR_PLAYER && selectedEntity->canMove() == true && entityMovementManager.pathExist() == false)
 					{
 						auto pos = getCorrectedMousePosition();
-						moveEntity(pos, selectedEntity);
-						selectedEntity->EntitySetMove();
-						tour = BT_TOUR_AI;
+						if (distance(pos, selectedEntity->getPosition()) <= selectedEntity->getStats()->stamina * 64.0f)
+						{
+							moveEntity(pos, selectedEntity);
+							selectedEntity->EntitySetMove();
+							tour = BT_TOUR_AI;
+						}
 					}
 				}
 			}

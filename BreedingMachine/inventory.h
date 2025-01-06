@@ -9,6 +9,7 @@
 #include "Entity.h"
 #include "Building.h"
 #include "gui.h"
+#include "Define.h"
 
 struct ObjectDim {
 	glm::vec2 position;
@@ -556,12 +557,14 @@ void getCharacterInventory_EI(void* v1, void* v2, EntityItem** entityItem, Inven
 			slots.at(5)->changeItem(entityItems->Boots);
 
 			std::string componentName = "Vname";
-			GComponent* component;
-			component = GetNamedComponent(componentName.c_str());
-			component->SetText(ent->getName().c_str());
+			GComponentSlider* component;
+			GComponent* cmp;
+			cmp = GetNamedComponent(componentName.c_str());
+			cmp->SetText(ent->getName().c_str());
 
 			componentName = "Vhp";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = 0.2f;//ent->getStats()->hp / ENTITY_MAX_HEALTH;
 
 			componentName = "Vstamina";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
@@ -595,12 +598,14 @@ void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv
 			slots.at(5)->changeItem(entityItems->Boots);
 
 			std::string componentName = "Vname";
-			GComponent* component;
-			component = GetNamedComponent(componentName.c_str());
-			component->SetText((*entity)->getName().c_str());
+			GComponentSlider* component;
+			GComponent* comp;
+			comp = GetNamedComponent(componentName.c_str());
+			comp->SetText((*entity)->getName().c_str());
 
 			componentName = "Vhp";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = (*entity)->getHp() / (*entity)->getStats()->hp;
 
 			componentName = "Vstamina";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
