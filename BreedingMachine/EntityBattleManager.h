@@ -489,6 +489,7 @@ private:
 			else inv->DisableWindow(gui_windows.inventory);
 		}
 		if (instance.KeyPressed(SDL_SCANCODE_LEFT)) {
+			//GUI
 			glm::vec2 mp = getMousePosition();
 			if (draggedObj->draggedWindow.win && !draggedObj->draggedWindow.wasPressed) {
 				draggedObj->draggedWindow.wasPressed = true;
@@ -499,20 +500,22 @@ private:
 				draggedObj->draggedWindow.offset.y = offsetY;
 			}
 			else if (draggedObj->draggedWindow.wasPressed) {
-				//std::cout << offset << "\n";
 				draggedObj->draggedWindow.win->changeWindowPosition(mp.x - draggedObj->draggedWindow.offset.x, mp.y - draggedObj->draggedWindow.offset.y);
 			}
 		}
 		else {
+			//GUI
 			draggedObj->draggedWindow = {};
 			draggedObj->draggedItem = {};
 		}
 		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
 			glm::vec2 mp = getMousePosition();
+			//GUI
 			if (inv->isGuiClicked(mp)) {
 				Inventory::Window* win = inv->setPressedWindowOnTop(mp);
 				win->getGWindow()->CollisionCheck(mp.x, mp.y);
 			}
+			//GAME LOGIC
 			else {
 				mp = getCorrectedMousePosition();
 				printf("%f %f\n", mp.x, mp.y);
