@@ -508,7 +508,7 @@ private:
 		}
 
 		gui_windows.recruitShop = win;
-		//inv.ActivateWindow(win);
+		inv.ActivateWindow(win);
 	}
 	void initInteractionViewer(int width, int height) {
 		Inventory::Window* win = inv.AddWindow("interaction_viewer", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));

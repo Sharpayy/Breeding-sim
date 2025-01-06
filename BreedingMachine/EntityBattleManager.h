@@ -72,6 +72,16 @@ public:
 		cLoadedFactionTexturesEnemy = -1;
 		cLoadedFactionTexturesPlayer = -1;
 
+		for (int i = 0; i < sizeof(LDR_FACTION_TEXTURE_MAP) / sizeof(LDR_FACTION_TEXTURE_MAP[0]); i++)
+		{
+			LDR_MODELS* model = LDR_FACTION_TEXTURE_MAP + i;
+			if (model->models == nullptr || model->amount == 0)
+				continue;
+
+			for (int l = 0; l < model->amount; l++)
+				LoadTextureFromFile(model->models[i]);
+		}
+
 		mapProgram = fmp;
 		mapProgram.use();
 		uint32_t pid = mapProgram.id;
@@ -398,7 +408,7 @@ private:
 		{
 			for (int b = 1; b > -1; b--)
 			{
-				if (entityMovementManager.pass(e + glm::vec2(64.0f * a, 64.0f * b) + 512.0f) == false)
+				if (entityMovementManager.pass(e + glm::vec2(64.0f * a, 64.0f * b) + 512.0f - 32.0f) == false)
 				{
 					moveEntity(e + glm::vec2(64.0f * a, 64.0f * b), entity);
 					return true;
