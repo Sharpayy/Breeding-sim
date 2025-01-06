@@ -99,7 +99,7 @@ int EntityCombatCloseRange::AttackEntity(void* battleContext)
     if (enemy_close == 0)
         return false;
 
-    float new_hp = min(0.0f, AiGetAttackAfterArmor(enemy_close, AiGetUnitAttack(self)));
+    float new_hp = min(0.0f, enemy_close->getHp() - AiGetAttackAfterArmor(enemy_close, AiGetUnitAttack(self)));
     enemy_close->SetHp(new_hp);
 
     return true;
@@ -225,7 +225,7 @@ int EntityCombatLongRange::AttackEntity(void* battleContext)
     if (enemy_close == 0)
         return false;
 
-    float new_hp = max(0.0f, AiGetAttackAfterArmor(enemy_close, AiGetUnitAttack(self)));
+    float new_hp = max(0.0f, enemy_close->getHp() - AiGetAttackAfterArmor(enemy_close, AiGetUnitAttack(self)));
     enemy_close->SetHp(new_hp);
     return true;
 }

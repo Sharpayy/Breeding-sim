@@ -4,45 +4,8 @@
 #include "inputHandler.h"
 #include "Define.h"
 #include "inventory.h"
+#include "EntityTextures.h"
 
-#define MODEL_ORKS 0
-#define MODEL_HUMANS 1
-#define MODEL_NOMADS 2
-#define MODEL_EVIL_HUMANS 3
-#define MODEL_GOBLINS 4
-#define MODEL_PLAYER 5
-#define MODEL_BANDITS 6
-#define MODEL_ANIMALS 7
-
-typedef struct _LDR_MODELS
-{
-	const char** models;
-	uint32_t amount;
-} LDR_MODELS;
-
-const char* LDR_ORC_TEXTURE[] = {
-	"Data\\bt_orc_0.png",
-	"Data\\bt_orc_1.png"
-};
-
-const char* LDR_HUMAN_TEXTURE[] = {
-	"Data\\bt_human_0.png",
-	"Data\\bt_human_1.png",
-	"Data\\bt_human_2.png"
-};
-
-LDR_MODELS LDR_FACTION_TEXTURE_MAP[] = {
-	LDR_MODELS{LDR_ORC_TEXTURE, sizeof(LDR_ORC_TEXTURE) / sizeof(LDR_ORC_TEXTURE[0])},
-	LDR_MODELS{LDR_HUMAN_TEXTURE, sizeof(LDR_HUMAN_TEXTURE) / sizeof(LDR_HUMAN_TEXTURE[0])},
-	LDR_MODELS{nullptr, 0},
-	LDR_MODELS{nullptr, 0},
-	LDR_MODELS{nullptr, 0},
-	LDR_MODELS{LDR_HUMAN_TEXTURE, sizeof(LDR_HUMAN_TEXTURE) / sizeof(LDR_HUMAN_TEXTURE[0])}
-};
-
-#define MODEL_ENEMY_FACTION_BASE		20
-#define MODEL_PLAYER_FACTION_BASE		40
-#define LDR_MAX_FACTION_MODELS 16
 
 class EntityBattleManager {
 public:
@@ -548,12 +511,15 @@ private:
 				}
 				else
 				{
-					if (tour == BT_TOUR_PLAYER && selectedEntity->canMove() == true)
+					if (tour == BT_TOUR_PLAYER && selectedEntity->canMove() == true && entityMovementManager.pathExist() == false)
 					{
 						auto pos = getCorrectedMousePosition();
-						moveEntity(pos, selectedEntity);
-						selectedEntity->EntitySetMove();
-						tour = BT_TOUR_AI;
+						if (distance(pos, selectedEntity->getPosition()) <= selectedEntity->getStats()->stamina * 64.0f)
+						{
+							moveEntity(pos, selectedEntity);
+							selectedEntity->EntitySetMove();
+							tour = BT_TOUR_AI;
+						}
 					}
 				}
 			}

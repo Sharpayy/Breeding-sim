@@ -598,12 +598,14 @@ void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv
 			slots.at(5)->changeItem(entityItems->Boots);
 
 			std::string componentName = "Vname";
-			GComponent* component;
-			component = GetNamedComponent(componentName.c_str());
-			component->SetText((*entity)->getName().c_str());
+			GComponentSlider* component;
+			GComponent* comp;
+			comp = GetNamedComponent(componentName.c_str());
+			comp->SetText((*entity)->getName().c_str());
 
 			componentName = "Vhp";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = (*entity)->getHp() / (*entity)->getStats()->hp;
 
 			componentName = "Vstamina";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
