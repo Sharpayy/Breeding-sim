@@ -58,6 +58,7 @@ public:
 	bool changeItem(Item* object) {
 		if (object == nullptr)
 		{
+			this->object = object;
 			((GComponentImage*)item_comp)->texture = 0;
 			return false;
 		}
@@ -166,6 +167,16 @@ public:
 
 		bool onTop() {
 			return alwaysOnTop;
+		}
+
+		int getSlotIndex(Slot* slot) {
+			auto it = std::find(slots.begin(), slots.end(), slot);
+
+			if (it != slots.end()) {
+				return std::distance(slots.begin(), it);
+			}
+
+			return -1;
 		}
 
 	private:
@@ -473,6 +484,11 @@ void SetDraggedItem(void* v1, void* v2, GUI_DraggedItem* guiDI, Item* item) {
 	guiDI->item = item;
 }
 
+void setInventory(void* v1, void* v2, int* money, Inventory* inv, Inventory::Window* win) {
+	std::string labelName = "playerMoney";
+	auto label = GetNamedComponent(labelName.c_str());
+	label->SetText(std::to_string(*money).c_str());
+}
 
 void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, Inventory::Window* win) {
 	if (inv) {
@@ -480,13 +496,17 @@ void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, In
 			auto items = (*building)->getItemsRotation();
 			auto slots = win->getAllSlots();
 			int size = items.size() < slots.size() ? items.size() : slots.size();
+			std::string labelName;
 			for (int idx = 0; idx < slots.size(); idx++) {
 				slots.at(idx)->changeItem(nullptr);
+				labelName = "shopItem" + std::to_string(idx);
+				auto label = GetNamedComponent(labelName.c_str());
+				label->SetText(std::string("0").c_str());
 			}
 			for (int idx = 0; idx < size; idx++) {
 				Item* nItem = items.at(idx);
 				slots.at(idx)->changeItem(nItem);
-				std::string labelName = "shopItem" + std::to_string(idx);
+				labelName = "shopItem" + std::to_string(idx);
 				auto label = GetNamedComponent(labelName.c_str());
 				label->SetText(std::to_string(nItem->getItemPrice()).c_str());
 			}
@@ -549,4 +569,11 @@ void getCharacterInventory(void* v1, void* v2, EntityItem** entityItem, Inventor
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
 		}
 	}
+}
+
+void setSquadCompSize(void* v1, void* v2, uint8_t* squadSize) {
+	std::string text, componentName = "squad_count";
+	GComponent* component = GetNamedComponent(componentName.c_str());
+	text = std::to_string((int)(*squadSize)) + "/" + std::to_string((int)SQUAD_MAX_SIZE);
+	component->SetText(text.c_str());
 }

@@ -57,7 +57,7 @@ public:
 	
 	void update() {
 		moveSquads();
-		SDL_Delay(10);
+		//SDL_Delay(10);
 	}
 
 	uint8_t getMapTileSize() {
