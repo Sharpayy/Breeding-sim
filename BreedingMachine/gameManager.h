@@ -735,12 +735,11 @@ private:
 		//DO TOTALNEJ ZMIANY
 		path = path.append("Data\\buildings.txt");
 		initItems();
-		loadNames("", 1);
-		loadNames("", 1);
-		loadNames("", 1);
-		loadNames("", 1);
-		loadNames("", 1);
-		loadNames("", 1);
+		loadNames("Data\\entityNames\\evilhumans.txt", MODEL_EVIL_HUMANS);
+		loadNames("Data\\entityNames\\gobbos.txt", MODEL_GOBLINS);
+		loadNames("Data\\entityNames\\humans.txt", MODEL_HUMANS);
+		loadNames("Data\\entityNames\\nomads.txt", MODEL_NOMADS);
+		loadNames("Data\\entityNames\\orcs.txt", MODEL_ORKS);
 
 		factionManager.CreateNewFaction(MODEL_ORKS, "Data\\ork.png", "Orks", buildingManager.getRaceBuildings(MODEL_ORKS));
 		factionManager.CreateNewFaction(MODEL_HUMANS, "Data\\human.png", "Humans", buildingManager.getRaceBuildings(MODEL_HUMANS));
@@ -822,6 +821,11 @@ private:
 		}
 		std::cout << "Amount of squads: " << amount << "\n";
 
+
+		auto entity = generateRandomEntityItem(MODEL_HUMANS);
+		entity = generateRandomEntityItem(MODEL_HUMANS);
+		entity = generateRandomEntityItem(MODEL_HUMANS);
+		entity = generateRandomEntityItem(MODEL_HUMANS);
 		//GUI INIT
 		setSquadCompSize(nullptr, nullptr, &playerData.player->getSquadComp()->size);
 	}
@@ -1025,6 +1029,20 @@ private:
 	int getRandomNumber(int min, int max) {
 		auto val = std::uniform_int_distribution(min, max)(gen);
 		return val;
+	}
+
+	EntityItem generateRandomEntityItem(uint8_t factionID) {
+		Stats entityStats = {
+			getRandomNumber(5,20),
+			getRandomNumber(2,10),
+			getRandomNumber(5,20),
+			getRandomNumber(100,200),
+			5.1f,
+			getRandomNumber(10,30) };
+		Entity::EquipedItems* items = nullptr;
+		Entity* entity = new Entity(getRandomFactionName(factionID), 0, entityStats, items);
+		EntityItem entityItem{ entity, 0 };
+		return entityItem;
 	}
 
 private:

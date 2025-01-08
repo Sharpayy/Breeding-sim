@@ -296,17 +296,19 @@ public:
 
 class EntityItem : public Item {
 public:
-	EntityItem(Entity* entityItem = nullptr, uint32_t price = 0) {
-		this->itemName = "SOME ENTITY";
-		this->object = (void*)entityItem->getTexture();
-		this->entityItem = entityItem;
+	EntityItem(Entity* entity = nullptr, uint32_t price = 0) {
+		if (entity) {
+			this->itemName = entity->getName();
+			this->entity = entity;
+			this->object = (void*)entity->getTexture();
+		}
 		this->objType = ENTITY;
 		this->price = price;
 	}
 
 	Entity* getEntity() {
-		return entityItem;
+		return entity;
 	}
 private:
-	Entity* entityItem;
+	Entity* entity;
 };

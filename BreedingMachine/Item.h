@@ -247,14 +247,6 @@ public:
 		return it;
 	}
 
-	/*EntityItem generateRandomEntityItem(uint8_t fractionID) {
-		Stats entityStats = {10,10,10,20,5,30};
-		Entity::EquipedItems* items;
-		Entity* entity = new Entity("", 0, entityStats, items);
-		EntityItem entityItem{entity, 0};
-		return entityItem;
-	}*/
-
 private:
 	std::unordered_map<std::string, Item*> itemMap;
 	std::unordered_map<uint8_t, std::vector<Item*>> tierItemMap;
