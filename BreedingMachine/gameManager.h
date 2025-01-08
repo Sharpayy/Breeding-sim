@@ -347,11 +347,10 @@ public:
 		case BOOTS:
 			items->Boots = (ArmorItem*)slot->getItem();
 			break;
+		case SHIELD:
+			items->shield = (ArmorItem*)slot->getItem();
 		case WEAPON:
-			//2 - primary, 3 - secondary
-			idx = gui_windows.characterWindow->getSlotIndex(slot);
-			if (idx == 2) items->weapon_primary = (WeaponItem*)slot->getItem();
-			else  items->weapon_secondary = (WeaponItem*)slot->getItem();
+			items->weapon = (WeaponItem*)slot->getItem();
 			break;
 		default:
 			break;
@@ -596,7 +595,7 @@ private:
 		}
 
 		gui_windows.recruitShop = win;
-		inv.ActivateWindow(win);
+		//inv.ActivateWindow(win);
 	}
 	void initInteractionViewer(int width, int height) {
 		Inventory::Window* win = inv.AddWindow("interaction_viewer", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
@@ -668,7 +667,7 @@ private:
 		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, HELMET), texItemFrame);
 		y += 30;
 		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 - 30, y), 30.0f, 30.0f, WEAPON), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 - 30, y), 30.0f, 30.0f, SHIELD), texItemFrame);
 		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 + 30, y), 30.0f, 30.0f, WEAPON), texItemFrame);
 		y += 30;
 		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, LEGS), texItemFrame);

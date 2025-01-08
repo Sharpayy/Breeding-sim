@@ -398,10 +398,10 @@ float AiGetUnitAttack(Entity* e)
     float atk = max(e->getStats()->melee, e->getStats()->ranged);
     Entity::EquipedItems* items = e->getEquipedItems();
 
-    if (items->weapon_primary != nullptr)
+   /* if (items->weapon_primary != nullptr)
         atk += items->weapon_primary->getObjectStatistic()->damage;
     if (items->weapon_secondary != nullptr)
-        atk += items->weapon_secondary->getObjectStatistic()->damage;
+        atk += items->weapon_secondary->getObjectStatistic()->damage;*/
 
     return atk;
 }

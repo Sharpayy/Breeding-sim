@@ -52,9 +52,8 @@ public:
 		ArmorItem* Chestplate = nullptr;
 		ArmorItem* Legs = nullptr;
 		ArmorItem* Boots = nullptr;
-		WeaponItem* weapon_primary = nullptr;
-		WeaponItem* weapon_secondary = nullptr;
-
+		ArmorItem* shield = nullptr;
+		WeaponItem* weapon = nullptr;
 	};
 public:
 	Entity(std::string name = "", uint64_t texture = 0, Stats stats = {}, EquipedItems * items = {}) {
@@ -309,10 +308,6 @@ public:
 
 	Entity* getEntity() {
 		return entityItem;
-	}
-
-	void* getItemTexture() {
-		return object;
 	}
 private:
 	Entity* entityItem;
