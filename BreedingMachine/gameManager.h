@@ -437,7 +437,7 @@ private:
 		itemLoader.loadItem(iron_cap);
 		ArmorItem iron_boots = { "iron boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC237.png","EquipmentIconsC237"), BOOTS, new ArmorItem::ObjectStatistic{2}, 52, TIER_2 };
 		itemLoader.loadItem(iron_boots);
-		ArmorItem tower_shield = { "tower shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC147.png","EquipmentIconsC147"), SHIELD, new ArmorItem::ObjectStatistic{2}, 52, TIER_2 };
+		ArmorItem tower_shield = { "tower shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC147.png","EquipmentIconsC147"), SHIELD, new ArmorItem::ObjectStatistic{4}, 67, TIER_2 };
 
 		ArmorItem guardian_helmet = { "guardian helmet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC179.png","EquipmentIconsC179"), HELMET, new ArmorItem::ObjectStatistic{5}, 129, TIER_3 };
 		itemLoader.loadItem(guardian_helmet);
