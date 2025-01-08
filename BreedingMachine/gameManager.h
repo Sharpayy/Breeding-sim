@@ -437,7 +437,7 @@ private:
 		itemLoader.loadItem(iron_cap);
 		ArmorItem iron_boots = { "iron boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC237.png","EquipmentIconsC237"), BOOTS, new ArmorItem::ObjectStatistic{2}, 52, TIER_2 };
 		itemLoader.loadItem(iron_boots);
-		ArmorItem tower_shield = { "tower shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC147.png","EquipmentIconsC147"), SHIELD, new ArmorItem::ObjectStatistic{4}, 67, TIER_2 };
+		ArmorItem tower_shield = { "tower shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC152.png","EquipmentIconsC152"), SHIELD, new ArmorItem::ObjectStatistic{4}, 67, TIER_2 };
 		itemLoader.loadItem(tower_shield);
 
 		ArmorItem guardian_helmet = { "guardian helmet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC179.png","EquipmentIconsC179"), HELMET, new ArmorItem::ObjectStatistic{5}, 129, TIER_3 };
@@ -448,6 +448,7 @@ private:
 		itemLoader.loadItem(guardian_greaves);
 		ArmorItem guardian_boots = { "guardian boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC231.png","EquipmentIconsC231"), BOOTS, new ArmorItem::ObjectStatistic{3}, 73, TIER_3 };
 		itemLoader.loadItem(guardian_boots);
+
 
 		ArmorItem copper_helmet = { "copper helmet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC163.png","EquipmentIconsC163"), HELMET, new ArmorItem::ObjectStatistic{3}, 64, TIER_2 };
 		itemLoader.loadItem(copper_helmet);
@@ -466,6 +467,9 @@ private:
 		itemLoader.loadItem(rags);
 		ArmorItem shoes = { "shoes", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC223.png","EquipmentIconsC223"), BOOTS, new ArmorItem::ObjectStatistic{0.1f}, 4, TIER_1 };
 		itemLoader.loadItem(shoes);
+		ArmorItem wooden_shield = { "wooden shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC152.png","EquipmentIconsC152"), SHIELD, new ArmorItem::ObjectStatistic{1}, 15, TIER_1 };
+		itemLoader.loadItem(wooden_shield);
+
 
 		ArmorItem darkwraith_helmet = { "darkwraith helmet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC176.png","EquipmentIconsC176"), HELMET, new ArmorItem::ObjectStatistic{5}, 118, TIER_3 };
 		itemLoader.loadItem(darkwraith_helmet);
@@ -475,6 +479,8 @@ private:
 		itemLoader.loadItem(darkwraith_greaves);
 		ArmorItem darkwraith_boots = { "darkwraith boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC227.png","EquipmentIconsC227"), BOOTS, new ArmorItem::ObjectStatistic{3}, 74, TIER_3 };
 		itemLoader.loadItem(darkwraith_boots);
+		ArmorItem darkwraith_shield = { "darkwraith shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC150.png","EquipmentIconsC150"), SHIELD, new ArmorItem::ObjectStatistic{5}, 95, TIER_3 };
+		itemLoader.loadItem(darkwraith_shield);
 
 		ArmorItem copper_cap = { "copper cap", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC162.png","EquipmentIconsC162"), HELMET, new ArmorItem::ObjectStatistic{2}, 31, TIER_1 };
 		itemLoader.loadItem(copper_cap);
