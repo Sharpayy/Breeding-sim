@@ -30,8 +30,6 @@ enum Race {
 	BANDITS = 4,
 };
 
-#define SQUAD_MAX_SIZE 15
-
 class Entity {
 public:
 

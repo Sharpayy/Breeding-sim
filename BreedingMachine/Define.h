@@ -11,3 +11,18 @@
 #define ENTITY_ALLY 1
 #define ENTITY_ENEMY 2
 #define ENTITY_WHATEVER 3
+
+#define NEUTRAL 0
+#define ENEMY 1
+#define ALLY 2
+
+#define SQUAD_MAX_SIZE 15
+
+#define MODEL_ORKS 0
+#define MODEL_HUMANS 1
+#define MODEL_NOMADS 2
+#define MODEL_EVIL_HUMANS 3
+#define MODEL_GOBLINS 4
+#define MODEL_PLAYER 5
+#define MODEL_BANDITS 6
+#define MODEL_ANIMALS 7

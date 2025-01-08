@@ -12,6 +12,7 @@
 #include "TextureLoader.h"
 #include "EntityBattleManager.h"
 #include <functional>
+#include "EntityNames.h"
 
 #define THRESHOLD 10.0f
 
@@ -734,6 +735,12 @@ private:
 		//DO TOTALNEJ ZMIANY
 		path = path.append("Data\\buildings.txt");
 		initItems();
+		loadNames("", 1);
+		loadNames("", 1);
+		loadNames("", 1);
+		loadNames("", 1);
+		loadNames("", 1);
+		loadNames("", 1);
 
 		factionManager.CreateNewFaction(MODEL_ORKS, "Data\\ork.png", "Orks", buildingManager.getRaceBuildings(MODEL_ORKS));
 		factionManager.CreateNewFaction(MODEL_HUMANS, "Data\\human.png", "Humans", buildingManager.getRaceBuildings(MODEL_HUMANS));
