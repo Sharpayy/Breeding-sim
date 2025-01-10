@@ -28,7 +28,7 @@ struct ObjectDim {
 class Slot {
 public:
 	Slot() = default;
-	Slot(Item* object, glm::vec2 position, int width, int height, uint8_t type = EVERY_ITEM) {
+	Slot(Item* object, glm::vec2 position, int width, int height, uint32_t type = EVERY_ITEM) {
 		if(object) assert(object->getObjectType() & type);
 		this->object = object;
 		this->slotDim = { position, width, height };
@@ -39,7 +39,7 @@ public:
 		return object;
 	}
 
-	uint8_t getSlotType() {
+	uint32_t getSlotType() {
 		return type;
 	}
 
@@ -90,7 +90,7 @@ public:
 private:
 	Item* object;
 	ObjectDim slotDim;
-	uint8_t type;
+	uint32_t type;
 };
 
 class Inventory {
@@ -551,8 +551,8 @@ void getCharacterInventory_EI(void* v1, void* v2, EntityItem** entityItem, Inven
 			auto entityItems = ent->getEquipedItems();
 			slots.at(0)->changeItem(entityItems->helmet);
 			slots.at(1)->changeItem(entityItems->Chestplate);
-			slots.at(2)->changeItem(entityItems->weapon_primary);
-			slots.at(3)->changeItem(entityItems->weapon_secondary);
+			slots.at(2)->changeItem(entityItems->shield);
+			slots.at(3)->changeItem(entityItems->weapon);
 			slots.at(4)->changeItem(entityItems->Legs);
 			slots.at(5)->changeItem(entityItems->Boots);
 
@@ -592,8 +592,8 @@ void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv
 			auto entityItems = (*entity)->getEquipedItems();
 			slots.at(0)->changeItem(entityItems->helmet);
 			slots.at(1)->changeItem(entityItems->Chestplate);
-			slots.at(2)->changeItem(entityItems->weapon_primary);
-			slots.at(3)->changeItem(entityItems->weapon_secondary);
+			slots.at(2)->changeItem(entityItems->shield);
+			slots.at(3)->changeItem(entityItems->weapon);
 			slots.at(4)->changeItem(entityItems->Legs);
 			slots.at(5)->changeItem(entityItems->Boots);
 

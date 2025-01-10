@@ -61,9 +61,8 @@ public:
 		ArmorItem* Chestplate = nullptr;
 		ArmorItem* Legs = nullptr;
 		ArmorItem* Boots = nullptr;
-		WeaponItem* weapon_primary = nullptr;
-		WeaponItem* weapon_secondary = nullptr;
-
+		ArmorItem* shield = nullptr;
+		WeaponItem* weapon = nullptr;
 	};
 public:
 	Entity(std::string name = "", uint64_t texture = 0, Stats stats = {}, EquipedItems * items = {}) {
@@ -320,21 +319,19 @@ public:
 
 class EntityItem : public Item {
 public:
-	EntityItem(Entity* entityItem = nullptr, uint32_t price = 0) {
-		this->itemName = "SOME ENTITY";
-		this->object = (void*)entityItem->getTexture();
-		this->entityItem = entityItem;
+	EntityItem(Entity* entity = nullptr, uint32_t price = 0) {
+		if (entity) {
+			this->itemName = entity->getName();
+			this->entity = entity;
+			this->object = (void*)entity->getTexture();
+		}
 		this->objType = ENTITY;
 		this->price = price;
 	}
 
 	Entity* getEntity() {
-		return entityItem;
-	}
-
-	void* getItemTexture() {
-		return object;
+		return entity;
 	}
 private:
-	Entity* entityItem;
+	Entity* entity;
 };

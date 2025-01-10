@@ -3,18 +3,38 @@
 #include <string>
 #include <unordered_map>
 
+//#define UNDEFINE	0
+//#define HELMET		(1 << 0)
+//#define CHESTPLATE  (1 << 1)
+//#define LEGS		(1 << 2)
+//#define BOOTS		(1 << 3)
+//#define SHIELD		(1 << 4)
+//#define ARMOR		(HELMET | CHESTPLATE | LEGS | BOOTS)
+//#define MELEE		(1 << 4)
+//#define RANGED		(1 << 5)
+//#define WEAPON		(MELEE | RANGED)
+//#define MISC		(1 << 6)
+//#define EVERY_ITEM	(ARMOR | WEAPON | MISC)
+//#define ENTITY		(1 << 7)
+//
+//#define TIER_0		(1 << 0)
+//#define TIER_1		(1 << 1)
+//#define TIER_2		(1 << 2)
+//#define TIER_3		(1 << 3)
+//#define TIER_ALL	(TIER_0 | TIER_1 | TIER_2 | TIER_3)
 #define UNDEFINE	0
 #define HELMET		(1 << 0)
 #define CHESTPLATE  (1 << 1)
 #define LEGS		(1 << 2)
 #define BOOTS		(1 << 3)
-#define ARMOR		(HELMET | CHESTPLATE | LEGS | BOOTS)
-#define MELEE		(1 << 4)
-#define RANGED		(1 << 5)
+#define SHIELD		(1 << 4)
+#define ARMOR		(HELMET | CHESTPLATE | LEGS | BOOTS | SHIELD)
+#define MELEE		(1 << 5)
+#define RANGED		(1 << 6)
 #define WEAPON		(MELEE | RANGED)
-#define MISC		(1 << 6)
+#define MISC		(1 << 7)
 #define EVERY_ITEM	(ARMOR | WEAPON | MISC)
-#define ENTITY		(1 << 7)
+#define ENTITY		(1 << 8)
 
 #define TIER_0		(1 << 0)
 #define TIER_1		(1 << 1)
@@ -28,7 +48,7 @@ public:
 		virtual ~ObjectStatistic() = default;
 	};
 public:
-	Item(std::string itemName = "UNDEFINE", void* texture = nullptr, uint8_t objeType = UNDEFINE, ObjectStatistic* objStats = {}, uint32_t price = 0, uint8_t tier = TIER_0) {
+	Item(std::string itemName = "UNDEFINE", void* texture = nullptr, uint32_t objeType = UNDEFINE, ObjectStatistic* objStats = {}, uint32_t price = 0, uint8_t tier = TIER_0) {
 		this->itemName = itemName;
 		this->object = texture;
 		this->objType = objeType;
@@ -53,7 +73,7 @@ public:
 		this->itemName = itemName;
 	}
 
-	uint8_t getObjectType() {
+	uint32_t getObjectType() {
 		return objType;
 	}
 
@@ -76,7 +96,7 @@ public:
 protected:
 	std::string itemName;
 	void* object;
-	uint8_t objType;
+	uint32_t objType;
 	ObjectStatistic* objStat;
 	uint32_t price;
 	uint8_t tier;
@@ -90,7 +110,7 @@ public:
 	};
 public:
 	//ArmorItem() = default;
-	ArmorItem(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objType = ARMOR, ObjectStatistic* objStats = {}, uint32_t price = 0, uint8_t tier = TIER_0) {
+	ArmorItem(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint32_t objType = ARMOR, ObjectStatistic* objStats = {}, uint32_t price = 0, uint8_t tier = TIER_0) {
 		assert(objType & ARMOR);
 		this->itemName = itemtName;
 		this->object = newItem;
@@ -120,7 +140,7 @@ public:
 	};
 public:
 	WeaponItem() = default;
-	WeaponItem(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint8_t objType = WEAPON, ObjectStatistic* objStat = {}, uint32_t price = 0, uint8_t tier = TIER_0) {
+	WeaponItem(std::string itemtName = "UNDEFINE", void* newItem = nullptr, uint32_t objType = WEAPON, ObjectStatistic* objStat = {}, uint32_t price = 0, uint8_t tier = TIER_0) {
 		assert(objType & WEAPON);
 		this->itemName = itemtName;
 		this->object = newItem;
@@ -207,6 +227,23 @@ public:
 		idx = rand() % tierItemMap.at(tier).size();
 		auto it = tierItemMap.at(tier).at(idx);
 
+		return it;
+	}
+
+	template<typename T>
+	Item* getRandomSpecificItem(uint8_t tier = TIER_ALL) {
+		int idx = 0;
+		if (tier == TIER_ALL) {
+			uint8_t availableTiers[] = { TIER_1, TIER_2, TIER_3 };
+			tier = availableTiers[rand() % 3];
+		}
+		Item* it = nullptr;
+		while(!it) {
+			idx = rand() % tierItemMap.at(tier).size();
+			if constexpr (std::is_same_v<decltype(it),T>) {
+				it = tierItemMap.at(tier).at(idx);
+			}
+		}
 		return it;
 	}
 

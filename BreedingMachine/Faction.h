@@ -3,10 +3,6 @@
 #include "Squad.h"
 #include "Building.h"
 
-#define NEUTRAL 0
-#define ENEMY 1
-#define ALLY 2
-
 class Faction {
 public:
 	Faction() {

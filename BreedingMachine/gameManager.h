@@ -12,6 +12,7 @@
 #include "TextureLoader.h"
 #include "EntityBattleManager.h"
 #include <functional>
+#include "EntityNames.h"
 
 #define THRESHOLD 10.0f
 
@@ -347,11 +348,10 @@ public:
 		case BOOTS:
 			items->Boots = (ArmorItem*)slot->getItem();
 			break;
+		case SHIELD:
+			items->shield = (ArmorItem*)slot->getItem();
 		case WEAPON:
-			//2 - primary, 3 - secondary
-			idx = gui_windows.characterWindow->getSlotIndex(slot);
-			if (idx == 2) items->weapon_primary = (WeaponItem*)slot->getItem();
-			else  items->weapon_secondary = (WeaponItem*)slot->getItem();
+			items->weapon = (WeaponItem*)slot->getItem();
 			break;
 		default:
 			break;
@@ -438,6 +438,8 @@ private:
 		itemLoader.loadItem(iron_cap);
 		ArmorItem iron_boots = { "iron boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC237.png","EquipmentIconsC237"), BOOTS, new ArmorItem::ObjectStatistic{2}, 52, TIER_2 };
 		itemLoader.loadItem(iron_boots);
+		ArmorItem tower_shield = { "tower shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC152.png","EquipmentIconsC152"), SHIELD, new ArmorItem::ObjectStatistic{4}, 67, TIER_2 };
+		itemLoader.loadItem(tower_shield);
 
 		ArmorItem guardian_helmet = { "guardian helmet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC179.png","EquipmentIconsC179"), HELMET, new ArmorItem::ObjectStatistic{5}, 129, TIER_3 };
 		itemLoader.loadItem(guardian_helmet);
@@ -447,6 +449,7 @@ private:
 		itemLoader.loadItem(guardian_greaves);
 		ArmorItem guardian_boots = { "guardian boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC231.png","EquipmentIconsC231"), BOOTS, new ArmorItem::ObjectStatistic{3}, 73, TIER_3 };
 		itemLoader.loadItem(guardian_boots);
+
 
 		ArmorItem copper_helmet = { "copper helmet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC163.png","EquipmentIconsC163"), HELMET, new ArmorItem::ObjectStatistic{3}, 64, TIER_2 };
 		itemLoader.loadItem(copper_helmet);
@@ -465,6 +468,9 @@ private:
 		itemLoader.loadItem(rags);
 		ArmorItem shoes = { "shoes", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC223.png","EquipmentIconsC223"), BOOTS, new ArmorItem::ObjectStatistic{0.1f}, 4, TIER_1 };
 		itemLoader.loadItem(shoes);
+		ArmorItem wooden_shield = { "wooden shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC152.png","EquipmentIconsC152"), SHIELD, new ArmorItem::ObjectStatistic{1}, 15, TIER_1 };
+		itemLoader.loadItem(wooden_shield);
+
 
 		ArmorItem darkwraith_helmet = { "darkwraith helmet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC176.png","EquipmentIconsC176"), HELMET, new ArmorItem::ObjectStatistic{5}, 118, TIER_3 };
 		itemLoader.loadItem(darkwraith_helmet);
@@ -474,6 +480,8 @@ private:
 		itemLoader.loadItem(darkwraith_greaves);
 		ArmorItem darkwraith_boots = { "darkwraith boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC227.png","EquipmentIconsC227"), BOOTS, new ArmorItem::ObjectStatistic{3}, 74, TIER_3 };
 		itemLoader.loadItem(darkwraith_boots);
+		ArmorItem darkwraith_shield = { "darkwraith shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC150.png","EquipmentIconsC150"), SHIELD, new ArmorItem::ObjectStatistic{5}, 95, TIER_3 };
+		itemLoader.loadItem(darkwraith_shield);
 
 		ArmorItem copper_cap = { "copper cap", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC162.png","EquipmentIconsC162"), HELMET, new ArmorItem::ObjectStatistic{2}, 31, TIER_1 };
 		itemLoader.loadItem(copper_cap);
@@ -596,7 +604,7 @@ private:
 		}
 
 		gui_windows.recruitShop = win;
-		inv.ActivateWindow(win);
+		//inv.ActivateWindow(win);
 	}
 	void initInteractionViewer(int width, int height) {
 		Inventory::Window* win = inv.AddWindow("interaction_viewer", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
@@ -668,7 +676,7 @@ private:
 		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, HELMET), texItemFrame);
 		y += 30;
 		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 - 30, y), 30.0f, 30.0f, WEAPON), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 - 30, y), 30.0f, 30.0f, SHIELD), texItemFrame);
 		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 + 30, y), 30.0f, 30.0f, WEAPON), texItemFrame);
 		y += 30;
 		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, LEGS), texItemFrame);
@@ -727,6 +735,11 @@ private:
 		//DO TOTALNEJ ZMIANY
 		path = path.append("Data\\buildings.txt");
 		initItems();
+		loadNames("Data\\entityNames\\evilhumans.txt", MODEL_EVIL_HUMANS);
+		loadNames("Data\\entityNames\\gobbos.txt", MODEL_GOBLINS);
+		loadNames("Data\\entityNames\\humans.txt", MODEL_HUMANS);
+		loadNames("Data\\entityNames\\nomads.txt", MODEL_NOMADS);
+		loadNames("Data\\entityNames\\orcs.txt", MODEL_ORKS);
 
 		factionManager.CreateNewFaction(MODEL_ORKS, "Data\\ork.png", "Orks", buildingManager.getRaceBuildings(MODEL_ORKS));
 		factionManager.CreateNewFaction(MODEL_HUMANS, "Data\\human.png", "Humans", buildingManager.getRaceBuildings(MODEL_HUMANS));
@@ -808,6 +821,11 @@ private:
 		}
 		std::cout << "Amount of squads: " << amount << "\n";
 
+
+		auto entity = generateRandomEntityItem(MODEL_HUMANS);
+		entity = generateRandomEntityItem(MODEL_HUMANS);
+		entity = generateRandomEntityItem(MODEL_HUMANS);
+		entity = generateRandomEntityItem(MODEL_HUMANS);
 		//GUI INIT
 		setSquadCompSize(nullptr, nullptr, &playerData.player->getSquadComp()->size);
 	}
@@ -1011,6 +1029,20 @@ private:
 	int getRandomNumber(int min, int max) {
 		auto val = std::uniform_int_distribution(min, max)(gen);
 		return val;
+	}
+
+	EntityItem generateRandomEntityItem(uint8_t factionID) {
+		Stats entityStats = {
+			getRandomNumber(5,20),
+			getRandomNumber(2,10),
+			getRandomNumber(5,20),
+			getRandomNumber(100,200),
+			5.1f,
+			getRandomNumber(10,30) };
+		Entity::EquipedItems* items = nullptr;
+		Entity* entity = new Entity(getRandomFactionName(factionID), 0, entityStats, items);
+		EntityItem entityItem{ entity, 0 };
+		return entityItem;
 	}
 
 private:

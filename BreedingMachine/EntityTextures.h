@@ -1,17 +1,10 @@
 #pragma once
 #include "textures.h"
 #include <ctime>
+#include "Define.h"
 
 #define INCLUDE_ENTITY_TEXTURE_MAP	extern const char* LDR_MODELS LDR_FACTION_TEXTURE_MAP[]
 
-#define MODEL_ORKS 0
-#define MODEL_HUMANS 1
-#define MODEL_NOMADS 2
-#define MODEL_EVIL_HUMANS 3
-#define MODEL_GOBLINS 4
-#define MODEL_PLAYER 5
-#define MODEL_BANDITS 6
-#define MODEL_ANIMALS 7
 
 typedef struct _LDR_MODELS
 {
