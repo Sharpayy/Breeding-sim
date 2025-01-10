@@ -12,7 +12,6 @@ const char* LDR_NOMAD_TEXTURE[] = {
 const char* LDR_HUMAN_TEXTURE[] = {
 	"Data\\bt_human_0.png",
 	"Data\\bt_human_1.png",
-	"Data\\bt_human_2.png"
 };
 const char* LDR_EVILHUMAN_TEXTURE[] = {
 	"Data\\bt_evilhuman_0.png",

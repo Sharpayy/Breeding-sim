@@ -422,12 +422,18 @@ private:
 		itemLoader.loadItem(spear);
 		WeaponItem hatchet = { "hatchet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC57.png","EquipmentIconsC57"), MELEE, new WeaponItem::ObjectStatistic{2}, 60, TIER_1 };
 		itemLoader.loadItem(hatchet);
+		WeaponItem twin_daggers = { "twin daggers", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC57.png","EquipmentIconsC57"), MELEE, new WeaponItem::ObjectStatistic{4.5f}, 102, TIER_2 };
+		itemLoader.loadItem(twin_daggers);
 		WeaponItem short_bow = { "short bow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC103.png","EquipmentIconsC103"), RANGED, new WeaponItem::ObjectStatistic{3}, 78, TIER_1};
 		itemLoader.loadItem(short_bow);
+		WeaponItem recurve_bow = { "recurve bow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC118.png","EquipmentIconsC118"), RANGED, new WeaponItem::ObjectStatistic{4}, 88, TIER_2 };
+		itemLoader.loadItem(recurve_bow);
 		WeaponItem crossbow = { "crossbow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC121.png","EquipmentIconsC121"), RANGED, new WeaponItem::ObjectStatistic{6}, 160, TIER_3};
 		itemLoader.loadItem(crossbow);
 		WeaponItem morningstar = { "morningstar", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC29.png","EquipmentIconsC29"), MELEE, new WeaponItem::ObjectStatistic{5}, 124, TIER_2 };
 		itemLoader.loadItem(morningstar);
+		WeaponItem flail = { "flail", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC15.png","EquipmentIconsC15"), MELEE, new WeaponItem::ObjectStatistic{3.5f}, 62, TIER_1 };
+		itemLoader.loadItem(flail);
 		WeaponItem sickle_blade = { "sickle_blade", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC15.png","EquipmentIconsC15"), MELEE, new WeaponItem::ObjectStatistic{4}, 70, TIER_1 };
 		itemLoader.loadItem(sickle_blade);
 		WeaponItem berserker_blade = { "berserker blade", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC13.png","EquipmentIconsC13"), MELEE, new WeaponItem::ObjectStatistic{8}, 203, TIER_3 };
@@ -438,6 +444,8 @@ private:
 		itemLoader.loadItem(trident);
 		WeaponItem battleaxe = { "battleaxe", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC49.png","EquipmentIconsC49"), MELEE, new WeaponItem::ObjectStatistic{4}, 112,  TIER_2};
 		itemLoader.loadItem(battleaxe);
+		WeaponItem excalibur = { "excalibur", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC19.png","EquipmentIconsC19"), MELEE, new WeaponItem::ObjectStatistic{10}, 300,  TIER_3 };
+		itemLoader.loadItem(excalibur);
 		//Armory
 		ArmorItem iron_chestplate = { "iron chestplate", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC193.png","EquipmentIconsC193"), CHESTPLATE, new ArmorItem::ObjectStatistic{5}, 132, TIER_2 };
 		itemLoader.loadItem(iron_chestplate);
@@ -468,6 +476,8 @@ private:
 		itemLoader.loadItem(copper_greaves);
 		ArmorItem copper_boots = { "copper boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC222.png","EquipmentIconsC222"), BOOTS, new ArmorItem::ObjectStatistic{1.5f}, 31, TIER_2 };
 		itemLoader.loadItem(copper_boots);
+		ArmorItem buckler = { "buckler", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC152.png","EquipmentIconsC152"), SHIELD, new ArmorItem::ObjectStatistic{1.5f}, 20, TIER_1 };
+		itemLoader.loadItem(buckler);
 
 		ArmorItem cap = { "cap", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC161.png","EquipmentIconsC161"), HELMET, new ArmorItem::ObjectStatistic{0.3f}, 14, TIER_1};
 		itemLoader.loadItem(cap);
@@ -500,6 +510,180 @@ private:
 		itemLoader.loadItem(leather_greaves);
 		ArmorItem leather_boots = { "leather boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC221.png","EquipmentIconsC221"), BOOTS, new ArmorItem::ObjectStatistic{1}, 21, TIER_1 };
 		itemLoader.loadItem(leather_boots);
+
+		//ArmorItem* helmet = nullptr;
+		//ArmorItem* Chestplate = nullptr;
+		//ArmorItem* Legs = nullptr;
+		//ArmorItem* Boots = nullptr;
+		//ArmorItem* shield = nullptr;
+		//WeaponItem* weapon = nullptr;
+
+
+		//weak sets
+		Entity::EquipedItems setWeakAxe = {
+			&copper_cap,
+			&copper_vest,
+			&leather_greaves,
+			&leather_boots,
+			nullptr,
+			&hatchet
+
+		};
+		itemLoader.loadSet(setWeakAxe);
+		Entity::EquipedItems setWeakSpear = {
+			&cap,
+			&clothes,
+			&rags,
+			&shoes,
+			&wooden_shield,
+			&spear
+
+		};
+		itemLoader.loadSet(setWeakSpear);
+		Entity::EquipedItems setWeakArcher = {
+			&cap,
+			&copper_vest,
+			&rags,
+			&shoes,
+			nullptr,
+			&short_bow
+
+		};
+		itemLoader.loadSet(setWeakArcher);
+		Entity::EquipedItems setSickleGuy = {
+			&copper_cap,
+			&copper_vest,
+			&rags,
+			&shoes,
+			nullptr,
+			&sickle_blade
+
+		};
+		itemLoader.loadSet(setWeakArcher);
+		//Mid sets
+		Entity::EquipedItems setIronTank = {
+			&iron_cap,
+			&iron_chestplate,
+			&iron_greaves,
+			&iron_boots,
+			&tower_shield,
+			&bastard_sword
+
+		};
+		itemLoader.loadSet(setIronTank);
+		Entity::EquipedItems setCopperDPS = {
+			&copper_helmet,
+			&copper_chestplate,
+			&copper_greaves,
+			&copper_boots,
+			&wooden_shield,
+			&battleaxe
+
+		};
+		itemLoader.loadSet(setCopperDPS);
+		Entity::EquipedItems setIronCrossbow = {
+			&iron_cap,
+			&iron_chestplate,
+			&iron_greaves,
+			&iron_boots,
+			nullptr,
+			&crossbow
+		};
+		itemLoader.loadSet(setIronCrossbow);
+		//stronk
+		Entity::EquipedItems setDarkwraith = {
+			&darkwraith_helmet,
+			&darkwraith_chestplate,
+			&darkwraith_greaves,
+			&darkwraith_boots,
+			nullptr,
+			&berserker_blade
+
+		};
+		itemLoader.loadSet(setDarkwraith);
+		Entity::EquipedItems setGuardian = {
+			&guardian_helmet,
+			&guardian_chestplate,
+			&guardian_greaves,
+			&guardian_boots,
+			&tower_shield,
+			&battlehammer
+		};
+		itemLoader.loadSet(setIronCrossbow);
+		//random sets
+		Entity::EquipedItems setBerserk = {
+			&darkwraith_helmet,
+			nullptr,
+			&darkwraith_greaves,
+			&darkwraith_boots,
+			nullptr,
+			&berserker_blade
+		};
+		itemLoader.loadSet(setBerserk);
+		Entity::EquipedItems setCheckOutMyBoots = {
+			nullptr,
+			nullptr,
+			&rags,
+			&guardian_boots,
+			nullptr,
+			&hatchet
+		};
+		itemLoader.loadSet(setCheckOutMyBoots);
+		Entity::EquipedItems setHeavyCrossbow = {
+			nullptr,
+			&guardian_chestplate,
+			&guardian_greaves,
+			&guardian_boots,
+			&tower_shield,
+			&crossbow
+		};
+		itemLoader.loadSet(setHeavyCrossbow);
+		Entity::EquipedItems setTridentGuy = {
+			&cap,
+			&iron_chestplate,
+			&copper_greaves,
+			&copper_boots,
+			&wooden_shield,
+			&trident
+		};
+		itemLoader.loadSet(setTridentGuy);
+		Entity::EquipedItems setRecurvedArcher = {
+			&cap,
+			&clothes,
+			&rags,
+			&copper_boots,
+			&wooden_shield,
+			&recurve_bow
+		};
+		itemLoader.loadSet(setRecurvedArcher);
+		Entity::EquipedItems setFlailGuy = {
+			&iron_cap,
+			&copper_vest,
+			&rags,
+			&copper_boots,
+			&buckler,
+			&flail
+		};
+		itemLoader.loadSet(setFlailGuy);
+		Entity::EquipedItems setChosenOne = {
+			nullptr,
+			nullptr,
+			nullptr,
+			&shoes,
+			nullptr,
+			&excalibur
+		};
+		itemLoader.loadSet(setChosenOne);
+		Entity::EquipedItems setTwinDaggers = {
+			&cap,
+			&darkwraith_chestplate,
+			&rags,
+			&iron_boots,
+			nullptr,
+			&twin_daggers
+		};
+		itemLoader.loadSet(setTwinDaggers);
+
 
 		stbi_set_flip_vertically_on_load(true);
 	}
