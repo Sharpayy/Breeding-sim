@@ -68,7 +68,7 @@ void main()
     col = mix(col, vec3(0.0), ps * 0.4);
     //col = col + (col + col * pow(distance(uv, (MouseCoord / MapDimensions)), 2.0));
     //col = mix(col, vec3(1.0), pow(distance(uv, (MouseCoord / MapDimensions)), 2.0));
-    col = col - (col * min(0.5, -0.2 + (pow(distance(uv, (MouseCoord / MapDimensions)), visn + 0.2))));
+    col = col - (col * min(0.5, -0.4 + (pow(distance(uv, (MouseCoord / MapDimensions)), sqrt(visn) + 0.2))));
     
     fragColor = vec4(col,1.0);
 }
