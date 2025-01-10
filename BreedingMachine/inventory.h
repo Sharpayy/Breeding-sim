@@ -562,7 +562,7 @@ public:
 		return sets.at(rand() % size);
 	}
 
-	Entity* generateRandomEntityItem(uint8_t factionID) {
+	Entity* generateRandomEntity(uint8_t factionID) {
 		Stats entityStats = {
 			generatorInstance.getRandomNumber(5,20),
 			generatorInstance.getRandomNumber(2,10),
