@@ -47,16 +47,39 @@ public:
 		if (temp) items_rotation.push_back(temp);
 	}
 
+	void addSingleEntityItemToRotation(EntityItem* item, int idx) {
+		//idx = idx <= items_rotation.size() ? idx :  
+		EntityItem* temp = nullptr;
+		if (idx < entity_rotation.size() && idx >= 0) {
+			temp = entity_rotation.at(idx);
+			entity_rotation.at(idx) = item;
+		}
+		else entity_rotation.push_back(item);
+		if (temp) entity_rotation.push_back(temp);
+	}
+
 	void clearItems() {
 		items_rotation.clear();
+	}
+
+	void clearEntityItems() {
+		entity_rotation.clear();
 	}
 
 	std::vector<Item*> getItemsRotation() {
 		return items_rotation;
 	}
 
+	std::vector<EntityItem*> getEntityItemsRotation() {
+		return entity_rotation;
+	}
+
 	void eraseItemFromRotation(Item* item) {
 		items_rotation.erase(std::remove(items_rotation.begin(), items_rotation.end(), item), items_rotation.end());
+	}
+
+	void eraseEntityItemFromRotation(EntityItem* item) {
+		entity_rotation.erase(std::remove(entity_rotation.begin(), entity_rotation.end(), item), entity_rotation.end());
 	}
 
 	uint8_t getBuildingType() {
@@ -72,5 +95,6 @@ private:
 	uint8_t buildingType;
 	glm::vec2 position;
 	std::vector<Item*> items_rotation;
+	std::vector<EntityItem*> entity_rotation;
 	bool hasNewRotation;
 };

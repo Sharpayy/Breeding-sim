@@ -10,6 +10,8 @@
 #include "gui.h"
 #include "Define.h"
 #include "Building.h"
+#include "generator.h"
+#include "EntityNames.h"
 
 struct ObjectDim {
 	glm::vec2 position;
@@ -461,7 +463,9 @@ private:
 
 class ItemLoader {
 public:
-	ItemLoader() {
+	ItemLoader() :
+	generatorInstance(Generator::getInstance())
+	{
 		tierItemMap[TIER_0] = {};
 		tierItemMap[TIER_1] = {};
 		tierItemMap[TIER_2] = {};
@@ -558,11 +562,26 @@ public:
 		return sets.at(rand() % size);
 	}
 
+	Entity* generateRandomEntityItem(uint8_t factionID) {
+		Stats entityStats = {
+			generatorInstance.getRandomNumber(5,20),
+			generatorInstance.getRandomNumber(2,10),
+			generatorInstance.getRandomNumber(5,20),
+			generatorInstance.getRandomNumber(100,200),
+			5.1f,
+			generatorInstance.getRandomNumber(10,30) };
+		Entity::EquipedItems items = getRandomSet();
+		Entity* entity = new Entity(getRandomFactionName(factionID), 0, entityStats, items);
+		return entity;
+	}
+
 private:
 	std::unordered_map<std::string, Item*> itemMap;
 	std::unordered_map<uint8_t, std::vector<Item*>> tierItemMap;
 	//std::unordered_map<std::string, Entity::EquipedItems> sets;
 	std::vector<Entity::EquipedItems> sets;
+	Generator& generatorInstance;
+
 };
 
 struct GUI_DraggedWindow {
@@ -606,7 +625,7 @@ void setInventory(void* v1, void* v2, int* money, Inventory* inv, Inventory::Win
 	label->SetText(std::to_string(*money).c_str());
 }
 
-void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, Inventory::Window* win) {
+void setShopItemsRotation(void* v1, void* v2, Building** building, Inventory* inv, Inventory::Window* win) {
 	if (inv) {
 		if (inv->ActivateWindow(win) && (*building)) {
 			auto items = (*building)->getItemsRotation();
@@ -630,6 +649,32 @@ void setShopRotation(void* v1, void* v2, Building** building, Inventory* inv, In
 	}
 }
 
+void setShopEntityRotation(void* v1, void* v2, Building** building, Inventory* inv, Inventory::Window* win) {
+	if (inv) {
+		if (inv->ActivateWindow(win) && (*building)) {
+			auto items = (*building)->getEntityItemsRotation();
+			auto slots = win->getAllSlots();
+			int size = items.size() < slots.size() ? items.size() : slots.size();
+			std::string labelName;
+			for (int idx = 0; idx < slots.size(); idx++) {
+				delete slots.at(idx)->getItem();
+				slots.at(idx)->changeItem(nullptr);
+				labelName = "shopEntityItem" + std::to_string(idx);
+				auto label = GetNamedComponent(labelName.c_str());
+				label->SetText(std::string("0").c_str());
+			}
+			for (int idx = 0; idx < size; idx++) {
+				EntityItem* nItem = (EntityItem*)items.at(idx);
+				slots.at(idx)->changeItem(nItem);
+				labelName = "shopEntityItem" + std::to_string(idx);
+				auto label = GetNamedComponent(labelName.c_str());
+				label->SetText(std::to_string(nItem->getItemPrice()).c_str());
+			}
+		}
+	}
+}
+
+
 
 //PRAWDOPODOBNIE ZLE DZIALA
 void setParty(void* v1, void* v2, Squad** squad, Inventory* inv, Inventory::Window* win) {
@@ -637,6 +682,10 @@ void setParty(void* v1, void* v2, Squad** squad, Inventory* inv, Inventory::Wind
 		if (inv->ActivateWindow(win) && (*squad)) {
 			auto squadComp = (*squad)->getSquadComp();
 			auto slots = win->getAllSlots();
+			for (int idx = 0; idx < slots.size(); idx++) {
+				delete slots.at(idx)->getItem();
+				slots.at(idx)->changeItem(nullptr);
+			}
 			for (int idx = 0; idx < squadComp->size; idx++) {
 				delete slots.at(idx)->getItem();
 				EntityItem* eitm = new EntityItem(squadComp->entities[idx]);
@@ -654,12 +703,12 @@ void getCharacterInventory_EI(void* v1, void* v2, EntityItem** entityItem, Inven
 			auto slots = win->getAllSlots();
 			Entity* ent = (*entityItem)->getEntity();
 			auto entityItems = ent->getEquipedItems();
-			slots.at(0)->changeItem(entityItems->helmet);
-			slots.at(1)->changeItem(entityItems->Chestplate);
-			slots.at(2)->changeItem(entityItems->shield);
-			slots.at(3)->changeItem(entityItems->weapon);
-			slots.at(4)->changeItem(entityItems->Legs);
-			slots.at(5)->changeItem(entityItems->Boots);
+			slots.at(0)->changeItem(entityItems.helmet);
+			slots.at(1)->changeItem(entityItems.Chestplate);
+			slots.at(2)->changeItem(entityItems.shield);
+			slots.at(3)->changeItem(entityItems.weapon);
+			slots.at(4)->changeItem(entityItems.Legs);
+			slots.at(5)->changeItem(entityItems.Boots);
 
 			std::string componentName = "Vname";
 			GComponentSlider* component;
@@ -695,12 +744,12 @@ void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv
 			inv->ActivateWindow(win);
 			auto slots = win->getAllSlots();
 			auto entityItems = (*entity)->getEquipedItems();
-			slots.at(0)->changeItem(entityItems->helmet);
-			slots.at(1)->changeItem(entityItems->Chestplate);
-			slots.at(2)->changeItem(entityItems->shield);
-			slots.at(3)->changeItem(entityItems->weapon);
-			slots.at(4)->changeItem(entityItems->Legs);
-			slots.at(5)->changeItem(entityItems->Boots);
+			slots.at(0)->changeItem(entityItems.helmet);
+			slots.at(1)->changeItem(entityItems.Chestplate);
+			slots.at(2)->changeItem(entityItems.shield);
+			slots.at(3)->changeItem(entityItems.weapon);
+			slots.at(4)->changeItem(entityItems.Legs);
+			slots.at(5)->changeItem(entityItems.Boots);
 
 			std::string componentName = "Vname";
 			GComponentSlider* component;

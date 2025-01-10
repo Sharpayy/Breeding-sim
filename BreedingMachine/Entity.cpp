@@ -334,7 +334,7 @@ Squad::Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position)
     //squadComp->size = 1;
     squadComp->size = rand() % SQUAD_MAX_SIZE;
     for (int i = 0; i < squadComp->size; i++) {
-        squadComp->entities[i] = new Entity("Some chujstwo", 0, {}, new Entity::EquipedItems{});
+        squadComp->entities[i] = new Entity("Some chujstwo", 0, {}, Entity::EquipedItems{});
         uint64_t index = GetEntityRandomTextureIndex(factionID);
         squadComp->entities[i]->SetEntityTextureIndex(GetEntityTextureFromIndex(index, factionID), index);
     }
@@ -374,16 +374,16 @@ float AiGetEntityAttackFactor(Entity* e)
 float AiGetUnitArmor(Entity* e)
 {
     float armor = e->getStats()->defense;
-    Entity::EquipedItems* items = e->getEquipedItems();
+    Entity::EquipedItems items = e->getEquipedItems();
 
-    if (items->Boots != nullptr)
-        armor += items->Boots->getObjectStatistic()->armor;
-    if (items->Chestplate != nullptr)
-        armor += items->Chestplate->getObjectStatistic()->armor;
-    if (items->helmet != nullptr)
-        armor += items->helmet->getObjectStatistic()->armor;
-    if (items->Legs != nullptr)
-        armor += items->Legs->getObjectStatistic()->armor;
+    if (items.Boots != nullptr)
+        armor += items.Boots->getObjectStatistic()->armor;
+    if (items.Chestplate != nullptr)
+        armor += items.Chestplate->getObjectStatistic()->armor;
+    if (items.helmet != nullptr)
+        armor += items.helmet->getObjectStatistic()->armor;
+    if (items.Legs != nullptr)
+        armor += items.Legs->getObjectStatistic()->armor;
 
     return armor;
 }
@@ -396,7 +396,7 @@ float AiGetAttackAfterArmor(Entity* e, float atk)
 float AiGetUnitAttack(Entity* e)
 {
     float atk = max(e->getStats()->melee, e->getStats()->ranged);
-    Entity::EquipedItems* items = e->getEquipedItems();
+    Entity::EquipedItems items = e->getEquipedItems();
 
    /* if (items->weapon_primary != nullptr)
         atk += items->weapon_primary->getObjectStatistic()->damage;

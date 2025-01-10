@@ -54,7 +54,7 @@ public:
 		WeaponItem* weapon = nullptr;
 	};
 public:
-	Entity(std::string name = "", uint64_t texture = 0, Stats stats = {}, EquipedItems * items = {}) {
+	Entity(std::string name = "", uint64_t texture = 0, Stats stats = {}, EquipedItems items = {}) {
 		this->name = name;
 		this->texture = texture;
 		this->stats = stats;
@@ -120,7 +120,7 @@ public:
 		return hp;
 	}
 
-	EquipedItems* getEquipedItems() {
+	EquipedItems getEquipedItems() {
 		return items;
 	}
 
@@ -160,7 +160,7 @@ private:
 	Stats stats;
 	uint64_t texture;
 	uint64_t index;
-	EquipedItems* items;
+	EquipedItems items;
 	bool canMoveEnt;
 
 	float hp;
