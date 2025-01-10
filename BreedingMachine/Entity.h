@@ -6,6 +6,7 @@
 #include <filesystem>
 #include "textures.h"
 #include "EntityTextures.h"
+#include "gui.h"
 
 struct BattleMap {
 	uint64_t texture;
@@ -29,6 +30,16 @@ enum Race {
 	GOBLINS = 3,
 	BANDITS = 4,
 };
+
+typedef struct _EntityApperance
+{
+	float attackTextureOpacity;
+	float blockadeOpacity;
+	
+	float Reserved[2];
+} EntityApperance;
+
+#define SQUAD_MAX_SIZE 15
 
 class Entity {
 public:
@@ -54,7 +65,7 @@ public:
 		WeaponItem* weapon = nullptr;
 	};
 public:
-	Entity(std::string name = "", uint64_t texture = 0, Stats stats = {}, EquipedItems * items = {}) {
+	Entity(std::string name = "", uint64_t texture = 0, Stats stats = {}, EquipedItems items = {}) {
 		this->name = name;
 		this->texture = texture;
 		this->stats = stats;
@@ -120,7 +131,7 @@ public:
 		return hp;
 	}
 
-	EquipedItems* getEquipedItems() {
+	EquipedItems getEquipedItems() {
 		return items;
 	}
 
@@ -151,6 +162,16 @@ public:
 		bravery = stats.bravery;
 	}
 
+	void UpdateHpBar()
+	{
+
+	}
+
+	void RenderHpBar(glm::mat4 pm)
+	{
+
+	}
+
 	IEntityState* state;
 	glm::vec2 travel;
 	//IMPL
@@ -160,11 +181,13 @@ private:
 	Stats stats;
 	uint64_t texture;
 	uint64_t index;
-	EquipedItems* items;
+	EquipedItems items;
 	bool canMoveEnt;
 
 	float hp;
 	float bravery;
+
+	//GComponentSlider* hp_bar;
 };
 
 class Squad {

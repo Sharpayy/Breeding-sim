@@ -109,6 +109,59 @@ public:
 
 	}
 
-	
+	MapChunk* GetMapChunk(int x, int y)
+	{
+		return aChunkArray+(blk * y + x);
+	}
+};
 
+class GameMapProxy
+{
+public:
+	GameMapProxy(GameMap* gm)
+	{
+		map = gm;
+	}
+
+	MapChunk* GetMapChunk(int x, int y, float vVisMapL, float vVisMapR, float vVisMapU, float vVisMapD)
+	{
+		float cX = x * map->pChunkSizeX;
+		float cY = y * map->pChunkSizeY;
+
+		vVisMapL = 0;
+		vVisMapU = 0;
+		vVisMapR *= 2.0f;
+		vVisMapD *= 2.0f;
+
+		if ((cX >= vVisMapL && cX + map->pChunkSizeX <= vVisMapR) && (cY >= vVisMapU && cY + map->pChunkSizeY <= vVisMapD))
+			{
+				auto c = map->GetMapChunk(x, y);
+				int64_t packed = x;
+				packed = packed << 32;
+				packed += y;
+				if (cache.find(packed) == cache.end())
+				{
+					c->txb.MakeResident();
+					cache.insert({ packed, c });
+				}
+				return c;
+			}
+
+		auto c = map->GetMapChunk(x, y);
+
+		int64_t packed = x;
+		packed = packed << 32;
+		packed += y;
+		if (cache.find(packed) != cache.end())
+		{
+			c->txb.MakeNonResident();
+			cache.erase(packed);
+		}
+		return 0;
+	}
+
+
+private:
+	GameMap* map;
+	std::unordered_map<int64_t, MapChunk*> cache;
 };
