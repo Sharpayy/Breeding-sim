@@ -4,8 +4,8 @@
 class InputHandler {
 public:
     static InputHandler& getInstance() {
-        static InputHandler instance;
-        return instance;
+        static InputHandler inputHandlerInstance;
+        return inputHandlerInstance;
     }
 
     InputHandler(const InputHandler&) = delete;

@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <glm/vec2.hpp>
-#include "inventory.h"
+#include "Item.h"
 
 #define BUILDING_TYPE_UNDEFINE 0
 #define BUILDING_TYPE_VILLAGE 1
@@ -20,28 +20,6 @@ public:
 
 	glm::vec2 getPosition() {
 		return position;
-	}
-
-	void setRandomItemsRotation(ItemLoader* itm, int size) {
-		uint8_t type = 0;
-		switch (buildingType) {
-		case BUILDING_TYPE_VILLAGE:
-			type = TIER_1;
-			break;
-		case BUILDING_TYPE_CASTLE:
-			type = TIER_2;
-			break;
-		case BUILDING_TYPE_CITY:
-			type = TIER_ALL;
-			break;
-		default:
-			type = TIER_ALL;
-			break;
-		}
-		for (int i = 0; i < size; i++) {
-
-			items_rotation.push_back(itm->getRandomItem(type));
-		}
 	}
 
 	void addSingleItemToRotation(Item* item, int idx) {

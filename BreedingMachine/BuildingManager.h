@@ -3,7 +3,7 @@
 #include "filesystem"
 #include <unordered_map>
 #include <fstream>
-
+#include "generator.h"
 //enum {
 //	ORKS = 0,
 //	HUMANS = 1,
@@ -14,10 +14,9 @@
 
 class BuildingManager {
 public:
-	BuildingManager() {
-		std::cout << "chujowyBuioldingManager\n";
-	}
-	BuildingManager(std::filesystem::path path) {
+	BuildingManager(std::filesystem::path path = "") :
+	generatorInstance(Generator::getInstance())
+	{
 		int id, race, size, buildingType;
 		glm::vec2 position;
 		std::ifstream file;
@@ -35,6 +34,33 @@ public:
 		}
 	}
 
+	void setRandomItemsRotation(ItemLoader* itm) {
+		int size = 0;
+		for (auto building : getAllBuildings()) {
+			uint8_t type = 0;
+			switch (building->getBuildingType()) {
+			case BUILDING_TYPE_VILLAGE:
+				type = TIER_1;
+				size = generatorInstance.getRandomNumber(5, 11);
+				break;
+			case BUILDING_TYPE_CASTLE:
+				type = TIER_2;
+				size = generatorInstance.getRandomNumber(10, 20);
+				break;
+			case BUILDING_TYPE_CITY:
+				type = TIER_ALL;
+				size = generatorInstance.getRandomNumber(18, 30);
+				break;
+			default:
+				type = TIER_ALL;
+				break;
+			}
+			for (int i = 0; i < size; i++) {
+				building->addSingleItemToRotation(itm->getRandomItem(type), size);
+			}
+		}
+	}
+
 	std::vector<Building*> getRaceBuildings(uint8_t raceID) {
 		for (auto& building : fBuildings) {
 			if (building.first == raceID) return building.second;
@@ -48,6 +74,7 @@ public:
 	}
 
 private:
+	Generator& generatorInstance;
 	std::unordered_map<uint8_t, std::vector<Building*>> fBuildings;
 	std::vector<Building*> allBuildings;
 };

@@ -7,7 +7,7 @@
 #include "FactionManager.h"
 #include <glm/vec2.hpp>
 #include <glm/gtc/quaternion.hpp> 
-#include <random>
+#include "generator.h"
 #include "timer.h"
 #include "TextureLoader.h"
 #include "EntityBattleManager.h"
@@ -24,8 +24,10 @@ public:
 	Inventory inv;
 
 	gameManager(rasticore::RastiCoreRender* r_, rasticore::ModelCreationDetails rect_mcd, rasticore::VertexBuffer mapVao, rasticore::Program mapPrg) :
-		instance(InputHandler::getInstance()),
-		battleManager(r_, rect_mcd, mapPrg, mapVao, &inv, &draggedObj, &cameraOffset)
+		inputHandlerInstance(InputHandler::getInstance()),
+		generatorInstance(Generator::getInstance()),
+		battleManager(r_, rect_mcd, mapPrg, mapVao, &inv, &draggedObj, &cameraOffset),
+		buildingManager(std::filesystem::current_path() / "Data/buildings.txt")
 	{
 		this->rect_mcd = rect_mcd;
 		this->r = r_;
@@ -33,28 +35,18 @@ public:
 		std::filesystem::path collisionPath = path, buildingPath = path;
 		collisionPath.append("Data\\collision.txt");
 		buildingPath.append("Data\\buildings.txt");
-		itemLoader = ItemLoader();
 		movementManager = SquadMovementManager{ collisionPath, 4096, 16, r_, rect_mcd };
-		buildingManager = BuildingManager{ buildingPath };
 		factionManager = FactionManager{r_, rect_mcd, 16};
 		cameraOffset = CameraOffset{ 0, 0, 1.0f };
+		itemLoader = ItemLoader();
 		initGame(path);
-		int size = 0;
-		for (auto& building : buildingManager.getAllBuildings()) {
-			if (building->getBuildingType() == BUILDING_TYPE_VILLAGE) size = getRandomNumber(5, 11);
-			if (building->getBuildingType() == BUILDING_TYPE_CASTLE) size = getRandomNumber(10, 20);
-			if (building->getBuildingType() == BUILDING_TYPE_CITY) size = getRandomNumber(18, 30);
-			building->setRandomItemsRotation(&itemLoader, size);
-		}
+		buildingManager.setRandomItemsRotation(&itemLoader);
 
 		game_type = GAMETYPE_BIGMAP;
-
-		std::random_device rd;
-		gen = std::mt19937{ rd() };
 	}
 	
 	void update() {
-		instance.handleKeys();
+		inputHandlerInstance.handleKeys();
 		//auto pos = getMousePosition();
 		//Astar::point p;
 		//for (auto& squad : squads) {
@@ -96,25 +88,25 @@ public:
 	}
 
 	void inputHandler() {
-		if (instance.KeyPressed(SDL_SCANCODE_W)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_W)) {
 			cameraOffset.y += 20;
 		}
-		if (instance.KeyPressed(SDL_SCANCODE_S)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_S)) {
 			cameraOffset.y -= 20;
 		}
-		if (instance.KeyPressed(SDL_SCANCODE_A)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_A)) {
 			cameraOffset.x -= 20;
 		}
-		if (instance.KeyPressed(SDL_SCANCODE_D)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_D)) {
 			cameraOffset.x += 20;
 		}
-		if (instance.KeyPressed(SDL_SCANCODE_Q)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_Q)) {
 			cameraOffset.z *= 0.9f;
 		}
-		if (instance.KeyPressed(SDL_SCANCODE_E)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_E)) {
 			cameraOffset.z *= 1.1f;
 		}
-		if (instance.KeyPressedOnce(SDL_SCANCODE_I))
+		if (inputHandlerInstance.KeyPressedOnce(SDL_SCANCODE_I))
 		{
 			if (!inv.isWindowActive(gui_windows.inventory)) {
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
@@ -122,7 +114,7 @@ public:
 			}
 			else inv.DisableWindow(gui_windows.inventory);
 		}
-		if (instance.KeyPressedOnce(SDL_SCANCODE_V))
+		if (inputHandlerInstance.KeyPressedOnce(SDL_SCANCODE_V))
 		{
 			if (!inv.isWindowActive(gui_windows.partyView)) {
 				setParty(nullptr, nullptr, &playerData.player, &inv, gui_windows.partyView);
@@ -131,12 +123,12 @@ public:
 			else inv.DisableWindow(gui_windows.partyView);
 		}
 
-		if (instance.KeyPressed(SDL_SCANCODE_R))
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_R))
 		{
 			game_type = (!(game_type - 1) + 1);
 			SDL_Delay(100);
 		}
-		if (instance.KeyPressed(SDL_SCANCODE_LEFT)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_LEFT)) {
 			auto mp = getMousePosition();
 			if (draggedObj.draggedWindow.win && !draggedObj.draggedWindow.wasPressed) {
 				draggedObj.draggedWindow.wasPressed = true;
@@ -213,7 +205,7 @@ public:
 			draggedObj.draggedItem = {};
 			inv.SetCursorItemHold(nullptr);
 		}
-		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
+		if (inputHandlerInstance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
 			auto mp = getMousePosition();
 
 			//GUI
@@ -236,7 +228,7 @@ public:
 			}
 			else {
 				auto mousePos = getCorrectedMousePosition();
-				if (instance.KeyPressed(SDL_SCANCODE_LALT)) {
+				if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_LALT)) {
 					for (auto& building : buildingManager.getAllBuildings()) {
 						auto buildingPos = building->getPosition();
 						if (glm::distance(mousePos, buildingPos) < 64.0f) {
@@ -254,7 +246,7 @@ public:
 				}
 			}
 		}
-		if (instance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
+		if (inputHandlerInstance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
 			auto pos = getCorrectedMousePosition();
 			pos.x = (int)(pos.x / 16) * 16;
 			pos.y = (int)(pos.y / 16) * 16;
@@ -817,7 +809,7 @@ private:
 			squad = factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size())->getPosition());
 			if (squad) amount++;
 			timer.startMeasure(squad->getSquadID(), 0);
-			squad->force = getRandomNumber(10, 100);
+			squad->force = generatorInstance.getRandomNumber(10, 100);
 		}
 		std::cout << "Amount of squads: " << amount << "\n";
 
@@ -895,14 +887,14 @@ private:
 		int buildingAmount = buildings.size();
 		if (buildingAmount) {
 			if (!movementManager.SquadHasPath(squad)) { 
-				glm::vec2 randomBuildingPosition = buildings.at(getRandomNumber(0, buildingAmount - 1))->getPosition();
+				glm::vec2 randomBuildingPosition = buildings.at(generatorInstance.getRandomNumber(0, buildingAmount - 1))->getPosition();
 				movementManager.createSquadPath(Astar::point{ (int)randomBuildingPosition.x, (int)randomBuildingPosition.y }, squad);
 			}
 		}
 		//IF BUILDINGS NOT FOUND ACT LIKE NORMAL WANDER STATE
 		else {
 			squad->setSquadState(WANDER);
-			timer.startMeasure(squad->getSquadID(), getRandomNumber(20, 50));
+			timer.startMeasure(squad->getSquadID(), generatorInstance.getRandomNumber(20, 50));
 		}
 	}
 
@@ -914,12 +906,12 @@ private:
 		while (!movementManager.SquadHasPath(squad)) {
 			glm::vec2 squadPosition, newPosition;
 			squadPosition = squad->getSquadPosition();
-			int angle = getRandomNumber(0, 360);
+			int angle = generatorInstance.getRandomNumber(0, 360);
 			glm::mat2 rotationMatrix = glm::mat2(
 				glm::cos(angle), -glm::sin(angle),
 				glm::sin(angle), glm::cos(angle)
 			);
-			newPosition = squadPosition + (rotationMatrix * glm::vec2(getRandomNumber(32, distance)));
+			newPosition = squadPosition + (rotationMatrix * glm::vec2(generatorInstance.getRandomNumber(32, distance)));
 			movementManager.createSquadPath(Astar::point{ (int)newPosition.x, (int)newPosition.y }, squad);
 		}
 	}
@@ -968,20 +960,20 @@ private:
 		if (!timer.hasTimeElapsed(squadS->getSquadID())) return;
 			
 		//Default options
-		int state = getRandomNumber(0,2);
+		int state = generatorInstance.getRandomNumber(0,2);
 		switch (state)
 		{
 		case STAND:
 			squadF->setSquadState(STAND);
-			timer.startMeasure(squadF->getSquadID(), getRandomNumber(5, 10));
+			timer.startMeasure(squadF->getSquadID(), generatorInstance.getRandomNumber(5, 10));
 			break;
 		case PATROL:
 			squadF->setSquadState(PATROL);
-			timer.startMeasure(squadF->getSquadID(), getRandomNumber(30, 60));
+			timer.startMeasure(squadF->getSquadID(), generatorInstance.getRandomNumber(30, 60));
 			break;
 		case WANDER:
 			squadF->setSquadState(WANDER);
-			timer.startMeasure(squadF->getSquadID(), getRandomNumber(20, 50));
+			timer.startMeasure(squadF->getSquadID(), generatorInstance.getRandomNumber(20, 50));
 			break;
 		default:
 			break;
@@ -1016,33 +1008,30 @@ private:
 		}
 	}
 
-	bool calculateChance(int chance) {
-		chance = glm::clamp(chance, 0, 100);
-		return (std::uniform_int_distribution(0, chance)(gen) == 0);
-	}
-
-	int getSquadDrawnState(int amountOfStates) {
-		auto val = std::uniform_int_distribution(0, amountOfStates - 1)(gen);
-		return val;
-	}
-
-	int getRandomNumber(int min, int max) {
-		auto val = std::uniform_int_distribution(min, max)(gen);
-		return val;
-	}
-
-	EntityItem generateRandomEntityItem(uint8_t factionID) {
+	//EntityItem generateRandomEntityItem(uint8_t factionID) {
+	//	Stats entityStats = {
+	//		getRandomNumber(5,20),
+	//		getRandomNumber(2,10),
+	//		getRandomNumber(5,20),
+	//		getRandomNumber(100,200),
+	//		5.1f,
+	//		getRandomNumber(10,30) };
+	//	Entity::EquipedItems* items = nullptr;
+	//	Entity* entity = new Entity(getRandomFactionName(factionID), 0, entityStats, items);
+	//	EntityItem entityItem{ entity, 0 };
+	//	return entityItem;
+	//}
+	Entity* generateRandomEntityItem(uint8_t factionID) {
 		Stats entityStats = {
-			getRandomNumber(5,20),
-			getRandomNumber(2,10),
-			getRandomNumber(5,20),
-			getRandomNumber(100,200),
+			generatorInstance.getRandomNumber(5,20),
+			generatorInstance.getRandomNumber(2,10),
+			generatorInstance.getRandomNumber(5,20),
+			generatorInstance.getRandomNumber(100,200),
 			5.1f,
-			getRandomNumber(10,30) };
+			generatorInstance.getRandomNumber(10,30) };
 		Entity::EquipedItems* items = nullptr;
 		Entity* entity = new Entity(getRandomFactionName(factionID), 0, entityStats, items);
-		EntityItem entityItem{ entity, 0 };
-		return entityItem;
+		return entity;
 	}
 
 private:
@@ -1055,12 +1044,12 @@ private:
 	EntityBattleManager battleManager;
 	//std::vector<Squad*> squads;
 	CameraOffset cameraOffset;
-	InputHandler& instance;
+	InputHandler& inputHandlerInstance;
 
 	std::unordered_map<uint64_t, glm::vec2> stateH;
 	//
 	Timer timer;
-	std::mt19937 gen;
+	Generator& generatorInstance;
 
 	struct PlayerData {
 		Squad* player;
