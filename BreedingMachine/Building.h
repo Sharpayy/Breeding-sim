@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <glm/vec2.hpp>
-#include "inventory.h"
+#include "Item.h"
 
 #define BUILDING_TYPE_UNDEFINE 0
 #define BUILDING_TYPE_VILLAGE 1
@@ -13,35 +13,27 @@ public:
 	Building() {
 		std::cout << "chujowy budynek\n";
 	}
-	Building(glm::vec2 position, uint8_t buildingType) {
+	Building(uint64_t buildingID, glm::vec2 position, uint8_t buildingType) {
+		this->buildingID = buildingID;
 		this->position = position;
 		this->buildingType = buildingType;
+		this->hasNewRotation = false;
+	}
+
+	bool newRotationOccured() {
+		return hasNewRotation;
+	}
+
+	void setNewRotationState(bool state) {
+		hasNewRotation = state;
+	}
+
+	uint64_t getID() {
+		return buildingID;
 	}
 
 	glm::vec2 getPosition() {
 		return position;
-	}
-
-	void setRandomItemsRotation(ItemLoader* itm, int size) {
-		uint8_t type = 0;
-		switch (buildingType) {
-		case BUILDING_TYPE_VILLAGE:
-			type = TIER_1;
-			break;
-		case BUILDING_TYPE_CASTLE:
-			type = TIER_2;
-			break;
-		case BUILDING_TYPE_CITY:
-			type = TIER_ALL;
-			break;
-		default:
-			type = TIER_ALL;
-			break;
-		}
-		for (int i = 0; i < size; i++) {
-
-			items_rotation.push_back(itm->getRandomItem(type));
-		}
 	}
 
 	void addSingleItemToRotation(Item* item, int idx) {
@@ -53,6 +45,10 @@ public:
 		}
 		else items_rotation.push_back(item);
 		if (temp) items_rotation.push_back(temp);
+	}
+
+	void clearItems() {
+		items_rotation.clear();
 	}
 
 	std::vector<Item*> getItemsRotation() {
@@ -72,7 +68,9 @@ public:
 	}
 
 private:
+	uint64_t buildingID;
 	uint8_t buildingType;
 	glm::vec2 position;
 	std::vector<Item*> items_rotation;
+	bool hasNewRotation;
 };

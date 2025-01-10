@@ -22,7 +22,7 @@ public:
 	};
 public:
 	EntityBattleManager() = default;
-	EntityBattleManager(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails rect_mcd, rasticore::Program fmp, rasticore::VertexBuffer mapVao, Inventory* inv, DraggedObj* dragObj, CameraOffset* cameraOffset) : instance(InputHandler::getInstance()) {
+	EntityBattleManager(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails rect_mcd, rasticore::Program fmp, rasticore::VertexBuffer mapVao, Inventory* inv, DraggedObj* dragObj, CameraOffset* cameraOffset) : inputHandlerInstance(InputHandler::getInstance()) {
 		this->r = r;
 		this->rect_mcd = rect_mcd;
 	
@@ -489,25 +489,25 @@ private:
 	}
 
 	void inputHandler() {
-		if (instance.KeyPressed(SDL_SCANCODE_W)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_W)) {
 			cameraOffset->y += 20;
 		}
-		if (instance.KeyPressed(SDL_SCANCODE_S)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_S)) {
 			cameraOffset->y -= 20;
 		}
-		if (instance.KeyPressed(SDL_SCANCODE_A)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_A)) {
 			cameraOffset->x -= 20;
 		}
-		if (instance.KeyPressed(SDL_SCANCODE_D)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_D)) {
 			cameraOffset->x += 20;
 		}
-		if (instance.KeyPressed(SDL_SCANCODE_Q)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_Q)) {
 			cameraOffset->z *= 0.9f;
 		}
-		if (instance.KeyPressed(SDL_SCANCODE_E)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_E)) {
 			cameraOffset->z *= 1.1f;
 		}
-		if (instance.KeyPressed(SDL_SCANCODE_LEFT)) {
+		if (inputHandlerInstance.KeyPressed(SDL_SCANCODE_LEFT)) {
 			//GUI
 			glm::vec2 mp = getMousePosition();
 			if (draggedObj->draggedWindow.win && !draggedObj->draggedWindow.wasPressed) {
@@ -527,7 +527,7 @@ private:
 			draggedObj->draggedWindow = {};
 			draggedObj->draggedItem = {};
 		}
-		if (instance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
+		if (inputHandlerInstance.KeyPressedOnce(SDL_SCANCODE_LEFT)) {
 			glm::vec2 mp = getMousePosition();
 			//GUI
 			if (inv->isGuiClicked(mp)) {
@@ -562,7 +562,7 @@ private:
 				}
 			}
 		}
-		if (instance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
+		if (inputHandlerInstance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
 			auto a = getCorrectedMousePosition();
 			Entity* se = getEntity(ENTITY_WHATEVER);
 			if (se) {
@@ -594,7 +594,7 @@ private:
 
 	DraggedObj* draggedObj;
 
-	InputHandler& instance;
+	InputHandler& inputHandlerInstance;
 	//std::vector<>
 	//
 	rasticore::RastiCoreRender* r;

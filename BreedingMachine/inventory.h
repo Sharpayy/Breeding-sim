@@ -7,9 +7,9 @@
 #include <string.h>
 #include <cassert>
 #include "Entity.h"
-#include "Building.h"
 #include "gui.h"
 #include "Define.h"
+#include "Building.h"
 
 struct ObjectDim {
 	glm::vec2 position;
@@ -57,14 +57,13 @@ public:
 	}
 
 	bool changeItem(Item* object) {
+		this->object = object;
 		if (object == nullptr)
 		{
-			this->object = object;
 			((GComponentImage*)item_comp)->texture = 0;
 			return false;
 		}
 		else if (type & object->getObjectType()) {
-			this->object = object;
 
 			uint64_t tx = (uint64_t)object->getItemTexture();
 
@@ -458,6 +457,112 @@ private:
 
 	GComponentImage* cursor_comp;
 	Item* cursor_hold;
+};
+
+class ItemLoader {
+public:
+	ItemLoader() {
+		tierItemMap[TIER_0] = {};
+		tierItemMap[TIER_1] = {};
+		tierItemMap[TIER_2] = {};
+		tierItemMap[TIER_3] = {};
+	}
+
+	void loadItem(Item& item) {
+		uint8_t type = item.getObjectType();
+		assert(!(item.getItemTier() == TIER_ALL));
+		if (type & ARMOR) {
+			auto armor = new ArmorItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (ArmorItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice(), item.getItemTier() };
+			itemMap[item.getItemName()] = armor;
+			tierItemMap.at(item.getItemTier()).push_back(armor);
+		}
+		if (type & WEAPON) {
+			auto weapon = new WeaponItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (WeaponItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice(), item.getItemTier() };
+			itemMap[item.getItemName()] = weapon;
+			tierItemMap.at(item.getItemTier()).push_back(weapon);
+		}
+		else {
+			auto nitem = new Item{ item.getItemName(), item.getItemTexture(), item.getObjectType(), item.getObjectStatistic(), item.getItemPrice(), item.getItemTier() };
+			itemMap[item.getItemName()] = nitem;
+			tierItemMap.at(item.getItemTier()).push_back(nitem);
+		}
+	}
+
+	template <typename T = Item>
+	T* getItem(std::string itemName) {
+		auto it = itemMap.find(itemName);
+		if (it != itemMap.end()) {
+			uint8_t objectType = it->second->getObjectType();
+			if (objectType & WEAPON) {
+				if constexpr (std::is_same_v<T, WeaponItem>) {
+					return (T*)it->second;
+				}
+				else return nullptr;
+			}
+			if (objectType & ARMOR) {
+				if constexpr (std::is_same_v<T, ArmorItem>) {
+					return (T*)it->second;
+				}
+				return nullptr;
+			}
+			if (objectType & EVERY_ITEM) {
+				if constexpr (std::is_same_v<T, Item>) {
+					return (T*)it->second;
+				}
+				return nullptr;
+			}
+		}
+		return nullptr;
+	}
+
+	Item* getRandomItem(uint8_t tier = TIER_ALL) {
+		int idx = 0;
+		if (tier == TIER_ALL) {
+			uint8_t availableTiers[] = { TIER_1, TIER_2, TIER_3 };
+			tier = availableTiers[rand() % 3];
+		}
+		idx = rand() % tierItemMap.at(tier).size();
+		auto it = tierItemMap.at(tier).at(idx);
+
+		return it;
+	}
+
+	template<typename T>
+	Item* getRandomSpecificItem(uint8_t tier = TIER_ALL) {
+		int idx = 0;
+		if (tier == TIER_ALL) {
+			uint8_t availableTiers[] = { TIER_1, TIER_2, TIER_3 };
+			tier = availableTiers[rand() % 3];
+		}
+		Item* it = nullptr;
+		while (!it) {
+			idx = rand() % tierItemMap.at(tier).size();
+			if constexpr (std::is_same_v<decltype(it), T>) {
+				it = tierItemMap.at(tier).at(idx);
+			}
+		}
+		return it;
+	}
+
+	void loadSet(Entity::EquipedItems& set) {
+		sets.push_back(set);
+	}
+
+	//void loadSet(std::string setName, Entity::EquipedItems& set) {
+	//	sets[setName] = set;
+	//}
+
+	Entity::EquipedItems getRandomSet() {
+		int size = sets.size();
+		if (!size) return Entity::EquipedItems{};
+		return sets.at(rand() % size);
+	}
+
+private:
+	std::unordered_map<std::string, Item*> itemMap;
+	std::unordered_map<uint8_t, std::vector<Item*>> tierItemMap;
+	//std::unordered_map<std::string, Entity::EquipedItems> sets;
+	std::vector<Entity::EquipedItems> sets;
 };
 
 struct GUI_DraggedWindow {
