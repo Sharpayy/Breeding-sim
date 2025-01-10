@@ -572,6 +572,8 @@ public:
 			generatorInstance.getRandomNumber(10,30) };
 		Entity::EquipedItems items = getRandomSet();
 		Entity* entity = new Entity(getRandomFactionName(factionID), 0, entityStats, items);
+		uint32_t index = GetEntityRandomTextureIndex(factionID);
+		entity->SetEntityTextureIndex(GetEntityTextureFromIndex(index, factionID), index);
 		return entity;
 	}
 
