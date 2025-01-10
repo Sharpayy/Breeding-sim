@@ -241,7 +241,7 @@ public:
 					slot->changeItem(nullptr);
 					draggedObj.draggedItem.previousSlot = slot;
 				}
-				if (win->getGWindow()->CollisionCheck(mp.x, mp.y)) {};
+				win->getGWindow()->CollisionCheck(mp.x, mp.y);
 			}
 			else {
 				auto mousePos = getCorrectedMousePosition();
