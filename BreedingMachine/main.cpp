@@ -333,6 +333,8 @@ int main(int argc, char* argv[])
 	mat4 gui_projection_matrix = ortho(0.0f, MAP_WIDTH, MAP_HEIGHT, 0.0f, -1000.0f, 1000.0f);
 
 	//TESTS
+
+	GameMapProxy gmproxy = GameMapProxy(&gm);
 	
 
 	gameManager gmanager(&_r, rect_mcd, gm.rChunkVao, fightMapProgram);
@@ -362,10 +364,14 @@ int main(int argc, char* argv[])
 			{
 				for (int x = 0; x < gm.blk; x++)
 				{
+				
 					glUniform1f(lShdrMoveX, (int)gm.pChunkSizeX * x - ((int)gm.pMapSizeX / 2));
 					glUniform1f(lShdrMoveY, (int)gm.pChunkSizeY * y - ((int)gm.pMapSizeY / 2));
 
-					glUniformHandleui64ARB(1, gm.aChunkArray[gm.blk * y + x].txb.handle);
+					auto c = gmproxy.GetMapChunk(x, y, 2048.0f, 2048.0f, 2048.0f, 2048.0f);
+					if (c == 0)
+						continue;
+					glUniformHandleui64ARB(1, c->txb.handle);
 
 					glDrawArrays(GL_TRIANGLES, 0, 6);
 				}

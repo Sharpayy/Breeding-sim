@@ -34,12 +34,12 @@ int EntityCombatCloseRange::MoveEntity(void* battleContext)
     {
         vec2 enemy_direction = normalize(self->getPosition() - enemy_close->getPosition());
         vec2 move_position = self->getPosition() - (enemy_direction * self->getStats()->stamina * 64.0f);
-        self->travel = move_position;
+        self->travel = MAPCLAMP(move_position);
     }
     else
     {
         vec2 move_position = enemy_close->getPosition();
-        self->travel = move_position;
+        self->travel = MAPCLAMP(move_position);
     }
     return true;
 }

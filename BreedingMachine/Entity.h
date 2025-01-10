@@ -6,6 +6,7 @@
 #include <filesystem>
 #include "textures.h"
 #include "EntityTextures.h"
+#include "gui.h"
 
 struct BattleMap {
 	uint64_t texture;
@@ -29,6 +30,16 @@ enum Race {
 	GOBLINS = 3,
 	BANDITS = 4,
 };
+
+typedef struct _EntityApperance
+{
+	float attackTextureOpacity;
+	float blockadeOpacity;
+	
+	float Reserved[2];
+} EntityApperance;
+
+#define SQUAD_MAX_SIZE 15
 
 class Entity {
 public:
@@ -151,6 +162,16 @@ public:
 		bravery = stats.bravery;
 	}
 
+	void UpdateHpBar()
+	{
+
+	}
+
+	void RenderHpBar(glm::mat4 pm)
+	{
+
+	}
+
 	IEntityState* state;
 	glm::vec2 travel;
 	//IMPL
@@ -165,6 +186,8 @@ private:
 
 	float hp;
 	float bravery;
+
+	//GComponentSlider* hp_bar;
 };
 
 class Squad {
