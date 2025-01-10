@@ -13,6 +13,7 @@
 #include "EntityBattleManager.h"
 #include <functional>
 #include "EntityNames.h"
+#include "timer.h"
 
 #define THRESHOLD 10.0f
 
@@ -27,7 +28,8 @@ public:
 		inputHandlerInstance(InputHandler::getInstance()),
 		generatorInstance(Generator::getInstance()),
 		battleManager(r_, rect_mcd, mapPrg, mapVao, &inv, &draggedObj, &cameraOffset),
-		buildingManager(std::filesystem::current_path() / "Data/buildings.txt")
+		buildingManager(std::filesystem::current_path() / "Data/buildings.txt", r_),
+		timerInstance(Timer::getInstance())
 	{
 		this->rect_mcd = rect_mcd;
 		this->r = r_;
@@ -40,24 +42,39 @@ public:
 		cameraOffset = CameraOffset{ 0, 0, 1.0f };
 		itemLoader = ItemLoader();
 		initGame(path);
-		buildingManager.setRandomItemsRotation(&itemLoader);
-
 		game_type = GAMETYPE_BIGMAP;
 	}
 	
 	void update() {
+		//Update pressed keys
 		inputHandlerInstance.handleKeys();
-		//auto pos = getMousePosition();
-		//Astar::point p;
-		//for (auto& squad : squads) {
-		//	SetSquadPosition(squad->getSquadPosition(), squad);
-		//}
 
 		if (game_type == GAMETYPE_BIGMAP)
 		{
+			//Key handler
 			inputHandler();
+
+			//Handling Squad Movement
 			movementManager.update();
+			
+			//Handling Squad Logic
 			handleSquadLogic();
+			
+			//Handle buildings items rotation and item shop window
+			buildingManager.updateBuildingItemsRotation(&itemLoader);
+			if (selectedItems.building && inv.isWindowActive(gui_windows.itemShop)) {
+				if (selectedItems.building->newRotationOccured()) {
+					if (draggedObj.draggedItem.item) {
+						draggedObj.draggedItem.previousSlot->changeItem(draggedObj.draggedItem.item);
+						draggedObj.draggedItem.item = nullptr;
+						inv.SetCursorItemHold(nullptr);
+					}
+					selectedItems.building->setNewRotationState(false);
+					setShopRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+				}
+			}
+
+			//Render
 			r->RenderSelectedModel(MODEL_PLAYER);
 			r->RenderSelectedModel(MODEL_ORKS);
 			r->RenderSelectedModel(MODEL_HUMANS);
@@ -483,6 +500,18 @@ private:
 		itemLoader.loadItem(leather_greaves);
 		ArmorItem leather_boots = { "leather boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC221.png","EquipmentIconsC221"), BOOTS, new ArmorItem::ObjectStatistic{1}, 21, TIER_1 };
 		itemLoader.loadItem(leather_boots);
+
+		//ArmorItem* helmet = nullptr;
+		//ArmorItem* Chestplate = nullptr;
+		//ArmorItem* Legs = nullptr;
+		//ArmorItem* Boots = nullptr;
+		//ArmorItem* shield = nullptr;
+		//WeaponItem* weapon = nullptr;
+
+		Entity::EquipedItems set1 = {
+			&copper_cap,
+
+		}
 		stbi_set_flip_vertically_on_load(true);
 	}
 
@@ -795,7 +824,7 @@ private:
 
 
 		factionManager.setFactionsRelationships(MODEL_HUMANS, MODEL_BANDITS, ENEMY);
-
+		
 		playerData.player = factionManager.CreateNewSquad(MODEL_PLAYER, glm::vec2(-1000.0f));
 		playerData.player->force = 1.0f;
 
@@ -808,7 +837,7 @@ private:
 			if (i == MODEL_PLAYER || !buildings.size()) continue;
 			squad = factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size())->getPosition());
 			if (squad) amount++;
-			timer.startMeasure(squad->getSquadID(), 0);
+			timerInstance.startMeasure(squad->getSquadID(), 0);
 			squad->force = generatorInstance.getRandomNumber(10, 100);
 		}
 		std::cout << "Amount of squads: " << amount << "\n";
@@ -894,7 +923,7 @@ private:
 		//IF BUILDINGS NOT FOUND ACT LIKE NORMAL WANDER STATE
 		else {
 			squad->setSquadState(WANDER);
-			timer.startMeasure(squad->getSquadID(), generatorInstance.getRandomNumber(20, 50));
+			timerInstance.startMeasure(squad->getSquadID(), generatorInstance.getRandomNumber(20, 50));
 		}
 	}
 
@@ -953,11 +982,11 @@ private:
 					stateH[squadF->getSquadID()] = squadS->getSquadPosition();
 				}
 				//if (stateH.find(squadF->getSquadID()) != stateH.end()) stateH.erase(squadF->getSquadID());
-				timer.resetTimer(squadF->getSquadID());
+				timerInstance.resetTimer(squadF->getSquadID());
 				return;
 			}
 		}
-		if (!timer.hasTimeElapsed(squadS->getSquadID())) return;
+		if (!timerInstance.hasTimeElapsed(squadS->getSquadID())) return;
 			
 		//Default options
 		int state = generatorInstance.getRandomNumber(0,2);
@@ -965,15 +994,15 @@ private:
 		{
 		case STAND:
 			squadF->setSquadState(STAND);
-			timer.startMeasure(squadF->getSquadID(), generatorInstance.getRandomNumber(5, 10));
+			timerInstance.startMeasure(squadF->getSquadID(), generatorInstance.getRandomNumber(5, 10));
 			break;
 		case PATROL:
 			squadF->setSquadState(PATROL);
-			timer.startMeasure(squadF->getSquadID(), generatorInstance.getRandomNumber(30, 60));
+			timerInstance.startMeasure(squadF->getSquadID(), generatorInstance.getRandomNumber(30, 60));
 			break;
 		case WANDER:
 			squadF->setSquadState(WANDER);
-			timer.startMeasure(squadF->getSquadID(), generatorInstance.getRandomNumber(20, 50));
+			timerInstance.startMeasure(squadF->getSquadID(), generatorInstance.getRandomNumber(20, 50));
 			break;
 		default:
 			break;
@@ -1048,7 +1077,7 @@ private:
 
 	std::unordered_map<uint64_t, glm::vec2> stateH;
 	//
-	Timer timer;
+	Timer& timerInstance;
 	Generator& generatorInstance;
 
 	struct PlayerData {

@@ -13,9 +13,23 @@ public:
 	Building() {
 		std::cout << "chujowy budynek\n";
 	}
-	Building(glm::vec2 position, uint8_t buildingType) {
+	Building(uint64_t buildingID, glm::vec2 position, uint8_t buildingType) {
+		this->buildingID = buildingID;
 		this->position = position;
 		this->buildingType = buildingType;
+		this->hasNewRotation = false;
+	}
+
+	bool newRotationOccured() {
+		return hasNewRotation;
+	}
+
+	void setNewRotationState(bool state) {
+		hasNewRotation = state;
+	}
+
+	uint64_t getID() {
+		return buildingID;
 	}
 
 	glm::vec2 getPosition() {
@@ -31,6 +45,10 @@ public:
 		}
 		else items_rotation.push_back(item);
 		if (temp) items_rotation.push_back(temp);
+	}
+
+	void clearItems() {
+		items_rotation.clear();
 	}
 
 	std::vector<Item*> getItemsRotation() {
@@ -50,7 +68,9 @@ public:
 	}
 
 private:
+	uint64_t buildingID;
 	uint8_t buildingType;
 	glm::vec2 position;
 	std::vector<Item*> items_rotation;
+	bool hasNewRotation;
 };

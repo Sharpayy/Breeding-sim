@@ -57,14 +57,13 @@ public:
 	}
 
 	bool changeItem(Item* object) {
+		this->object = object;
 		if (object == nullptr)
 		{
-			this->object = object;
 			((GComponentImage*)item_comp)->texture = 0;
 			return false;
 		}
 		else if (type & object->getObjectType()) {
-			this->object = object;
 
 			uint64_t tx = (uint64_t)object->getItemTexture();
 
@@ -545,9 +544,25 @@ public:
 		return it;
 	}
 
+	void loadSet(Entity::EquipedItems& set) {
+		sets.push_back(set);
+	}
+
+	//void loadSet(std::string setName, Entity::EquipedItems& set) {
+	//	sets[setName] = set;
+	//}
+
+	Entity::EquipedItems getRandomSet() {
+		int size = sets.size();
+		if (!size) return Entity::EquipedItems{};
+		return sets.at(rand() % size);
+	}
+
 private:
 	std::unordered_map<std::string, Item*> itemMap;
 	std::unordered_map<uint8_t, std::vector<Item*>> tierItemMap;
+	//std::unordered_map<std::string, Entity::EquipedItems> sets;
+	std::vector<Entity::EquipedItems> sets;
 };
 
 struct GUI_DraggedWindow {

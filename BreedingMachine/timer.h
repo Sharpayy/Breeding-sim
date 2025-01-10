@@ -4,9 +4,15 @@
 
 class Timer {
 public:
-	Timer() = default;
+	static Timer& getInstance() {
+		static Timer timerInstance;
+		return timerInstance;
+	}
 
-	void startMeasure(uint64_t timerID, float stop) {
+	Timer(const Timer&) = delete;
+	Timer& operator=(const Timer&) = delete;
+	
+	void startMeasure(uint64_t timerID, float stop = 0) {
 		timerMap[timerID] = { std::chrono::system_clock::now(), stop };
 	}
 
@@ -17,6 +23,7 @@ public:
 	}
 
 	bool hasTimeElapsed(uint64_t timerID) {
+		auto c = timerMap[timerID].stop;
 		return timerMap[timerID].stop <= getElapsedTime(timerID);
 	}
 
@@ -25,6 +32,8 @@ public:
 	}
 
 private:
+	Timer() = default;
+
 	struct timeData {
 		std::chrono::system_clock::time_point start;
 		float stop = 0;
