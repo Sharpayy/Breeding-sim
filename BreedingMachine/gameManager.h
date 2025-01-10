@@ -674,7 +674,7 @@ private:
 			&excalibur
 		};
 		itemLoader.loadSet(setChosenOne);
-		Entity::EquipedItems setRecurvedArcher = {
+		Entity::EquipedItems setTwinDaggers = {
 			&cap,
 			&darkwraith_chestplate,
 			&rags,
@@ -682,7 +682,7 @@ private:
 			nullptr,
 			&twin_daggers
 		};
-		itemLoader.loadSet(setRecurvedArcher);
+		itemLoader.loadSet(setTwinDaggers);
 
 
 		stbi_set_flip_vertically_on_load(true);
