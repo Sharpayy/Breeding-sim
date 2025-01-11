@@ -59,6 +59,7 @@ public:
 		fightMapDim = glGetUniformLocation(pid, "MapDimensions");
 		fightMapTil = glGetUniformLocation(pid, "MapTiles");
 		fightMapVisn = glGetUniformLocation(pid, "visn");
+		fightMapEnts = glGetUniformLocation(pid, "units");
 
 		this->mapProgram = fmp;
 		this->mapVao = mapVao;
@@ -236,8 +237,24 @@ public:
 			EndBattle();
 		}
 
-		mapProgram.use();
+		mapProgram.use(); 
 		mapVao.bind();
+
+		Squad::SquadComp* ud = data.s1->getSquadComp();
+		EntityData ed[16];
+		for (int i = 0; i < 16; i++)
+		{
+			if (ud->size > i)
+			{
+				ed[i].pos = ud->entities[i]->getPosition();
+				ed[i].visn = ud->entities[i]->getStats()->stamina;
+			}
+			else
+			{
+				ed[i].visn = 0.0f;
+			}
+		}
+		glUniform4fv(fightMapEnts, 16, (float*)&ed);
 
 		glUniform1f(fightScaleX, currentMap.mapSize);
 		glUniform1f(fightScaleY, currentMap.mapSize);
@@ -610,6 +627,7 @@ private:
 	uint32_t fightMapDim;
 	uint32_t fightMapTil;
 	uint32_t fightMapVisn;
+	uint32_t fightMapEnts;
 	uint32_t fightFp;
 
 	CameraOffset* cameraOffset;
