@@ -90,7 +90,6 @@ public:
 			LoadTextureFromFile(models->models[i]);
 			r->getModel(MODEL_PLAYER_FACTION_BASE + i)->std_texture2d = GetTextureFullInfo(models->models[i])->txb;
 		}
-
 	}
 
 	void LoadEnemyFactionTextures(uint8_t id)
@@ -161,7 +160,7 @@ public:
 			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
 			e->EntityClearMove();
 			AiDecideEntityInitialState(e);
-			//entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
+			entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
 			offsetY -= 1;
 			r->newObject(MODEL_PLAYER_FACTION_BASE + e->GetIndex(), glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), &e->id);
 		}
@@ -499,7 +498,7 @@ private:
 			r = entityMovementManager.createEntityPath(Astar::point{ (int)e.x + 512, (int)e.y + 512 }, entity);
 			e.x = ((int)((e.x + 512.0f) / currentMap.tileSize)) * currentMap.tileSize;
 			e.y = ((int)((e.y + 512.0f) / currentMap.tileSize)) * currentMap.tileSize;
-			entityMovementManager.AddCollision(e - 32.0f);
+			entityMovementManager.AddCollision(e);
 			return r;
 		}
 		return r;

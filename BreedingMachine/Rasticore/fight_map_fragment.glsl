@@ -65,7 +65,7 @@ void main()
     vec3 col = texture(TEXTURE_HANDLE, uv).xyz * (1.0 - local_uv_border) + frame_color * (local_uv_border);
     col = mix(col, selec_color, rs * 0.5);
     col = mix(col, vec3(0.0), (1.0 - min(1.0, ps)) * 0.4);
-    col = mix(col, vec3(1.0), fog);
+    col = mix(col, vec3(0.0), min(0.7, fog));
     col = mix(col, vec3(0.0, 0.6, 0.2), (1.0 - step(visn, distance(mt_id, t_id))) * 0.15);
     
     fragColor = vec4(col,1.0);
