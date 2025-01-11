@@ -699,6 +699,9 @@ void setParty(void* v1, void* v2, Squad** squad, Inventory* inv, Inventory::Wind
 	}
 }
 
+float getPercentage(float max, float min, float value) {
+	return ((value - min) / (max - min));
+}
 
 void getCharacterInventory_EI(void* v1, void* v2, EntityItem** entityItem, Inventory* inv, Inventory::Window* win) {
 	if (inv && (*entityItem)) {
@@ -718,29 +721,34 @@ void getCharacterInventory_EI(void* v1, void* v2, EntityItem** entityItem, Inven
 			GComponent* cmp;
 			cmp = GetNamedComponent(componentName.c_str());
 			cmp->SetText(ent->getName().c_str());
-
+			auto entStats = ent->getStats();
 			componentName = "Vhp";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
-			component->value = 0.2f;//ent->getStats()->hp / ENTITY_MAX_HEALTH;
+			component->value = getPercentage(30, 0, entStats->hp) * 0.5f;//ent->getStats()->hp / ENTITY_MAX_HEALTH;
 
 			componentName = "Vstamina";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(6.1f, 0, entStats->stamina) * 0.5f;
 
 			componentName = "Vbravery";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
-
+			component->value = getPercentage(200, 0, entStats->bravery) * 0.5f;
+				
 			componentName = "Vmelee";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(20, 0, entStats->melee) * 0.5f;
 
 			componentName = "Vranged";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(20, 0, entStats->ranged) * 0.5f;
 
 			componentName = "Vdefense";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(10, 0, entStats->defense) * 0.5f;
+
 		}
 	}
 }
-
 void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv, Inventory::Window* win) {
 	if (inv && (*entity)) {
 		if (inv->ActivateWindow(win)) {
@@ -758,25 +766,30 @@ void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv
 			GComponent* comp;
 			comp = GetNamedComponent(componentName.c_str());
 			comp->SetText((*entity)->getName().c_str());
-
+			auto entStats = (*entity)->getStats();
 			componentName = "Vhp";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
 			component->value = (*entity)->getHp() / (*entity)->getStats()->hp;
 
 			componentName = "Vstamina";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(6.1f, 0, entStats->stamina) * 0.5f;
 
 			componentName = "Vbravery";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(200, 0, entStats->bravery) * 0.5f;
 
 			componentName = "Vmelee";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(20, 0, entStats->melee) * 0.5f;
 
 			componentName = "Vranged";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(20, 0, entStats->ranged) * 0.5f;
 
 			componentName = "Vdefense";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(10, 0, entStats->defense) * 0.5f;
 		}
 	}
 }
