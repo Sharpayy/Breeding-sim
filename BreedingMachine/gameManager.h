@@ -64,19 +64,21 @@ public:
 			buildingManager.updateBuildingItemsRotation(&itemLoader);
 			auto recruitShopActive = inv.isWindowActive(gui_windows.recruitShop);
 			auto itemShopActive = inv.isWindowActive(gui_windows.itemShop);
-			if (selectedItems.building &&  (recruitShopActive || itemShopActive) ) {
-				if (selectedItems.building->newRotationOccured()) {
+			if (selectedObj.building &&  (recruitShopActive || itemShopActive) ) {
+				if (selectedObj.building->newRotationOccured()) {
 					if (draggedObj.draggedItem.item) {
 						draggedObj.draggedItem.previousSlot->changeItem(draggedObj.draggedItem.item);
 						draggedObj.draggedItem.item = nullptr;
 						inv.SetCursorItemHold(nullptr);
 					}
-					selectedItems.building->setNewRotationState(false);
-					if (itemShopActive) setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+					selectedObj.building->setNewRotationState(false);
+					if (itemShopActive) setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 					if (recruitShopActive) {
-						inv.DisableWindow(gui_windows.characterWindow);
-						selectedItems.entityItem = nullptr;
-						setShopEntityRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.recruitShop);
+						if (selectedObj.win == gui_windows.recruitShop) {
+							inv.DisableWindow(gui_windows.characterWindow);
+							selectedObj.entityItem = nullptr;
+						}
+						setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
 					}
 				}
 			}
@@ -184,35 +186,37 @@ public:
 				draggedObj.draggedItem.previousSlot->changeItem(draggedObj.draggedItem.item);
 				if (slot) {
 					//if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.inventory) {
-					if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.itemShop) {
-						//if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) {
-						if(buyItem(slot)) equip_deequipItem(slot);
-					}
-					else if (win == gui_windows.itemShop && draggedObj.draggedItem.win == gui_windows.characterWindow) {
-						if (sellItem(slot)) equip_deequipItem(slot);
-					}
-					else if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.inventory) {
-						if(inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) equip_deequipItem(slot);
-					}
-					else if (win == gui_windows.inventory && draggedObj.draggedItem.win == gui_windows.characterWindow) {
-						if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) equip_deequipItem(draggedObj.draggedItem.previousSlot);
-					}
-					else if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.characterWindow) {
-						if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) {
-							equip_deequipItem(draggedObj.draggedItem.previousSlot);
-							equip_deequipItem(slot);
+					if (selectedObj.win != gui_windows.recruitShop) {
+						if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.itemShop) {
+							//if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) {
+							if (buyItem(slot)) equip_deequipItem(slot);
+						}
+						else if (win == gui_windows.itemShop && draggedObj.draggedItem.win == gui_windows.characterWindow) {
+							if (sellItem(slot)) equip_deequipItem(slot);
+						}
+						else if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.inventory) {
+							if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) equip_deequipItem(slot);
+						}
+						else if (win == gui_windows.inventory && draggedObj.draggedItem.win == gui_windows.characterWindow) {
+							if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) equip_deequipItem(draggedObj.draggedItem.previousSlot);
+						}
+						else if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.characterWindow) {
+							if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) {
+								equip_deequipItem(draggedObj.draggedItem.previousSlot);
+								equip_deequipItem(slot);
+							}
 						}
 					}
 					else if (draggedObj.draggedItem.win == gui_windows.itemShop && win == gui_windows.itemShop) {
 						//SWAP ITEMS IN ITEM SHOP
 						if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return;
 						int idx0, idx1, buildingItemsAmount;
-						buildingItemsAmount = selectedItems.building->getItemsRotation().size();
+						buildingItemsAmount = selectedObj.building->getItemsRotation().size();
 						idx0 = gui_windows.itemShop->getSlotIndex(slot);
 						idx1 = gui_windows.itemShop->getSlotIndex(draggedObj.draggedItem.previousSlot);
 						if (!(idx0 >= buildingItemsAmount || idx1 >= buildingItemsAmount))
-							selectedItems.building->swapByValue(idx0, idx1);
-						setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+							selectedObj.building->swapByValue(idx0, idx1);
+						setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 					}
 					else if (draggedObj.draggedItem.win == gui_windows.itemShop && win == gui_windows.inventory) {
 						buyItem(slot);
@@ -259,7 +263,7 @@ public:
 						if (glm::distance(mousePos, buildingPos) < 64.0f) {
 							inv.ActivateWindow(gui_windows.interaction);
 							buildingPos = getOnScreenPosition(buildingPos);
-							selectedItems.building = building;
+							selectedObj.building = building;
 							gui_windows.interaction->changeWindowPosition(buildingPos.x + 128, buildingPos.y - 64);
 						}
 					}
@@ -274,12 +278,11 @@ public:
 		if (inputHandlerInstance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
 			auto mp = getMousePosition();
 			if (inv.isGuiClicked(mp)) {
-				Inventory::Window* win;
-				Slot* slot = inv.getSlot(mp, win);
+				Slot* slot = inv.getSlot(mp, selectedObj.win);
 				if (slot) {
 					if (slot->getSlotType() == ENTITY) {
-						selectedItems.entityItem = (EntityItem*)slot->getItem();
-						win->getGWindow()->CollisionCheck(mp.x, mp.y);
+						selectedObj.entityItem = (EntityItem*)slot->getItem();
+						selectedObj.win->getGWindow()->CollisionCheck(mp.x, mp.y);
 					}
 					
 				}
@@ -303,8 +306,8 @@ public:
 		if (!slot->getItem()) {
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
-				selectedItems.building->eraseItemFromRotation(slot->getItem());
-				setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+				selectedObj.building->eraseItemFromRotation(slot->getItem());
+				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -316,10 +319,10 @@ public:
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
 				int idx0 = gui_windows.itemShop->getSlotIndex(draggedObj.draggedItem.previousSlot);
-				selectedItems.building->addSingleItemToRotation(draggedObj.draggedItem.previousSlot->getItem(), idx0);
-				selectedItems.building->eraseItemFromRotation(slot->getItem());
+				selectedObj.building->addSingleItemToRotation(draggedObj.draggedItem.previousSlot->getItem(), idx0);
+				selectedObj.building->eraseItemFromRotation(slot->getItem());
 
-				setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -335,9 +338,9 @@ public:
 		if (!slot->getItem()) {
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
-				selectedItems.building->addSingleItemToRotation(slot->getItem(), -1);
+				selectedObj.building->addSingleItemToRotation(slot->getItem(), -1);
 
-				setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -349,11 +352,11 @@ public:
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
 				int idx0 = gui_windows.itemShop->getSlotIndex(slot);
-				selectedItems.building->addSingleItemToRotation(slot->getItem(), idx0);
+				selectedObj.building->addSingleItemToRotation(slot->getItem(), idx0);
 
-				selectedItems.building->eraseItemFromRotation(draggedObj.draggedItem.previousSlot->getItem());
+				selectedObj.building->eraseItemFromRotation(draggedObj.draggedItem.previousSlot->getItem());
 
-				setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -363,7 +366,7 @@ public:
 
 	void equip_deequipItem(Slot* slot) {
 		int idx;
-		auto items = selectedItems.entityItem->getEntity()->getEquipedItems();
+		auto items = selectedObj.entityItem->getEntity()->getEquipedItems();
 		switch (slot->getSlotType())
 		{
 		case HELMET:
@@ -809,10 +812,10 @@ private:
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
 		GComponentButton* tradeItems = new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 40, 0.1f), "Trade", LoadTextureFromFile("Data\\red.png"));
-		tradeItems->callback = std::bind(setShopItemsRotation, std::placeholders::_1, std::placeholders::_2, &selectedItems.building, &inv, gui_windows.itemShop);
+		tradeItems->callback = std::bind(setShopItemsRotation, std::placeholders::_1, std::placeholders::_2, &selectedObj.building, &inv, gui_windows.itemShop);
 		gwin->AddComponent(tradeItems);
 		GComponentButton* tradeEntities = new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 90, 0.1f), "Recruit", LoadTextureFromFile("Data\\red.png"));
-		tradeEntities->callback = std::bind(setShopEntityRotation, std::placeholders::_1, std::placeholders::_2, &selectedItems.building, &inv, gui_windows.recruitShop);
+		tradeEntities->callback = std::bind(setShopEntityRotation, std::placeholders::_1, std::placeholders::_2, &selectedObj.building, &inv, gui_windows.recruitShop);
 		gwin->AddComponent(tradeEntities);
 		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 140, 0.1f), "Wait", LoadTextureFromFile("Data\\red.png")));
 		//inv.ActivateWindow(win);
@@ -930,7 +933,7 @@ private:
 
 				//
 				GComponentButton* button = new GComponentButton(glm::vec2(60.0f, 60.0f), glm::vec3(j, i, 0.0f), "", 0);
-				button->callback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedItems.entityItem, &inv, gui_windows.characterWindow);
+				button->callback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedObj.entityItem, &inv, gui_windows.characterWindow);
 				gwin->AddComponent(button);
 			}
 		}
@@ -953,7 +956,7 @@ private:
 			for (int j = 10; j < width - 60; j += 60) {
 				GComponentButton* button = new GComponentButton(glm::vec2(60.0f, 60.0f), glm::vec3(j, i, 0.0f), "", 0);
 				gwin->AddComponent(button);
-				button->callback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedItems.entityItem, &inv, gui_windows.characterWindow);
+				button->callback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedObj.entityItem, &inv, gui_windows.characterWindow);
 				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
 			}
 		}
@@ -1288,10 +1291,11 @@ private:
 		Inventory::Window* overworldHud;
 	} gui_windows;
 
-	struct SelectedItems {
+	struct SelectedObj {
 		Building* building;
 		EntityItem* entityItem;
-	} selectedItems;
+		Inventory::Window* win;
+	} selectedObj;
 
 	 DraggedObj draggedObj;
 
