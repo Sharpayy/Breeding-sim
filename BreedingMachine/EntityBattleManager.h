@@ -285,18 +285,18 @@ public:
 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		glUniform1i(fightFp, 0);
+		glUniform1i(fightFp, 1);
 		for (int i = 0; i < LDR_MAX_FACTION_MODELS; i++)
 		{
 			r->RenderSelectedModel(MODEL_PLAYER_FACTION_BASE + i);
 		}
 
-		glUniform1i(fightFp, 1);
+		glUniform1i(fightFp, 0);
 		for (int i = 0; i < LDR_MAX_FACTION_MODELS; i++)
 		{
 			r->RenderSelectedModel(MODEL_ENEMY_FACTION_BASE + i);
 		}
-		glUniform1i(fightFp, 0);
+		glUniform1i(fightFp, 1);
 	}
 
 	Entity* AiGetNextMoveableEntity()

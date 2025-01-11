@@ -56,7 +56,7 @@ void main()
 
         }
     }
-    fog = -0.5 + pow(distance((uc.xy+vec2(512.0))/MapDimensions.xy, uv) * 1.5, sqrt(uc.z));
+    fog = -0.4 + pow(distance((uc.xy+vec2(512.0))/MapDimensions.xy, uv) * 1.5, sqrt(uc.z));
     
     float local_uv_border = 1.0 - float(t_uv.x > bd.x && t_uv.x < 1.0 - bd.x)
     * float(t_uv.y > bd.y && t_uv.y < 1.0 - bd.y);
@@ -67,7 +67,7 @@ void main()
     col = mix(col, selec_color, rs * 0.5);
     col = mix(col, vec3(0.0), (1.0 - min(1.0, ps)) * 0.4);
     col = mix(col, vec3(0.0), min(0.7, fog));
-    col = mix(col, vec3(0.0, 0.6, 0.2), (1.0 - step(visn, distance(mt_id, t_id))) * 0.3);
+    col = mix(col, vec3(0.0, 0.6, 0.2), (1.0 - step(visn, distance(mt_id, t_id))) * 0.15);
     
     fragColor = vec4(col,1.0);
 }
