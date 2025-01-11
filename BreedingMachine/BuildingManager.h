@@ -45,6 +45,7 @@ public:
 		for (auto& building : allBuildings) {
 			if (timerInstance.hasTimeElapsed(building->getID())) {
 				building->clearItems();
+				building->clearEntityItems();
 				setRandomRotation(building, itm);
 				building->setNewRotationState(true);
 				timerInstance.startMeasure(building->getID(), (float)SHOP_ROTATION_TIMER + generatorInstance.getRandomNumber(0, 10));
@@ -67,33 +68,34 @@ public:
 private:
 	void setRandomRotation(Building* building, ItemLoader* itm) {
 		int itemAmount = 0;
-		int entityAmount = 0;
+		int entitiesAmount = 0;
 		uint8_t type = 0;
 		EntityItem* entityItem;
 		switch (building->getBuildingType()) {
 		case BUILDING_TYPE_VILLAGE:
 			type = TIER_1;
 			itemAmount = generatorInstance.getRandomNumber(5, 11);
-			entityAmount = generatorInstance.getRandomNumber(1, 3);
+			entitiesAmount = generatorInstance.getRandomNumber(1, 3);
 			break;
 		case BUILDING_TYPE_CASTLE:
 			type = TIER_2;
 			itemAmount = generatorInstance.getRandomNumber(10, 20);
-			entityAmount = generatorInstance.getRandomNumber(3, 6);
+			entitiesAmount = generatorInstance.getRandomNumber(3, 6);
 			break;
 		case BUILDING_TYPE_CITY:
 			type = TIER_ALL;
 			itemAmount = generatorInstance.getRandomNumber(18, 30);
-			entityAmount = generatorInstance.getRandomNumber(7, 11);
+			entitiesAmount = generatorInstance.getRandomNumber(7, 11);
 			break;
 		default:
 			type = TIER_ALL;
 			break;
 		}
-		for (int i = 0; i < itemAmount; i++) {
-			building->addSingleItemToRotation(itm->getRandomItem(type), itemAmount);
+		for (int i = 0; i < itemAmount; i++) building->addSingleItemToRotation(itm->getRandomItem(type), itemAmount);
+
+		for (int i = 0; i < entitiesAmount; i++) {
 			entityItem = new EntityItem(itm->generateRandomEntity(getBuildingRace(building)));
-			building->addSingleEntityItemToRotation(entityItem, entityAmount);
+			building->addSingleEntityItemToRotation(entityItem, entitiesAmount);
 		}
 	}
 

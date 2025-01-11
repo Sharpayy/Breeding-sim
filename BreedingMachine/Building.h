@@ -63,6 +63,10 @@ public:
 	}
 
 	void clearEntityItems() {
+		for (auto& entityItem : entity_rotation) {
+			delete entityItem->getEntity();
+			delete entityItem;
+		}
 		entity_rotation.clear();
 	}
 
