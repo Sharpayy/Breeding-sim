@@ -15,7 +15,7 @@ public:
 	bool calculateChance(int chance) {
 		chance = glm::clamp(chance, 0, 100);
 		return (std::uniform_int_distribution(0, chance)(gen) == 0);
-	}
+	} 
 
 	int getSquadDrawnState(int amountOfStates) {
 		auto val = std::uniform_int_distribution(0, amountOfStates - 1)(gen);

@@ -39,6 +39,13 @@ typedef struct _EntityApperance
 	float Reserved[2];
 } EntityApperance;
 
+typedef struct _EntityData
+{
+	glm::vec2 pos;
+	float visn;
+	float Reserevd;
+} EntityData;
+
 #define SQUAD_MAX_SIZE 15
 
 class Entity {
