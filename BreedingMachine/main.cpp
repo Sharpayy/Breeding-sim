@@ -333,10 +333,8 @@ int main(int argc, char* argv[])
 	mat4 gui_projection_matrix = ortho(0.0f, MAP_WIDTH, MAP_HEIGHT, 0.0f, -1000.0f, 1000.0f);
 
 	//TESTS
-
-	GameMapProxy gmproxy = GameMapProxy(&gm);
 	
-
+	GameMapProxy gmproxy = GameMapProxy(&gm);
 	gameManager gmanager(&_r, rect_mcd, gm.rChunkVao, fightMapProgram);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

@@ -566,14 +566,13 @@ private:
 				}
 				else
 				{
-					// tour == BT_TOUR_PLAYER && selectedEntity->canMove() == true && 
 					if (tour == BT_TOUR_PLAYER && selectedEntity->canMove() == true && entityMovementManager.pathExist() == false)
 					{
 						auto pos = getCorrectedMousePosition();
 						if (distance(pos, selectedEntity->getPosition()) <= selectedEntity->getStats()->stamina * 64.0f) // TODO
 						{
 							moveEntity(pos, selectedEntity);
-							//selectedEntity->EntitySetMove();
+							selectedEntity->EntitySetMove();
 							tour = BT_TOUR_AI;
 						}
 					}
