@@ -633,8 +633,8 @@ void setInventory(void* v1, void* v2, int* money, Inventory* inv, Inventory::Win
 }
 
 void setShopItemsRotation(void* v1, void* v2, Building** building, Inventory* inv, Inventory::Window* win) {
-	if (inv) {
-		if (inv->ActivateWindow(win) && (*building)) {
+	if (inv && (*building)) {
+		if (inv->ActivateWindow(win)) {
 			auto items = (*building)->getItemsRotation();
 			auto slots = win->getAllSlots();
 			int size = items.size() < slots.size() ? items.size() : slots.size();
@@ -657,8 +657,8 @@ void setShopItemsRotation(void* v1, void* v2, Building** building, Inventory* in
 }
 
 void setShopEntityRotation(void* v1, void* v2, Building** building, Inventory* inv, Inventory::Window* win) {
-	if (inv) {
-		if (inv->ActivateWindow(win) && (*building)) {
+	if (inv && (*building)) {
+		if (inv->ActivateWindow(win)) {
 			auto entities = (*building)->getEntityItemsRotation();
 			auto slots = win->getAllSlots();
 			std::string labelName;
@@ -683,8 +683,8 @@ void setShopEntityRotation(void* v1, void* v2, Building** building, Inventory* i
 
 //PRAWDOPODOBNIE ZLE DZIALA
 void setParty(void* v1, void* v2, Squad** squad, Inventory* inv, Inventory::Window* win) {
-	if (inv) {
-		if (inv->ActivateWindow(win) && (*squad)) {
+	if (inv && (*squad)) {
+		if (inv->ActivateWindow(win)) {
 			auto squadComp = (*squad)->getSquadComp();
 			auto slots = win->getAllSlots();
 			for (int idx = 0; idx < slots.size(); idx++) {
@@ -701,9 +701,8 @@ void setParty(void* v1, void* v2, Squad** squad, Inventory* inv, Inventory::Wind
 
 
 void getCharacterInventory_EI(void* v1, void* v2, EntityItem** entityItem, Inventory* inv, Inventory::Window* win) {
-	if (inv) {
-		if (*entityItem) {
-			inv->ActivateWindow(win);
+	if (inv && (*entityItem)) {
+		if (inv->ActivateWindow(win)) {
 			auto slots = win->getAllSlots();
 			Entity* ent = (*entityItem)->getEntity();
 			auto entityItems = ent->getEquipedItems();
@@ -743,9 +742,8 @@ void getCharacterInventory_EI(void* v1, void* v2, EntityItem** entityItem, Inven
 }
 
 void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv, Inventory::Window* win) {
-	if (inv) {
-		if (*entity) {
-			inv->ActivateWindow(win);
+	if (inv && (*entity)) {
+		if (inv->ActivateWindow(win)) {
 			auto slots = win->getAllSlots();
 			auto entityItems = (*entity)->getEquipedItems();
 			slots.at(0)->changeItem(entityItems.helmet);
