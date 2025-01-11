@@ -450,9 +450,9 @@ private:
 		itemLoader.loadItem(twin_daggers);
 		WeaponItem* short_bow = new WeaponItem{ "short bow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC103.png","EquipmentIconsC103"), RANGED, new WeaponItem::ObjectStatistic{3}, 78, TIER_1};
 		itemLoader.loadItem(short_bow);
-		WeaponItem* recurve_bow = new WeaponItem{ "recurve bow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC118.png","EquipmentIconsC118"), RANGED, new WeaponItem::ObjectStatistic{4}, 88, TIER_2 };
+		WeaponItem* recurve_bow = new WeaponItem{ "recurve bow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC118.png","EquipmentIconsC118"), RANGED, new WeaponItem::ObjectStatistic{3.5}, 88, TIER_2 };
 		itemLoader.loadItem(recurve_bow);
-		WeaponItem* crossbow = new WeaponItem{ "crossbow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC121.png","EquipmentIconsC121"), RANGED, new WeaponItem::ObjectStatistic{6}, 160, TIER_3};
+		WeaponItem* crossbow = new WeaponItem{ "crossbow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC121.png","EquipmentIconsC121"), RANGED, new WeaponItem::ObjectStatistic{4.0f}, 90, TIER_2};
 		itemLoader.loadItem(crossbow);
 		WeaponItem* morningstar = new WeaponItem{ "morningstar", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC29.png","EquipmentIconsC29"), MELEE, new WeaponItem::ObjectStatistic{5}, 124, TIER_2 };
 		itemLoader.loadItem(morningstar);
@@ -470,6 +470,20 @@ private:
 		itemLoader.loadItem(battleaxe);
 		WeaponItem *excalibur = new WeaponItem{ "excalibur", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC19.png","EquipmentIconsC19"), MELEE, new WeaponItem::ObjectStatistic{10}, 300,  TIER_3 };
 		itemLoader.loadItem(excalibur);
+		WeaponItem *heavy_crossbow = new WeaponItem{ "heavy crossbow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC129.png","EquipmentIconsC129"), RANGED, new WeaponItem::ObjectStatistic{5}, 120,  TIER_3 };
+		itemLoader.loadItem(heavy_crossbow);
+		WeaponItem *repeater_crossbow = new WeaponItem{ "repeater crossbow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC132.png","EquipmentIconsC132"), RANGED, new WeaponItem::ObjectStatistic{5.5f}, 162,  TIER_3 };
+		itemLoader.loadItem(repeater_crossbow);
+		WeaponItem *golden_bow = new WeaponItem{ "golden bow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC115.png","EquipmentIconsC115"), RANGED, new WeaponItem::ObjectStatistic{4.5}, 111,  TIER_3 };
+		itemLoader.loadItem(golden_bow);
+		WeaponItem *crusher = new WeaponItem{ "crusher", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC19.png","EquipmentIconsC19"), MELEE, new WeaponItem::ObjectStatistic{4.5f}, 102,  TIER_2 };
+		itemLoader.loadItem(crusher);
+		WeaponItem *notched_blade = new WeaponItem{ "notched blade", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC17.png","EquipmentIconsC17"), MELEE, new WeaponItem::ObjectStatistic{1.5f}, 32,  TIER_1 };
+		itemLoader.loadItem(notched_blade);
+		WeaponItem *notched_blades = new WeaponItem{ "notched blades", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC95.png","EquipmentIconsC95"), MELEE, new WeaponItem::ObjectStatistic{2.0f}, 44,  TIER_1 };
+		itemLoader.loadItem(notched_blades);
+		WeaponItem *doom_mace = new WeaponItem{ "doom mace", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC39.png","EquipmentIconsC39"), MELEE, new WeaponItem::ObjectStatistic{5.0f}, 123,  TIER_3 };
+		itemLoader.loadItem(doom_mace);
 		//Armory
 		ArmorItem *iron_chestplate = new ArmorItem{ "iron chestplate", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC193.png","EquipmentIconsC193"), CHESTPLATE, new ArmorItem::ObjectStatistic{5}, 132, TIER_2 };
 		itemLoader.loadItem(iron_chestplate);
@@ -535,6 +549,16 @@ private:
 		ArmorItem *leather_boots = new ArmorItem{ "leather boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC221.png","EquipmentIconsC221"), BOOTS, new ArmorItem::ObjectStatistic{1}, 21, TIER_1 };
 		itemLoader.loadItem(leather_boots);
 
+		ArmorItem* golden_mask = new ArmorItem{ "golden mask", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC175.png","EquipmentIconsC175"), HELMET, new ArmorItem::ObjectStatistic{3}, 92, TIER_3 };
+		itemLoader.loadItem(golden_mask);
+		ArmorItem* golden_chestplate = new ArmorItem{ "golden chestplate", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC195.png","EquipmentIconsC195"), CHESTPLATE, new ArmorItem::ObjectStatistic{7.5f}, 163, TIER_3 };
+		itemLoader.loadItem(golden_chestplate);
+		ArmorItem* golden_greaves = new ArmorItem{ "golden greaves", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC215.png","EquipmentIconsC215"), LEGS, new ArmorItem::ObjectStatistic{3.5f}, 73, TIER_3 };
+		itemLoader.loadItem(golden_greaves);
+		ArmorItem* golden_boots = new ArmorItem{ "golden boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC235.png","EquipmentIconsC235"), BOOTS, new ArmorItem::ObjectStatistic{3}, 84, TIER_3 };
+		itemLoader.loadItem(golden_boots);
+		ArmorItem* golden_shield = new ArmorItem{ "golden shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC155.png","EquipmentIconsC155"), SHIELD, new ArmorItem::ObjectStatistic{4}, 73, TIER_3 };
+		itemLoader.loadItem(golden_shield);
 		//ArmorItem* helmet = nullptr;
 		//ArmorItem* Chestplate = nullptr;
 		//ArmorItem* Legs = nullptr;
@@ -543,7 +567,6 @@ private:
 		//WeaponItem* weapon = nullptr;
 
 
-		//weak sets
 		Entity::EquipedItems setWeakAxe = {
 			copper_cap,
 			copper_vest,
@@ -583,7 +606,6 @@ private:
 
 		};
 		itemLoader.loadSet(setWeakArcher);
-		//Mid sets
 		Entity::EquipedItems setIronTank = {
 			iron_cap,
 			iron_chestplate,
@@ -613,7 +635,6 @@ private:
 			crossbow
 		};
 		itemLoader.loadSet(setIronCrossbow);
-		//stronk
 		Entity::EquipedItems setDarkwraith = {
 			darkwraith_helmet,
 			darkwraith_chestplate,
@@ -633,7 +654,6 @@ private:
 			battlehammer
 		};
 		itemLoader.loadSet(setIronCrossbow);
-		//random sets
 		Entity::EquipedItems setBerserk = {
 			darkwraith_helmet,
 			nullptr,
