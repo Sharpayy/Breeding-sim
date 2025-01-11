@@ -340,6 +340,8 @@ int main(int argc, char* argv[])
 	gameManager gmanager(&_r, rect_mcd, gm.rChunkVao, fightMapProgram);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//RS_ENABLE_FRATURE(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
 	CameraOffset cameraOffset;
 	float tick = 0;
 	while (1)
