@@ -62,7 +62,9 @@ public:
 			
 			//Handle buildings items rotation and item shop window
 			buildingManager.updateBuildingItemsRotation(&itemLoader);
-			if (selectedItems.building && inv.isWindowActive(gui_windows.itemShop)) {
+			auto recruitShopActive = inv.isWindowActive(gui_windows.recruitShop);
+			auto itemShopActive = inv.isWindowActive(gui_windows.itemShop);
+			if (selectedItems.building &&  (recruitShopActive || itemShopActive) ) {
 				if (selectedItems.building->newRotationOccured()) {
 					if (draggedObj.draggedItem.item) {
 						draggedObj.draggedItem.previousSlot->changeItem(draggedObj.draggedItem.item);
@@ -70,7 +72,12 @@ public:
 						inv.SetCursorItemHold(nullptr);
 					}
 					selectedItems.building->setNewRotationState(false);
-					setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+					if (itemShopActive) setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+					if (recruitShopActive) {
+						inv.DisableWindow(gui_windows.characterWindow);
+						selectedItems.entityItem = nullptr;
+						setShopEntityRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.recruitShop);
+					}
 				}
 			}
 
@@ -232,16 +239,17 @@ public:
 				Slot* slot = inv.getSlot(mp, draggedObj.draggedItem.win);
 				
 				if (slot) {
-					if (slot->getItem()) {
-						if (slot->getItem()->getObjectType() & ENTITY) {
-							selectedItems.entityItem = (EntityItem*)slot->getItem();
-						}
-					}
+					//if (slot->getItem()) {
+					//	if (slot->getItem()->getObjectType() & ENTITY) {
+					//		selectedItems.entityItem = (EntityItem*)slot->getItem();
+					//	}
+					//}
 					draggedObj.draggedItem.item = slot->getItem();
 					slot->changeItem(nullptr);
 					draggedObj.draggedItem.previousSlot = slot;
+					if (win != gui_windows.recruitShop && slot->getSlotType() != ENTITY) win->getGWindow()->CollisionCheck(mp.x, mp.y);
 				}
-				if (win->getGWindow()->CollisionCheck(mp.x, mp.y)) {};
+				else win->getGWindow()->CollisionCheck(mp.x, mp.y);
 			}
 			else {
 				auto mousePos = getCorrectedMousePosition();
@@ -264,14 +272,27 @@ public:
 			}
 		}
 		if (inputHandlerInstance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
-			auto pos = getCorrectedMousePosition();
-			pos.x = (int)(pos.x / 16) * 16;
-			pos.y = (int)(pos.y / 16) * 16;
-			playerData.player->setSquadPosition(pos);
-			uint64_t id = playerData.player->getSquadID();
-			r->BindActiveModel(LONG_GET_MODEL(id));
-			r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ playerData.player->getSquadPosition(), 1.1f}), true);
-
+			auto mp = getMousePosition();
+			if (inv.isGuiClicked(mp)) {
+				Inventory::Window* win;
+				Slot* slot = inv.getSlot(mp, win);
+				if (slot) {
+					if (slot->getSlotType() == ENTITY) {
+						selectedItems.entityItem = (EntityItem*)slot->getItem();
+						win->getGWindow()->CollisionCheck(mp.x, mp.y);
+					}
+					
+				}
+			}
+			else {
+				auto pos = getCorrectedMousePosition();
+				pos.x = (int)(pos.x / 16) * 16;
+				pos.y = (int)(pos.y / 16) * 16;
+				playerData.player->setSquadPosition(pos);
+				uint64_t id = playerData.player->getSquadID();
+				r->BindActiveModel(LONG_GET_MODEL(id));
+				r->SetObjectMatrix(LONG_GET_OBJECT(id), glm::translate(glm::mat4{ 1.0f }, glm::vec3{ playerData.player->getSquadPosition(), 1.1f }), true);
+			}
 		}
 	}
 
@@ -416,7 +437,7 @@ private:
 	void initItems() {
 		//Weaponry
 		stbi_set_flip_vertically_on_load(false);
-		WeaponItem bastard_sword = {"bastard sword", (void*) LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC2.png","EquipmentIconsC2.png"), MELEE, new WeaponItem::ObjectStatistic{4}, 83, TIER_2};
+		WeaponItem* bastard_sword = new WeaponItem{"bastard sword", (void*) LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC2.png","EquipmentIconsC2.png"), MELEE, new WeaponItem::ObjectStatistic{4}, 83, TIER_2};
 		itemLoader.loadItem(bastard_sword);
 		WeaponItem spear = { "spear", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC61.png","EquipmentIconsC61"), MELEE, new WeaponItem::ObjectStatistic{3}, 80, TIER_1 };
 		itemLoader.loadItem(spear);
@@ -547,7 +568,6 @@ private:
 			&shoes,
 			nullptr,
 			&short_bow
-
 		};
 		itemLoader.loadSet(setWeakArcher);
 		Entity::EquipedItems setSickleGuy = {
@@ -567,7 +587,7 @@ private:
 			&iron_greaves,
 			&iron_boots,
 			&tower_shield,
-			&bastard_sword
+			bastard_sword
 
 		};
 		itemLoader.loadSet(setIronTank);
@@ -778,35 +798,7 @@ private:
 		gui_windows.itemShop = win;
 		//inv.ActivateWindow(win);
 	}
-	void initShopRecruits(int width, int height, uint64_t texItemFrame) {
-		Inventory::Window* win = inv.AddWindow("shop_recruits", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
-		auto gwin = win->getGWindow();
-
-		//Drag
-		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"));
-		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
-		gwin->AddComponent(drag);
-		//wyjœcie
-		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
-		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
-		gwin->AddComponent(exit);
-
-		GComponent* c;
-		int counter = 0;
-		std::string labelName;
-		for (int i = 30; i < height - 90; i += 90) {
-			for (int j = 10; j < width - 60; j += 60) {
-				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
-				c = new GComponentLabel(glm::vec2(20, 20), glm::vec3(j, i + 60, 0.1f), "0");
-				labelName = std::string("shopEntityItem") + std::to_string(counter++);
-				AddNamedComponent(c, labelName.c_str());
-				gwin->AddComponent(c);
-			}
-		}
-
-		gui_windows.recruitShop = win;
-		//inv.ActivateWindow(win);
-	}
+	
 	void initInteractionViewer(int width, int height) {
 		Inventory::Window* win = inv.AddWindow("interaction_viewer", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = win->getGWindow();
@@ -912,6 +904,41 @@ private:
 		gui_windows.characterWindow = win;
 	}
 
+	void initShopRecruits(int width, int height, uint64_t texItemFrame) {
+		Inventory::Window* win = inv.AddWindow("shop_recruits", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = win->getGWindow();
+
+		//Drag
+		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"));
+		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
+		gwin->AddComponent(drag);
+		//wyjœcie
+		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
+		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
+		gwin->AddComponent(exit);
+
+		GComponent* c;
+		int counter = 0;
+		std::string labelName;
+		for (int i = 30; i < height - 90; i += 90) {
+			for (int j = 10; j < width - 60; j += 60) {
+				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
+				c = new GComponentLabel(glm::vec2(20, 20), glm::vec3(j, i + 60, 0.1f), "0");
+				labelName = std::string("shopEntityItem") + std::to_string(counter++);
+				AddNamedComponent(c, labelName.c_str());
+				gwin->AddComponent(c);
+
+				//
+				GComponentButton* button = new GComponentButton(glm::vec2(60.0f, 60.0f), glm::vec3(j, i, 0.0f), "", 0);
+				button->callback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedItems.entityItem, &inv, gui_windows.characterWindow);
+				gwin->AddComponent(button);
+			}
+		}
+
+		gui_windows.recruitShop = win;
+		//inv.ActivateWindow(win);
+	}
+
 	void initSquadViewer(int width, int height, uint64_t texItemFrame) {
 		Inventory::Window* win = inv.AddWindow("party_view", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = win->getGWindow();
@@ -957,12 +984,12 @@ private:
 
 		inv = Inventory();
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
-		initShopRecruits(300, 400, texItemFrame);
 		initOverworldHud();
 		initBattleHud();
 		initShopItems(300, 300, texItemFrame);
-		initInteractionViewer(200, 200);
 		initCharInv(300, 250, texItemFrame);
+		initShopRecruits(300, 400, texItemFrame);
+		initInteractionViewer(200, 200);
 		initSquadViewer(300, 400, texItemFrame);
 		initPrimaryInv(300, 400, texItemFrame);
 

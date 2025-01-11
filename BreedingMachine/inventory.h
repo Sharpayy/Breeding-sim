@@ -491,6 +491,11 @@ public:
 			tierItemMap.at(item.getItemTier()).push_back(nitem);
 		}
 	}
+	void loadItem(Item* item) {
+		assert(!(item->getItemTier() == TIER_ALL));
+		itemMap[item->getItemName()] = item;
+		tierItemMap.at(item->getItemTier()).push_back(item);
+	}
 
 	template <typename T = Item>
 	T* getItem(std::string itemName) {
@@ -548,7 +553,7 @@ public:
 		return it;
 	}
 
-	void loadSet(Entity::EquipedItems& set) {
+	void loadSet(Entity::EquipedItems set) {
 		sets.push_back(set);
 	}
 
@@ -654,19 +659,17 @@ void setShopItemsRotation(void* v1, void* v2, Building** building, Inventory* in
 void setShopEntityRotation(void* v1, void* v2, Building** building, Inventory* inv, Inventory::Window* win) {
 	if (inv) {
 		if (inv->ActivateWindow(win) && (*building)) {
-			auto items = (*building)->getEntityItemsRotation();
+			auto entities = (*building)->getEntityItemsRotation();
 			auto slots = win->getAllSlots();
-			int size = items.size() < slots.size() ? items.size() : slots.size();
 			std::string labelName;
-			for (int idx = 0; idx < slots.size(); idx++) {
-				delete slots.at(idx)->getItem();
+			for (int idx = entities.size(); idx < slots.size(); idx++) {
 				slots.at(idx)->changeItem(nullptr);
 				labelName = "shopEntityItem" + std::to_string(idx);
 				auto label = GetNamedComponent(labelName.c_str());
 				label->SetText(std::string("0").c_str());
 			}
-			for (int idx = 0; idx < size; idx++) {
-				EntityItem* nItem = (EntityItem*)items.at(idx);
+			for (int idx = 0; idx < entities.size(); idx++) {
+				EntityItem* nItem = (EntityItem*)entities.at(idx);
 				slots.at(idx)->changeItem(nItem);
 				labelName = "shopEntityItem" + std::to_string(idx);
 				auto label = GetNamedComponent(labelName.c_str());
@@ -689,7 +692,6 @@ void setParty(void* v1, void* v2, Squad** squad, Inventory* inv, Inventory::Wind
 				slots.at(idx)->changeItem(nullptr);
 			}
 			for (int idx = 0; idx < squadComp->size; idx++) {
-				delete slots.at(idx)->getItem();
 				EntityItem* eitm = new EntityItem(squadComp->entities[idx]);
 				slots.at(idx)->changeItem(eitm);
 			}
