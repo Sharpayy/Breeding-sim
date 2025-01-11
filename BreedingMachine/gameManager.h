@@ -187,8 +187,13 @@ public:
 				if (slot) {
 					//if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.inventory) {
 					if (selectedObj.win != gui_windows.recruitShop) {
-						if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.itemShop) {
-							//if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) {
+						if (win == gui_windows.partyView && draggedObj.draggedItem.win == gui_windows.recruitShop) {
+							buyItem(slot, 1);
+						}
+						else if (win == gui_windows.recruitShop && draggedObj.draggedItem.win == gui_windows.partyView) {
+							sellItem(slot, 1);
+						}
+						else if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.itemShop) {
 							if (buyItem(slot)) equip_deequipItem(slot);
 						}
 						else if (win == gui_windows.itemShop && draggedObj.draggedItem.win == gui_windows.characterWindow) {
@@ -207,7 +212,7 @@ public:
 							}
 						}
 					}
-					else if (draggedObj.draggedItem.win == gui_windows.itemShop && win == gui_windows.itemShop) {
+					if (draggedObj.draggedItem.win == gui_windows.itemShop && win == gui_windows.itemShop) {
 						//SWAP ITEMS IN ITEM SHOP
 						if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return;
 						int idx0, idx1, buildingItemsAmount;
@@ -299,15 +304,23 @@ public:
 		}
 	}
 
-	bool buyItem(Slot* slot) {
+	bool buyItem(Slot* slot, uint8_t flag = 0) {
 		int draggedItemPrice, possibleItemPrice = 0, finallPrice;
 		draggedItemPrice = draggedObj.draggedItem.item->getItemPrice();
 		finallPrice = draggedItemPrice;
 		if (!slot->getItem()) {
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
-				selectedObj.building->eraseItemFromRotation(slot->getItem());
-				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				if (flag == 0) {
+					selectedObj.building->eraseItemFromRotation(slot->getItem());
+					setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				}
+				else {
+					selectedObj.building->eraseEntityItemFromRotation((EntityItem*)slot->getItem());
+					setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
+					auto comp = playerData.player->getSquadComp();
+					comp->entities[comp->size++] = ((EntityItem*)slot->getItem())->getEntity();
+				}
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -318,11 +331,22 @@ public:
 			finallPrice = draggedItemPrice - possibleItemPrice;
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
-				int idx0 = gui_windows.itemShop->getSlotIndex(draggedObj.draggedItem.previousSlot);
-				selectedObj.building->addSingleItemToRotation(draggedObj.draggedItem.previousSlot->getItem(), idx0);
-				selectedObj.building->eraseItemFromRotation(slot->getItem());
-
-				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				int idx0 = -1;
+				if (flag == 0) {
+					idx0 = gui_windows.itemShop->getSlotIndex(draggedObj.draggedItem.previousSlot);
+					selectedObj.building->addSingleItemToRotation(draggedObj.draggedItem.previousSlot->getItem(), idx0);
+					selectedObj.building->eraseItemFromRotation(slot->getItem());
+					setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				}
+				else {
+					idx0 = gui_windows.recruitShop->getSlotIndex(draggedObj.draggedItem.previousSlot);
+					selectedObj.building->addSingleEntityItemToRotation((EntityItem*)draggedObj.draggedItem.previousSlot->getItem(), idx0);
+					selectedObj.building->eraseEntityItemFromRotation((EntityItem*)slot->getItem());
+					setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
+					auto comp = playerData.player->getSquadComp();
+					idx0 = gui_windows.partyView->getSlotIndex(slot);
+					comp->entities[idx0] = ((EntityItem*)slot->getItem())->getEntity();
+				}
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -331,16 +355,29 @@ public:
 		return false;
 	}
 
-	bool sellItem(Slot* slot) {
+	bool sellItem(Slot* slot, uint8_t flag = 0) {
 		int draggedItemPrice, possibleItemPrice = 0, finallPrice;
 		draggedItemPrice = draggedObj.draggedItem.item->getItemPrice();
 		finallPrice = -draggedItemPrice;
 		if (!slot->getItem()) {
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
-				selectedObj.building->addSingleItemToRotation(slot->getItem(), -1);
-
-				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				if (flag == 0) {
+					selectedObj.building->addSingleItemToRotation(slot->getItem(), -1);
+					setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				}
+				else {
+					selectedObj.building->addSingleEntityItemToRotation((EntityItem*)slot->getItem(), -1);
+					setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
+					int idx = gui_windows.partyView->getSlotIndex(draggedObj.draggedItem.previousSlot);
+					auto comp = playerData.player->getSquadComp();
+					comp->entities[idx] = ((EntityItem*)slot->getItem())->getEntity();
+					for (int i = idx; i < comp->size - 1; i++) {
+						comp->entities[i] = comp->entities[i + 1];
+					}
+					comp->size--;
+					setParty(nullptr, nullptr, &playerData.player, &inv, gui_windows.partyView);
+				}
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -351,12 +388,19 @@ public:
 			finallPrice = -draggedItemPrice + possibleItemPrice;
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
-				int idx0 = gui_windows.itemShop->getSlotIndex(slot);
-				selectedObj.building->addSingleItemToRotation(slot->getItem(), idx0);
-
-				selectedObj.building->eraseItemFromRotation(draggedObj.draggedItem.previousSlot->getItem());
-
-				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				int idx0 = -1;
+				if (flag == 0) {
+					idx0 = gui_windows.itemShop->getSlotIndex(slot);
+					selectedObj.building->addSingleItemToRotation(slot->getItem(), idx0);
+					selectedObj.building->eraseItemFromRotation(draggedObj.draggedItem.previousSlot->getItem());
+					setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				}
+				else {
+					idx0 = gui_windows.recruitShop->getSlotIndex(slot);
+					selectedObj.building->addSingleEntityItemToRotation((EntityItem*)slot->getItem(), idx0);
+					selectedObj.building->eraseEntityItemFromRotation((EntityItem*)draggedObj.draggedItem.previousSlot->getItem());
+					setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
+				}
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -366,7 +410,7 @@ public:
 
 	void equip_deequipItem(Slot* slot) {
 		int idx;
-		auto items = selectedObj.entityItem->getEntity()->getEquipedItems();
+		auto& items = selectedObj.entityItem->getEntity()->getEquipedItems();
 		switch (slot->getSlotType())
 		{
 		case HELMET:
@@ -1297,7 +1341,7 @@ private:
 
 	struct PlayerData {
 		Squad* player;
-		int money = 300;
+		int money = 1200;
 	} playerData;
 
 	struct GUI_Windows {

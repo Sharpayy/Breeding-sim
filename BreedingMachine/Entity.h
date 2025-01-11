@@ -138,7 +138,7 @@ public:
 		return hp;
 	}
 
-	EquipedItems getEquipedItems() {
+	EquipedItems& getEquipedItems() {
 		return items;
 	}
 

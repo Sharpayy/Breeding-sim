@@ -94,7 +94,8 @@ private:
 		for (int i = 0; i < itemAmount; i++) building->addSingleItemToRotation(itm->getRandomItem(type), itemAmount);
 
 		for (int i = 0; i < entitiesAmount; i++) {
-			entityItem = new EntityItem(itm->generateRandomEntity(getBuildingRace(building)));
+			Entity* entity = itm->generateRandomEntity(getBuildingRace(building));
+			entityItem = new EntityItem(entity, itm->calculateEntityPrice(entity));
 			building->addSingleEntityItemToRotation(entityItem, entitiesAmount);
 		}
 	}
