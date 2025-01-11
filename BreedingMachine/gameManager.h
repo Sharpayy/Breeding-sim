@@ -64,19 +64,21 @@ public:
 			buildingManager.updateBuildingItemsRotation(&itemLoader);
 			auto recruitShopActive = inv.isWindowActive(gui_windows.recruitShop);
 			auto itemShopActive = inv.isWindowActive(gui_windows.itemShop);
-			if (selectedItems.building &&  (recruitShopActive || itemShopActive) ) {
-				if (selectedItems.building->newRotationOccured()) {
+			if (selectedObj.building &&  (recruitShopActive || itemShopActive) ) {
+				if (selectedObj.building->newRotationOccured()) {
 					if (draggedObj.draggedItem.item) {
 						draggedObj.draggedItem.previousSlot->changeItem(draggedObj.draggedItem.item);
 						draggedObj.draggedItem.item = nullptr;
 						inv.SetCursorItemHold(nullptr);
 					}
-					selectedItems.building->setNewRotationState(false);
-					if (itemShopActive) setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+					selectedObj.building->setNewRotationState(false);
+					if (itemShopActive) setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 					if (recruitShopActive) {
-						inv.DisableWindow(gui_windows.characterWindow);
-						selectedItems.entityItem = nullptr;
-						setShopEntityRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.recruitShop);
+						if (selectedObj.win == gui_windows.recruitShop) {
+							inv.DisableWindow(gui_windows.characterWindow);
+							selectedObj.entityItem = nullptr;
+						}
+						setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
 					}
 				}
 			}
@@ -184,35 +186,37 @@ public:
 				draggedObj.draggedItem.previousSlot->changeItem(draggedObj.draggedItem.item);
 				if (slot) {
 					//if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.inventory) {
-					if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.itemShop) {
-						//if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) {
-						if(buyItem(slot)) equip_deequipItem(slot);
-					}
-					else if (win == gui_windows.itemShop && draggedObj.draggedItem.win == gui_windows.characterWindow) {
-						if (sellItem(slot)) equip_deequipItem(slot);
-					}
-					else if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.inventory) {
-						if(inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) equip_deequipItem(slot);
-					}
-					else if (win == gui_windows.inventory && draggedObj.draggedItem.win == gui_windows.characterWindow) {
-						if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) equip_deequipItem(draggedObj.draggedItem.previousSlot);
-					}
-					else if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.characterWindow) {
-						if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) {
-							equip_deequipItem(draggedObj.draggedItem.previousSlot);
-							equip_deequipItem(slot);
+					if (selectedObj.win != gui_windows.recruitShop) {
+						if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.itemShop) {
+							//if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) {
+							if (buyItem(slot)) equip_deequipItem(slot);
+						}
+						else if (win == gui_windows.itemShop && draggedObj.draggedItem.win == gui_windows.characterWindow) {
+							if (sellItem(slot)) equip_deequipItem(slot);
+						}
+						else if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.inventory) {
+							if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) equip_deequipItem(slot);
+						}
+						else if (win == gui_windows.inventory && draggedObj.draggedItem.win == gui_windows.characterWindow) {
+							if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) equip_deequipItem(draggedObj.draggedItem.previousSlot);
+						}
+						else if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.characterWindow) {
+							if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) {
+								equip_deequipItem(draggedObj.draggedItem.previousSlot);
+								equip_deequipItem(slot);
+							}
 						}
 					}
 					else if (draggedObj.draggedItem.win == gui_windows.itemShop && win == gui_windows.itemShop) {
 						//SWAP ITEMS IN ITEM SHOP
 						if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return;
 						int idx0, idx1, buildingItemsAmount;
-						buildingItemsAmount = selectedItems.building->getItemsRotation().size();
+						buildingItemsAmount = selectedObj.building->getItemsRotation().size();
 						idx0 = gui_windows.itemShop->getSlotIndex(slot);
 						idx1 = gui_windows.itemShop->getSlotIndex(draggedObj.draggedItem.previousSlot);
 						if (!(idx0 >= buildingItemsAmount || idx1 >= buildingItemsAmount))
-							selectedItems.building->swapByValue(idx0, idx1);
-						setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+							selectedObj.building->swapByValue(idx0, idx1);
+						setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 					}
 					else if (draggedObj.draggedItem.win == gui_windows.itemShop && win == gui_windows.inventory) {
 						buyItem(slot);
@@ -259,7 +263,7 @@ public:
 						if (glm::distance(mousePos, buildingPos) < 64.0f) {
 							inv.ActivateWindow(gui_windows.interaction);
 							buildingPos = getOnScreenPosition(buildingPos);
-							selectedItems.building = building;
+							selectedObj.building = building;
 							gui_windows.interaction->changeWindowPosition(buildingPos.x + 128, buildingPos.y - 64);
 						}
 					}
@@ -274,12 +278,11 @@ public:
 		if (inputHandlerInstance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
 			auto mp = getMousePosition();
 			if (inv.isGuiClicked(mp)) {
-				Inventory::Window* win;
-				Slot* slot = inv.getSlot(mp, win);
+				Slot* slot = inv.getSlot(mp, selectedObj.win);
 				if (slot) {
 					if (slot->getSlotType() == ENTITY) {
-						selectedItems.entityItem = (EntityItem*)slot->getItem();
-						win->getGWindow()->CollisionCheck(mp.x, mp.y);
+						selectedObj.entityItem = (EntityItem*)slot->getItem();
+						selectedObj.win->getGWindow()->CollisionCheck(mp.x, mp.y);
 					}
 					
 				}
@@ -303,8 +306,8 @@ public:
 		if (!slot->getItem()) {
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
-				selectedItems.building->eraseItemFromRotation(slot->getItem());
-				setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+				selectedObj.building->eraseItemFromRotation(slot->getItem());
+				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -316,10 +319,10 @@ public:
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
 				int idx0 = gui_windows.itemShop->getSlotIndex(draggedObj.draggedItem.previousSlot);
-				selectedItems.building->addSingleItemToRotation(draggedObj.draggedItem.previousSlot->getItem(), idx0);
-				selectedItems.building->eraseItemFromRotation(slot->getItem());
+				selectedObj.building->addSingleItemToRotation(draggedObj.draggedItem.previousSlot->getItem(), idx0);
+				selectedObj.building->eraseItemFromRotation(slot->getItem());
 
-				setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -335,9 +338,9 @@ public:
 		if (!slot->getItem()) {
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
-				selectedItems.building->addSingleItemToRotation(slot->getItem(), -1);
+				selectedObj.building->addSingleItemToRotation(slot->getItem(), -1);
 
-				setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -349,11 +352,11 @@ public:
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
 				int idx0 = gui_windows.itemShop->getSlotIndex(slot);
-				selectedItems.building->addSingleItemToRotation(slot->getItem(), idx0);
+				selectedObj.building->addSingleItemToRotation(slot->getItem(), idx0);
 
-				selectedItems.building->eraseItemFromRotation(draggedObj.draggedItem.previousSlot->getItem());
+				selectedObj.building->eraseItemFromRotation(draggedObj.draggedItem.previousSlot->getItem());
 
-				setShopItemsRotation(nullptr, nullptr, &selectedItems.building, &inv, gui_windows.itemShop);
+				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -363,7 +366,7 @@ public:
 
 	void equip_deequipItem(Slot* slot) {
 		int idx;
-		auto items = selectedItems.entityItem->getEntity()->getEquipedItems();
+		auto items = selectedObj.entityItem->getEntity()->getEquipedItems();
 		switch (slot->getSlotType())
 		{
 		case HELMET:
@@ -439,99 +442,123 @@ private:
 		stbi_set_flip_vertically_on_load(false);
 		WeaponItem* bastard_sword = new WeaponItem{"bastard sword", (void*) LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC2.png","EquipmentIconsC2.png"), MELEE, new WeaponItem::ObjectStatistic{4}, 83, TIER_2};
 		itemLoader.loadItem(bastard_sword);
-		WeaponItem spear = { "spear", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC61.png","EquipmentIconsC61"), MELEE, new WeaponItem::ObjectStatistic{3}, 80, TIER_1 };
+		WeaponItem* spear = new WeaponItem{ "spear", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC61.png","EquipmentIconsC61"), MELEE, new WeaponItem::ObjectStatistic{3}, 80, TIER_1 };
 		itemLoader.loadItem(spear);
-		WeaponItem hatchet = { "hatchet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC57.png","EquipmentIconsC57"), MELEE, new WeaponItem::ObjectStatistic{2}, 60, TIER_1 };
+		WeaponItem* hatchet = new WeaponItem{ "hatchet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC57.png","EquipmentIconsC57"), MELEE, new WeaponItem::ObjectStatistic{2}, 60, TIER_1 };
 		itemLoader.loadItem(hatchet);
-		WeaponItem twin_daggers = { "twin daggers", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC57.png","EquipmentIconsC57"), MELEE, new WeaponItem::ObjectStatistic{4.5f}, 102, TIER_2 };
+		WeaponItem* twin_daggers = new WeaponItem{ "twin daggers", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC57.png","EquipmentIconsC57"), MELEE, new WeaponItem::ObjectStatistic{4.5f}, 102, TIER_2 };
 		itemLoader.loadItem(twin_daggers);
-		WeaponItem short_bow = { "short bow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC103.png","EquipmentIconsC103"), RANGED, new WeaponItem::ObjectStatistic{3}, 78, TIER_1};
+		WeaponItem* short_bow = new WeaponItem{ "short bow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC103.png","EquipmentIconsC103"), RANGED, new WeaponItem::ObjectStatistic{3}, 78, TIER_1};
 		itemLoader.loadItem(short_bow);
-		WeaponItem recurve_bow = { "recurve bow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC118.png","EquipmentIconsC118"), RANGED, new WeaponItem::ObjectStatistic{4}, 88, TIER_2 };
+		WeaponItem* recurve_bow = new WeaponItem{ "recurve bow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC118.png","EquipmentIconsC118"), RANGED, new WeaponItem::ObjectStatistic{3.5}, 88, TIER_2 };
 		itemLoader.loadItem(recurve_bow);
-		WeaponItem crossbow = { "crossbow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC121.png","EquipmentIconsC121"), RANGED, new WeaponItem::ObjectStatistic{6}, 160, TIER_3};
+		WeaponItem* crossbow = new WeaponItem{ "crossbow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC121.png","EquipmentIconsC121"), RANGED, new WeaponItem::ObjectStatistic{4.0f}, 90, TIER_2};
 		itemLoader.loadItem(crossbow);
-		WeaponItem morningstar = { "morningstar", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC29.png","EquipmentIconsC29"), MELEE, new WeaponItem::ObjectStatistic{5}, 124, TIER_2 };
+		WeaponItem* morningstar = new WeaponItem{ "morningstar", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC29.png","EquipmentIconsC29"), MELEE, new WeaponItem::ObjectStatistic{5}, 124, TIER_2 };
 		itemLoader.loadItem(morningstar);
-		WeaponItem flail = { "flail", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC15.png","EquipmentIconsC15"), MELEE, new WeaponItem::ObjectStatistic{3.5f}, 62, TIER_1 };
+		WeaponItem* flail = new WeaponItem{ "flail", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC15.png","EquipmentIconsC15"), MELEE, new WeaponItem::ObjectStatistic{3.5f}, 62, TIER_1 };
 		itemLoader.loadItem(flail);
-		WeaponItem sickle_blade = { "sickle_blade", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC15.png","EquipmentIconsC15"), MELEE, new WeaponItem::ObjectStatistic{4}, 70, TIER_1 };
+		WeaponItem *sickle_blade = new WeaponItem{ "sickle_blade", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC15.png","EquipmentIconsC15"), MELEE, new WeaponItem::ObjectStatistic{4}, 70, TIER_1 };
 		itemLoader.loadItem(sickle_blade);
-		WeaponItem berserker_blade = { "berserker blade", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC13.png","EquipmentIconsC13"), MELEE, new WeaponItem::ObjectStatistic{8}, 203, TIER_3 };
+		WeaponItem *berserker_blade = new WeaponItem{ "berserker blade", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC13.png","EquipmentIconsC13"), MELEE, new WeaponItem::ObjectStatistic{8}, 203, TIER_3 };
 		itemLoader.loadItem(berserker_blade);
-		WeaponItem battlehammer = { "battlehammer", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC31.png","EquipmentIconsC31"), MELEE, new WeaponItem::ObjectStatistic{6}, 148, TIER_3};
+		WeaponItem *battlehammer = new WeaponItem{ "battlehammer", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC31.png","EquipmentIconsC31"), MELEE, new WeaponItem::ObjectStatistic{6}, 148, TIER_3};
 		itemLoader.loadItem(battlehammer);
-		WeaponItem trident = { "trident", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC65.png","EquipmentIconsC65"), MELEE, new WeaponItem::ObjectStatistic{5}, 132, TIER_3 };
+		WeaponItem *trident = new WeaponItem{ "trident", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC65.png","EquipmentIconsC65"), MELEE, new WeaponItem::ObjectStatistic{5}, 132, TIER_3 };
 		itemLoader.loadItem(trident);
-		WeaponItem battleaxe = { "battleaxe", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC49.png","EquipmentIconsC49"), MELEE, new WeaponItem::ObjectStatistic{4}, 112,  TIER_2};
+		WeaponItem *battleaxe = new WeaponItem{ "battleaxe", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC49.png","EquipmentIconsC49"), MELEE, new WeaponItem::ObjectStatistic{4}, 112,  TIER_2};
 		itemLoader.loadItem(battleaxe);
-		WeaponItem excalibur = { "excalibur", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC19.png","EquipmentIconsC19"), MELEE, new WeaponItem::ObjectStatistic{10}, 300,  TIER_3 };
+		WeaponItem *excalibur = new WeaponItem{ "excalibur", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC19.png","EquipmentIconsC19"), MELEE, new WeaponItem::ObjectStatistic{10}, 300,  TIER_3 };
 		itemLoader.loadItem(excalibur);
+		WeaponItem *heavy_crossbow = new WeaponItem{ "heavy crossbow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC129.png","EquipmentIconsC129"), RANGED, new WeaponItem::ObjectStatistic{5}, 120,  TIER_3 };
+		itemLoader.loadItem(heavy_crossbow);
+		WeaponItem *repeater_crossbow = new WeaponItem{ "repeater crossbow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC132.png","EquipmentIconsC132"), RANGED, new WeaponItem::ObjectStatistic{5.5f}, 162,  TIER_3 };
+		itemLoader.loadItem(repeater_crossbow);
+		WeaponItem *golden_bow = new WeaponItem{ "golden bow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC115.png","EquipmentIconsC115"), RANGED, new WeaponItem::ObjectStatistic{4.5}, 111,  TIER_3 };
+		itemLoader.loadItem(golden_bow);
+		WeaponItem *crusher = new WeaponItem{ "crusher", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC19.png","EquipmentIconsC19"), MELEE, new WeaponItem::ObjectStatistic{4.5f}, 102,  TIER_2 };
+		itemLoader.loadItem(crusher);
+		WeaponItem *notched_blade = new WeaponItem{ "notched blade", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC17.png","EquipmentIconsC17"), MELEE, new WeaponItem::ObjectStatistic{1.5f}, 32,  TIER_1 };
+		itemLoader.loadItem(notched_blade);
+		WeaponItem *notched_blades = new WeaponItem{ "notched blades", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC95.png","EquipmentIconsC95"), MELEE, new WeaponItem::ObjectStatistic{2.0f}, 44,  TIER_1 };
+		itemLoader.loadItem(notched_blades);
+		WeaponItem *doom_mace = new WeaponItem{ "doom mace", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC39.png","EquipmentIconsC39"), MELEE, new WeaponItem::ObjectStatistic{5.0f}, 123,  TIER_3 };
+		itemLoader.loadItem(doom_mace);
 		//Armory
-		ArmorItem iron_chestplate = { "iron chestplate", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC193.png","EquipmentIconsC193"), CHESTPLATE, new ArmorItem::ObjectStatistic{5}, 132, TIER_2 };
+		ArmorItem *iron_chestplate = new ArmorItem{ "iron chestplate", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC193.png","EquipmentIconsC193"), CHESTPLATE, new ArmorItem::ObjectStatistic{5}, 132, TIER_2 };
 		itemLoader.loadItem(iron_chestplate);
-		ArmorItem iron_greaves = { "iron greaves", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC217.png","EquipmentIconsC217"), LEGS, new ArmorItem::ObjectStatistic{3}, 90, TIER_2 };
+		ArmorItem *iron_greaves = new ArmorItem{ "iron greaves", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC217.png","EquipmentIconsC217"), LEGS, new ArmorItem::ObjectStatistic{3}, 90, TIER_2 };
 		itemLoader.loadItem(iron_greaves);
-		ArmorItem iron_cap = { "iron cap", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC166.png","EquipmentIconsC166"), HELMET, new ArmorItem::ObjectStatistic{3}, 90, TIER_2 };
+		ArmorItem *iron_cap = new ArmorItem{ "iron cap", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC166.png","EquipmentIconsC166"), HELMET, new ArmorItem::ObjectStatistic{3}, 90, TIER_2 };
 		itemLoader.loadItem(iron_cap);
-		ArmorItem iron_boots = { "iron boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC237.png","EquipmentIconsC237"), BOOTS, new ArmorItem::ObjectStatistic{2}, 52, TIER_2 };
+		ArmorItem *iron_boots = new ArmorItem{ "iron boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC237.png","EquipmentIconsC237"), BOOTS, new ArmorItem::ObjectStatistic{2}, 52, TIER_2 };
 		itemLoader.loadItem(iron_boots);
-		ArmorItem tower_shield = { "tower shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC152.png","EquipmentIconsC152"), SHIELD, new ArmorItem::ObjectStatistic{4}, 67, TIER_2 };
+		ArmorItem *tower_shield = new ArmorItem{ "tower shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC152.png","EquipmentIconsC152"), SHIELD, new ArmorItem::ObjectStatistic{4}, 67, TIER_2 };
 		itemLoader.loadItem(tower_shield);
 
-		ArmorItem guardian_helmet = { "guardian helmet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC179.png","EquipmentIconsC179"), HELMET, new ArmorItem::ObjectStatistic{5}, 129, TIER_3 };
+		ArmorItem *guardian_helmet = new ArmorItem{ "guardian helmet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC179.png","EquipmentIconsC179"), HELMET, new ArmorItem::ObjectStatistic{5}, 129, TIER_3 };
 		itemLoader.loadItem(guardian_helmet);
-		ArmorItem guardian_chestplate = { "guardian chestplate", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC199.png","EquipmentIconsC199"), CHESTPLATE, new ArmorItem::ObjectStatistic{7}, 164, TIER_3 };
+		ArmorItem *guardian_chestplate = new ArmorItem{ "guardian chestplate", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC199.png","EquipmentIconsC199"), CHESTPLATE, new ArmorItem::ObjectStatistic{7}, 164, TIER_3 };
 		itemLoader.loadItem(guardian_chestplate);
-		ArmorItem guardian_greaves = { "guardian greaves", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC216.png","EquipmentIconsC216"), LEGS, new ArmorItem::ObjectStatistic{4}, 102, TIER_3 };
+		ArmorItem *guardian_greaves = new ArmorItem{ "guardian greaves", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC216.png","EquipmentIconsC216"), LEGS, new ArmorItem::ObjectStatistic{4}, 102, TIER_3 };
 		itemLoader.loadItem(guardian_greaves);
-		ArmorItem guardian_boots = { "guardian boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC231.png","EquipmentIconsC231"), BOOTS, new ArmorItem::ObjectStatistic{3}, 73, TIER_3 };
+		ArmorItem *guardian_boots = new ArmorItem{ "guardian boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC231.png","EquipmentIconsC231"), BOOTS, new ArmorItem::ObjectStatistic{3}, 73, TIER_3 };
 		itemLoader.loadItem(guardian_boots);
 
 
-		ArmorItem copper_helmet = { "copper helmet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC163.png","EquipmentIconsC163"), HELMET, new ArmorItem::ObjectStatistic{3}, 64, TIER_2 };
+		ArmorItem *copper_helmet = new ArmorItem{ "copper helmet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC163.png","EquipmentIconsC163"), HELMET, new ArmorItem::ObjectStatistic{3}, 64, TIER_2 };
 		itemLoader.loadItem(copper_helmet);
-		ArmorItem copper_chestplate = { "copper chestplate", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC183.png","EquipmentIconsC183"), CHESTPLATE, new ArmorItem::ObjectStatistic{4}, 89, TIER_2 };
+		ArmorItem *copper_chestplate = new ArmorItem{ "copper chestplate", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC183.png","EquipmentIconsC183"), CHESTPLATE, new ArmorItem::ObjectStatistic{4}, 89, TIER_2 };
 		itemLoader.loadItem(copper_chestplate);
-		ArmorItem copper_greaves = { "copper greaves", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC204.png","EquipmentIconsC204"), LEGS, new ArmorItem::ObjectStatistic{2}, 56, TIER_2 };
+		ArmorItem *copper_greaves = new ArmorItem{ "copper greaves", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC204.png","EquipmentIconsC204"), LEGS, new ArmorItem::ObjectStatistic{2}, 56, TIER_2 };
 		itemLoader.loadItem(copper_greaves);
-		ArmorItem copper_boots = { "copper boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC222.png","EquipmentIconsC222"), BOOTS, new ArmorItem::ObjectStatistic{1.5f}, 31, TIER_2 };
+		ArmorItem *copper_boots = new ArmorItem{ "copper boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC222.png","EquipmentIconsC222"), BOOTS, new ArmorItem::ObjectStatistic{1.5f}, 31, TIER_2 };
 		itemLoader.loadItem(copper_boots);
-		ArmorItem buckler = { "buckler", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC152.png","EquipmentIconsC152"), SHIELD, new ArmorItem::ObjectStatistic{1.5f}, 20, TIER_1 };
+		ArmorItem *buckler = new ArmorItem{ "buckler", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC152.png","EquipmentIconsC152"), SHIELD, new ArmorItem::ObjectStatistic{1.5f}, 20, TIER_1 };
 		itemLoader.loadItem(buckler);
 
-		ArmorItem cap = { "cap", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC161.png","EquipmentIconsC161"), HELMET, new ArmorItem::ObjectStatistic{0.3f}, 14, TIER_1};
+		ArmorItem *cap = new ArmorItem{ "cap", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC161.png","EquipmentIconsC161"), HELMET, new ArmorItem::ObjectStatistic{0.3f}, 14, TIER_1};
 		itemLoader.loadItem(cap);
-		ArmorItem clothes = { "clothes", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC181.png","EquipmentIconsC181"), CHESTPLATE, new ArmorItem::ObjectStatistic{0.5f}, 21, TIER_1 };
+		ArmorItem *clothes = new ArmorItem{ "clothes", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC181.png","EquipmentIconsC181"), CHESTPLATE, new ArmorItem::ObjectStatistic{0.5f}, 21, TIER_1 };
 		itemLoader.loadItem(clothes);
-		ArmorItem rags = { "rags", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC202.png","EquipmentIconsC202"), LEGS, new ArmorItem::ObjectStatistic{0.2f}, 8, TIER_1 };
+		ArmorItem *rags = new ArmorItem{ "rags", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC202.png","EquipmentIconsC202"), LEGS, new ArmorItem::ObjectStatistic{0.2f}, 8, TIER_1 };
 		itemLoader.loadItem(rags);
-		ArmorItem shoes = { "shoes", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC223.png","EquipmentIconsC223"), BOOTS, new ArmorItem::ObjectStatistic{0.1f}, 4, TIER_1 };
+		ArmorItem *shoes = new ArmorItem{ "shoes", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC223.png","EquipmentIconsC223"), BOOTS, new ArmorItem::ObjectStatistic{0.1f}, 4, TIER_1 };
 		itemLoader.loadItem(shoes);
-		ArmorItem wooden_shield = { "wooden shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC152.png","EquipmentIconsC152"), SHIELD, new ArmorItem::ObjectStatistic{1}, 15, TIER_1 };
+		ArmorItem *wooden_shield = new ArmorItem{ "wooden shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC152.png","EquipmentIconsC152"), SHIELD, new ArmorItem::ObjectStatistic{1}, 15, TIER_1 };
 		itemLoader.loadItem(wooden_shield);
 
 
-		ArmorItem darkwraith_helmet = { "darkwraith helmet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC176.png","EquipmentIconsC176"), HELMET, new ArmorItem::ObjectStatistic{5}, 118, TIER_3 };
+		ArmorItem *darkwraith_helmet = new ArmorItem{ "darkwraith helmet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC176.png","EquipmentIconsC176"), HELMET, new ArmorItem::ObjectStatistic{5}, 118, TIER_3 };
 		itemLoader.loadItem(darkwraith_helmet);
-		ArmorItem darkwraith_chestplate = { "darkwraith chestplate", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC191.png","EquipmentIconsC191"), CHESTPLATE, new ArmorItem::ObjectStatistic{7}, 171, TIER_3 };
+		ArmorItem *darkwraith_chestplate = new ArmorItem{ "darkwraith chestplate", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC191.png","EquipmentIconsC191"), CHESTPLATE, new ArmorItem::ObjectStatistic{7}, 171, TIER_3 };
 		itemLoader.loadItem(darkwraith_chestplate);
-		ArmorItem darkwraith_greaves = { "darkwraith greaves", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC207.png","EquipmentIconsC207"), LEGS, new ArmorItem::ObjectStatistic{4}, 104, TIER_3 };
+		ArmorItem *darkwraith_greaves = new ArmorItem{ "darkwraith greaves", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC207.png","EquipmentIconsC207"), LEGS, new ArmorItem::ObjectStatistic{4}, 104, TIER_3 };
 		itemLoader.loadItem(darkwraith_greaves);
-		ArmorItem darkwraith_boots = { "darkwraith boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC227.png","EquipmentIconsC227"), BOOTS, new ArmorItem::ObjectStatistic{3}, 74, TIER_3 };
+		ArmorItem *darkwraith_boots = new ArmorItem{ "darkwraith boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC227.png","EquipmentIconsC227"), BOOTS, new ArmorItem::ObjectStatistic{3}, 74, TIER_3 };
 		itemLoader.loadItem(darkwraith_boots);
-		ArmorItem darkwraith_shield = { "darkwraith shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC150.png","EquipmentIconsC150"), SHIELD, new ArmorItem::ObjectStatistic{5}, 95, TIER_3 };
+		ArmorItem *darkwraith_shield = new ArmorItem{ "darkwraith shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC150.png","EquipmentIconsC150"), SHIELD, new ArmorItem::ObjectStatistic{5}, 95, TIER_3 };
 		itemLoader.loadItem(darkwraith_shield);
 
-		ArmorItem copper_cap = { "copper cap", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC162.png","EquipmentIconsC162"), HELMET, new ArmorItem::ObjectStatistic{2}, 31, TIER_1 };
+		ArmorItem *copper_cap = new ArmorItem{ "copper cap", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC162.png","EquipmentIconsC162"), HELMET, new ArmorItem::ObjectStatistic{2}, 31, TIER_1 };
 		itemLoader.loadItem(copper_cap);
-		ArmorItem copper_vest = { "copper vest", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC182.png","EquipmentIconsC182"), CHESTPLATE, new ArmorItem::ObjectStatistic{3}, 54, TIER_1 };
+		ArmorItem *copper_vest = new ArmorItem{ "copper vest", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC182.png","EquipmentIconsC182"), CHESTPLATE, new ArmorItem::ObjectStatistic{3}, 54, TIER_1 };
 		itemLoader.loadItem(copper_vest);
-		ArmorItem leather_greaves = { "leather greaves", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC203.png","EquipmentIconsC203"), LEGS, new ArmorItem::ObjectStatistic{2}, 36, TIER_1 };
+		ArmorItem *leather_greaves = new ArmorItem{ "leather greaves", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC203.png","EquipmentIconsC203"), LEGS, new ArmorItem::ObjectStatistic{2}, 36, TIER_1 };
 		itemLoader.loadItem(leather_greaves);
-		ArmorItem leather_boots = { "leather boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC221.png","EquipmentIconsC221"), BOOTS, new ArmorItem::ObjectStatistic{1}, 21, TIER_1 };
+		ArmorItem *leather_boots = new ArmorItem{ "leather boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC221.png","EquipmentIconsC221"), BOOTS, new ArmorItem::ObjectStatistic{1}, 21, TIER_1 };
 		itemLoader.loadItem(leather_boots);
 
+		ArmorItem* golden_mask = new ArmorItem{ "golden mask", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC175.png","EquipmentIconsC175"), HELMET, new ArmorItem::ObjectStatistic{3}, 92, TIER_3 };
+		itemLoader.loadItem(golden_mask);
+		ArmorItem* golden_chestplate = new ArmorItem{ "golden chestplate", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC195.png","EquipmentIconsC195"), CHESTPLATE, new ArmorItem::ObjectStatistic{7.5f}, 163, TIER_3 };
+		itemLoader.loadItem(golden_chestplate);
+		ArmorItem* golden_greaves = new ArmorItem{ "golden greaves", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC215.png","EquipmentIconsC215"), LEGS, new ArmorItem::ObjectStatistic{3.5f}, 73, TIER_3 };
+		itemLoader.loadItem(golden_greaves);
+		ArmorItem* golden_boots = new ArmorItem{ "golden boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC235.png","EquipmentIconsC235"), BOOTS, new ArmorItem::ObjectStatistic{3}, 84, TIER_3 };
+		itemLoader.loadItem(golden_boots);
+		ArmorItem* golden_shield = new ArmorItem{ "golden shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC155.png","EquipmentIconsC155"), SHIELD, new ArmorItem::ObjectStatistic{4}, 73, TIER_3 };
+		itemLoader.loadItem(golden_shield);
 		//ArmorItem* helmet = nullptr;
 		//ArmorItem* Chestplate = nullptr;
 		//ArmorItem* Legs = nullptr;
@@ -540,167 +567,163 @@ private:
 		//WeaponItem* weapon = nullptr;
 
 
-		//weak sets
 		Entity::EquipedItems setWeakAxe = {
-			&copper_cap,
-			&copper_vest,
-			&leather_greaves,
-			&leather_boots,
+			copper_cap,
+			copper_vest,
+			leather_greaves,
+			leather_boots,
 			nullptr,
-			&hatchet
+			hatchet
 
 		};
 		itemLoader.loadSet(setWeakAxe);
 		Entity::EquipedItems setWeakSpear = {
-			&cap,
-			&clothes,
-			&rags,
-			&shoes,
-			&wooden_shield,
-			&spear
+			cap,
+			clothes,
+			rags,
+			shoes,
+			wooden_shield,
+			spear
 
 		};
 		itemLoader.loadSet(setWeakSpear);
 		Entity::EquipedItems setWeakArcher = {
-			&cap,
-			&copper_vest,
-			&rags,
-			&shoes,
+			cap,
+			copper_vest,
+			rags,
+			shoes,
 			nullptr,
-			&short_bow
+			short_bow
 		};
 		itemLoader.loadSet(setWeakArcher);
 		Entity::EquipedItems setSickleGuy = {
-			&copper_cap,
-			&copper_vest,
-			&rags,
-			&shoes,
+			copper_cap,
+			copper_vest,
+			rags,
+			shoes,
 			nullptr,
-			&sickle_blade
+			sickle_blade
 
 		};
 		itemLoader.loadSet(setWeakArcher);
-		//Mid sets
 		Entity::EquipedItems setIronTank = {
-			&iron_cap,
-			&iron_chestplate,
-			&iron_greaves,
-			&iron_boots,
-			&tower_shield,
+			iron_cap,
+			iron_chestplate,
+			iron_greaves,
+			iron_boots,
+			tower_shield,
 			bastard_sword
 
 		};
 		itemLoader.loadSet(setIronTank);
 		Entity::EquipedItems setCopperDPS = {
-			&copper_helmet,
-			&copper_chestplate,
-			&copper_greaves,
-			&copper_boots,
-			&wooden_shield,
-			&battleaxe
+			copper_helmet,
+			copper_chestplate,
+			copper_greaves,
+			copper_boots,
+			wooden_shield,
+			battleaxe
 
 		};
 		itemLoader.loadSet(setCopperDPS);
 		Entity::EquipedItems setIronCrossbow = {
-			&iron_cap,
-			&iron_chestplate,
-			&iron_greaves,
-			&iron_boots,
+			iron_cap,
+			iron_chestplate,
+			iron_greaves,
+			iron_boots,
 			nullptr,
-			&crossbow
+			crossbow
 		};
 		itemLoader.loadSet(setIronCrossbow);
-		//stronk
 		Entity::EquipedItems setDarkwraith = {
-			&darkwraith_helmet,
-			&darkwraith_chestplate,
-			&darkwraith_greaves,
-			&darkwraith_boots,
+			darkwraith_helmet,
+			darkwraith_chestplate,
+			darkwraith_greaves,
+			darkwraith_boots,
 			nullptr,
-			&berserker_blade
+			berserker_blade
 
 		};
 		itemLoader.loadSet(setDarkwraith);
 		Entity::EquipedItems setGuardian = {
-			&guardian_helmet,
-			&guardian_chestplate,
-			&guardian_greaves,
-			&guardian_boots,
-			&tower_shield,
-			&battlehammer
+			guardian_helmet,
+			guardian_chestplate,
+			guardian_greaves,
+			guardian_boots,
+			tower_shield,
+			battlehammer
 		};
 		itemLoader.loadSet(setIronCrossbow);
-		//random sets
 		Entity::EquipedItems setBerserk = {
-			&darkwraith_helmet,
+			darkwraith_helmet,
 			nullptr,
-			&darkwraith_greaves,
-			&darkwraith_boots,
+			darkwraith_greaves,
+			darkwraith_boots,
 			nullptr,
-			&berserker_blade
+			berserker_blade
 		};
 		itemLoader.loadSet(setBerserk);
 		Entity::EquipedItems setCheckOutMyBoots = {
 			nullptr,
 			nullptr,
-			&rags,
-			&guardian_boots,
+			rags,
+			guardian_boots,
 			nullptr,
-			&hatchet
+			hatchet
 		};
 		itemLoader.loadSet(setCheckOutMyBoots);
 		Entity::EquipedItems setHeavyCrossbow = {
 			nullptr,
-			&guardian_chestplate,
-			&guardian_greaves,
-			&guardian_boots,
-			&tower_shield,
-			&crossbow
+			guardian_chestplate,
+			guardian_greaves,
+			guardian_boots,
+			tower_shield,
+			crossbow
 		};
 		itemLoader.loadSet(setHeavyCrossbow);
 		Entity::EquipedItems setTridentGuy = {
-			&cap,
-			&iron_chestplate,
-			&copper_greaves,
-			&copper_boots,
-			&wooden_shield,
-			&trident
+			cap,
+			iron_chestplate,
+			copper_greaves,
+			copper_boots,
+			wooden_shield,
+			trident
 		};
 		itemLoader.loadSet(setTridentGuy);
 		Entity::EquipedItems setRecurvedArcher = {
-			&cap,
-			&clothes,
-			&rags,
-			&copper_boots,
-			&wooden_shield,
-			&recurve_bow
+			cap,
+			clothes,
+			rags,
+			copper_boots,
+			wooden_shield,
+			recurve_bow
 		};
 		itemLoader.loadSet(setRecurvedArcher);
 		Entity::EquipedItems setFlailGuy = {
-			&iron_cap,
-			&copper_vest,
-			&rags,
-			&copper_boots,
-			&buckler,
-			&flail
+			iron_cap,
+			copper_vest,
+			rags,
+			copper_boots,
+			buckler,
+			flail
 		};
 		itemLoader.loadSet(setFlailGuy);
 		Entity::EquipedItems setChosenOne = {
 			nullptr,
 			nullptr,
 			nullptr,
-			&shoes,
+			shoes,
 			nullptr,
-			&excalibur
+			excalibur
 		};
 		itemLoader.loadSet(setChosenOne);
 		Entity::EquipedItems setTwinDaggers = {
-			&cap,
-			&darkwraith_chestplate,
-			&rags,
-			&iron_boots,
+			cap,
+			darkwraith_chestplate,
+			rags,
+			iron_boots,
 			nullptr,
-			&twin_daggers
+			twin_daggers
 		};
 		itemLoader.loadSet(setTwinDaggers);
 
@@ -809,10 +832,10 @@ private:
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
 		GComponentButton* tradeItems = new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 40, 0.1f), "Trade", LoadTextureFromFile("Data\\red.png"));
-		tradeItems->callback = std::bind(setShopItemsRotation, std::placeholders::_1, std::placeholders::_2, &selectedItems.building, &inv, gui_windows.itemShop);
+		tradeItems->callback = std::bind(setShopItemsRotation, std::placeholders::_1, std::placeholders::_2, &selectedObj.building, &inv, gui_windows.itemShop);
 		gwin->AddComponent(tradeItems);
 		GComponentButton* tradeEntities = new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 90, 0.1f), "Recruit", LoadTextureFromFile("Data\\red.png"));
-		tradeEntities->callback = std::bind(setShopEntityRotation, std::placeholders::_1, std::placeholders::_2, &selectedItems.building, &inv, gui_windows.recruitShop);
+		tradeEntities->callback = std::bind(setShopEntityRotation, std::placeholders::_1, std::placeholders::_2, &selectedObj.building, &inv, gui_windows.recruitShop);
 		gwin->AddComponent(tradeEntities);
 		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 140, 0.1f), "Wait", LoadTextureFromFile("Data\\red.png")));
 		//inv.ActivateWindow(win);
@@ -930,7 +953,7 @@ private:
 
 				//
 				GComponentButton* button = new GComponentButton(glm::vec2(60.0f, 60.0f), glm::vec3(j, i, 0.0f), "", 0);
-				button->callback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedItems.entityItem, &inv, gui_windows.characterWindow);
+				button->callback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedObj.entityItem, &inv, gui_windows.characterWindow);
 				gwin->AddComponent(button);
 			}
 		}
@@ -953,7 +976,7 @@ private:
 			for (int j = 10; j < width - 60; j += 60) {
 				GComponentButton* button = new GComponentButton(glm::vec2(60.0f, 60.0f), glm::vec3(j, i, 0.0f), "", 0);
 				gwin->AddComponent(button);
-				button->callback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedItems.entityItem, &inv, gui_windows.characterWindow);
+				button->callback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedObj.entityItem, &inv, gui_windows.characterWindow);
 				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
 			}
 		}
@@ -1288,10 +1311,11 @@ private:
 		Inventory::Window* overworldHud;
 	} gui_windows;
 
-	struct SelectedItems {
+	struct SelectedObj {
 		Building* building;
 		EntityItem* entityItem;
-	} selectedItems;
+		Inventory::Window* win;
+	} selectedObj;
 
 	 DraggedObj draggedObj;
 

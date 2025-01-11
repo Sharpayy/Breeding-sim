@@ -29,7 +29,7 @@ void Astar::addBlockade(point p) {
 }
 
 std::vector<Astar::point> Astar::findPath(point s, point e, int offset) {
-	if (tileIsBlocked(s) || tileIsBlocked(e) || (s == e)) return {};
+	if (tileIsBlocked(e) || (s == e)) return {};
 	std::vector<point> result;
 
 	point c = s;
