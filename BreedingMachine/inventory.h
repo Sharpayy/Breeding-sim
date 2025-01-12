@@ -263,21 +263,14 @@ public:
 	bool ActivateWindow(Window* win) {
 		Window* winExist = windowExist(win);
 		Window* winIsActive = windowExistActive(win);
-		if (winExist && !winIsActive) {
+		if (winExist) {
 			win->setWindowHeight(MAXINT64);
 			active_windows.push_back(win);
 			sortVec();
 
 			return true;
 		}
-		else if (winExist && winIsActive) {
-			active_windows.erase(std::remove(active_windows.begin(), active_windows.end(), win), active_windows.end());
-			win->setWindowHeight(MAXINT64);
-			active_windows.push_back(win);
-
-			return true;
-		}
-		else return false;
+		return false;
 	}
 
 	bool DisableWindow(Window* win) {
@@ -560,20 +553,43 @@ public:
 	//void loadSet(std::string setName, Entity::EquipedItems& set) {
 	//	sets[setName] = set;
 	//}
-
+	
 	Entity::EquipedItems getRandomSet() {
 		int size = sets.size();
 		if (!size) return Entity::EquipedItems{};
 		return sets.at(rand() % size);
 	}
 
+
+	//FOR NOW
+	float calculateEntityPrice(Entity* entity) {
+		if (!entity) return 0;
+		float sum = BASE_ENTITY_VALUE;
+		auto items = entity->getEquipedItems();
+		if (items.helmet) sum += items.helmet->getItemPrice();
+		if (items.Chestplate) sum += items.Chestplate->getItemPrice();
+		if (items.Legs) sum += items.Legs->getItemPrice();
+		if (items.Boots) sum += items.Boots->getItemPrice();
+		if (items.shield) sum += items.shield->getItemPrice();
+		if (items.weapon) sum += items.weapon->getItemPrice();
+
+		auto stats = entity->getStats();
+		sum += MAX_MELEE_STAT_PRICE * getPercentage(20, 5, stats->melee)
+			+ MAX_RANGED_STAT_PRICE * getPercentage(20, 5, stats->ranged)
+			+ MAX_BRAVERY_STAT_PRICE * getPercentage(200, 100, stats->bravery)
+			+ MAX_DEFENCE_STAT_PRICE * getPercentage(10, 2, stats->defense)
+			+ MAX_HP_STAT_PRICE * getPercentage(30, 10, stats->hp);
+		return sum;
+	}
+
+	//FOR NOW
 	Entity* generateRandomEntity(uint8_t factionID) {
 		Stats entityStats = {
 			generatorInstance.getRandomNumber(5,20),
 			generatorInstance.getRandomNumber(2,10),
 			generatorInstance.getRandomNumber(5,20),
 			generatorInstance.getRandomNumber(100,200),
-			5.1f,
+			4.1f + generatorInstance.getRandomNumber(0,2),
 			generatorInstance.getRandomNumber(10,30) };
 		Entity::EquipedItems items = getRandomSet();
 		Entity* entity = new Entity(getRandomFactionName(factionID), 0, entityStats, items);
@@ -583,6 +599,11 @@ public:
 	}
 
 private:
+	//FOR NOW
+	float getPercentage(float min, float max, float value) {
+		return ((value - min) / (max - min));
+	}
+
 	std::unordered_map<std::string, Item*> itemMap;
 	std::unordered_map<uint8_t, std::vector<Item*>> tierItemMap;
 	//std::unordered_map<std::string, Entity::EquipedItems> sets;
@@ -603,7 +624,6 @@ struct GUI_DraggedItem {
 	Inventory::Window* win;
 	Slot* previousSlot;
 };
-
 
 struct DraggedObj {
 	GUI_DraggedWindow draggedWindow = {};
@@ -699,6 +719,9 @@ void setParty(void* v1, void* v2, Squad** squad, Inventory* inv, Inventory::Wind
 	}
 }
 
+float getPercentage(float max, float min, float value) {
+	return ((value - min) / (max - min));
+}
 
 void getCharacterInventory_EI(void* v1, void* v2, EntityItem** entityItem, Inventory* inv, Inventory::Window* win) {
 	if (inv && (*entityItem)) {
@@ -718,29 +741,34 @@ void getCharacterInventory_EI(void* v1, void* v2, EntityItem** entityItem, Inven
 			GComponent* cmp;
 			cmp = GetNamedComponent(componentName.c_str());
 			cmp->SetText(ent->getName().c_str());
-
+			auto entStats = ent->getStats();
 			componentName = "Vhp";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
-			component->value = 0.2f;//ent->getStats()->hp / ENTITY_MAX_HEALTH;
+			component->value = getPercentage(30, 0, entStats->hp) * 0.5f;//ent->getStats()->hp / ENTITY_MAX_HEALTH;
 
 			componentName = "Vstamina";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(6.1f, 0, entStats->stamina) * 0.5f;
 
 			componentName = "Vbravery";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
-
+			component->value = getPercentage(200, 0, entStats->bravery) * 0.5f;
+				
 			componentName = "Vmelee";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(20, 0, entStats->melee) * 0.5f;
 
 			componentName = "Vranged";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(20, 0, entStats->ranged) * 0.5f;
 
 			componentName = "Vdefense";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(10, 0, entStats->defense) * 0.5f;
+
 		}
 	}
 }
-
 void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv, Inventory::Window* win) {
 	if (inv && (*entity)) {
 		if (inv->ActivateWindow(win)) {
@@ -758,25 +786,30 @@ void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv
 			GComponent* comp;
 			comp = GetNamedComponent(componentName.c_str());
 			comp->SetText((*entity)->getName().c_str());
-
+			auto entStats = (*entity)->getStats();
 			componentName = "Vhp";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
 			component->value = (*entity)->getHp() / (*entity)->getStats()->hp;
 
 			componentName = "Vstamina";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(6.1f, 0, entStats->stamina) * 0.5f;
 
 			componentName = "Vbravery";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(200, 0, entStats->bravery) * 0.5f;
 
 			componentName = "Vmelee";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(20, 0, entStats->melee) * 0.5f;
 
 			componentName = "Vranged";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(20, 0, entStats->ranged) * 0.5f;
 
 			componentName = "Vdefense";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
+			component->value = getPercentage(10, 0, entStats->defense) * 0.5f;
 		}
 	}
 }

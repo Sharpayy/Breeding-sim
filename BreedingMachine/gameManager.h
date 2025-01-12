@@ -187,8 +187,13 @@ public:
 				if (slot) {
 					//if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.inventory) {
 					if (selectedObj.win != gui_windows.recruitShop) {
-						if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.itemShop) {
-							//if (inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) {
+						if (win == gui_windows.partyView && draggedObj.draggedItem.win == gui_windows.recruitShop) {
+							buyItem(slot, 1);
+						}
+						else if (win == gui_windows.recruitShop && draggedObj.draggedItem.win == gui_windows.partyView) {
+							sellItem(slot, 1);
+						}
+						else if (win == gui_windows.characterWindow && draggedObj.draggedItem.win == gui_windows.itemShop) {
 							if (buyItem(slot)) equip_deequipItem(slot);
 						}
 						else if (win == gui_windows.itemShop && draggedObj.draggedItem.win == gui_windows.characterWindow) {
@@ -207,7 +212,7 @@ public:
 							}
 						}
 					}
-					else if (draggedObj.draggedItem.win == gui_windows.itemShop && win == gui_windows.itemShop) {
+					if (draggedObj.draggedItem.win == gui_windows.itemShop && win == gui_windows.itemShop) {
 						//SWAP ITEMS IN ITEM SHOP
 						if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return;
 						int idx0, idx1, buildingItemsAmount;
@@ -299,15 +304,23 @@ public:
 		}
 	}
 
-	bool buyItem(Slot* slot) {
+	bool buyItem(Slot* slot, uint8_t flag = 0) {
 		int draggedItemPrice, possibleItemPrice = 0, finallPrice;
 		draggedItemPrice = draggedObj.draggedItem.item->getItemPrice();
 		finallPrice = draggedItemPrice;
 		if (!slot->getItem()) {
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
-				selectedObj.building->eraseItemFromRotation(slot->getItem());
-				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				if (flag == 0) {
+					selectedObj.building->eraseItemFromRotation(slot->getItem());
+					setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				}
+				else {
+					selectedObj.building->eraseEntityItemFromRotation((EntityItem*)slot->getItem());
+					setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
+					auto comp = playerData.player->getSquadComp();
+					comp->entities[comp->size++] = ((EntityItem*)slot->getItem())->getEntity();
+				}
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -318,11 +331,22 @@ public:
 			finallPrice = draggedItemPrice - possibleItemPrice;
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
-				int idx0 = gui_windows.itemShop->getSlotIndex(draggedObj.draggedItem.previousSlot);
-				selectedObj.building->addSingleItemToRotation(draggedObj.draggedItem.previousSlot->getItem(), idx0);
-				selectedObj.building->eraseItemFromRotation(slot->getItem());
-
-				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				int idx0 = -1;
+				if (flag == 0) {
+					idx0 = gui_windows.itemShop->getSlotIndex(draggedObj.draggedItem.previousSlot);
+					selectedObj.building->addSingleItemToRotation(draggedObj.draggedItem.previousSlot->getItem(), idx0);
+					selectedObj.building->eraseItemFromRotation(slot->getItem());
+					setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				}
+				else {
+					idx0 = gui_windows.recruitShop->getSlotIndex(draggedObj.draggedItem.previousSlot);
+					selectedObj.building->addSingleEntityItemToRotation((EntityItem*)draggedObj.draggedItem.previousSlot->getItem(), idx0);
+					selectedObj.building->eraseEntityItemFromRotation((EntityItem*)slot->getItem());
+					setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
+					auto comp = playerData.player->getSquadComp();
+					idx0 = gui_windows.partyView->getSlotIndex(slot);
+					comp->entities[idx0] = ((EntityItem*)slot->getItem())->getEntity();
+				}
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -331,16 +355,29 @@ public:
 		return false;
 	}
 
-	bool sellItem(Slot* slot) {
+	bool sellItem(Slot* slot, uint8_t flag = 0) {
 		int draggedItemPrice, possibleItemPrice = 0, finallPrice;
 		draggedItemPrice = draggedObj.draggedItem.item->getItemPrice();
 		finallPrice = -draggedItemPrice;
 		if (!slot->getItem()) {
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
-				selectedObj.building->addSingleItemToRotation(slot->getItem(), -1);
-
-				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				if (flag == 0) {
+					selectedObj.building->addSingleItemToRotation(slot->getItem(), -1);
+					setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				}
+				else {
+					selectedObj.building->addSingleEntityItemToRotation((EntityItem*)slot->getItem(), -1);
+					setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
+					int idx = gui_windows.partyView->getSlotIndex(draggedObj.draggedItem.previousSlot);
+					auto comp = playerData.player->getSquadComp();
+					comp->entities[idx] = ((EntityItem*)slot->getItem())->getEntity();
+					for (int i = idx; i < comp->size - 1; i++) {
+						comp->entities[i] = comp->entities[i + 1];
+					}
+					comp->size--;
+					setParty(nullptr, nullptr, &playerData.player, &inv, gui_windows.partyView);
+				}
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -351,12 +388,19 @@ public:
 			finallPrice = -draggedItemPrice + possibleItemPrice;
 			if (playerData.money >= finallPrice) {
 				if (!inv.swapItems(slot, draggedObj.draggedItem.previousSlot)) return false;
-				int idx0 = gui_windows.itemShop->getSlotIndex(slot);
-				selectedObj.building->addSingleItemToRotation(slot->getItem(), idx0);
-
-				selectedObj.building->eraseItemFromRotation(draggedObj.draggedItem.previousSlot->getItem());
-
-				setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				int idx0 = -1;
+				if (flag == 0) {
+					idx0 = gui_windows.itemShop->getSlotIndex(slot);
+					selectedObj.building->addSingleItemToRotation(slot->getItem(), idx0);
+					selectedObj.building->eraseItemFromRotation(draggedObj.draggedItem.previousSlot->getItem());
+					setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
+				}
+				else {
+					idx0 = gui_windows.recruitShop->getSlotIndex(slot);
+					selectedObj.building->addSingleEntityItemToRotation((EntityItem*)slot->getItem(), idx0);
+					selectedObj.building->eraseEntityItemFromRotation((EntityItem*)draggedObj.draggedItem.previousSlot->getItem());
+					setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
+				}
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
 				return true;
@@ -366,7 +410,7 @@ public:
 
 	void equip_deequipItem(Slot* slot) {
 		int idx;
-		auto items = selectedObj.entityItem->getEntity()->getEquipedItems();
+		auto& items = selectedObj.entityItem->getEntity()->getEquipedItems();
 		switch (slot->getSlotType())
 		{
 		case HELMET:
@@ -484,6 +528,8 @@ private:
 		itemLoader.loadItem(notched_blades);
 		WeaponItem *doom_mace = new WeaponItem{ "doom mace", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC39.png","EquipmentIconsC39"), MELEE, new WeaponItem::ObjectStatistic{5.0f}, 123,  TIER_3 };
 		itemLoader.loadItem(doom_mace);
+		//WeaponItem* shining_hatchet = new WeaponItem{ "doom mace", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC52.png","EquipmentIconsC52"), MELEE, new WeaponItem::ObjectStatistic{5.0f}, 123,  TIER_3 };
+		//itemLoader.loadItem(doom_mace);
 		//Armory
 		ArmorItem *iron_chestplate = new ArmorItem{ "iron chestplate", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC193.png","EquipmentIconsC193"), CHESTPLATE, new ArmorItem::ObjectStatistic{5}, 132, TIER_2 };
 		itemLoader.loadItem(iron_chestplate);
@@ -845,7 +891,7 @@ private:
 	void initPrimaryInv(int width, int height, uint64_t texItemFrame) {
 		Inventory::Window* win = inv.AddWindow("inventory", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = win->getGWindow();
-		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), "Inventory 1", LoadTextureFromFile("Data\\red.png"));
+		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 5, 0.1f), "Inventory", LoadTextureFromFile("Data\\red.png"), true);
 		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
 		gwin->AddComponent(drag);
 		//przyciski do zmiany na kolejny panel ekwipunku
@@ -874,6 +920,28 @@ private:
 		//inv.ActivateWindow(win);
 
 	}
+	void initItemData(int width, int height) {
+		GComponent* c;
+		Inventory::Window* win = inv.AddWindow("item_data", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
+		auto gwin = win->getGWindow();
+		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"));
+		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
+		gwin->AddComponent(drag);
+		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
+		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
+		gwin->AddComponent(exit);
+		c = new GComponentImage(glm::vec2(32, 32), glm::vec3(width / 2 -  32 + 40, height/2 - 15, 0.1f), LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC175.png"));
+		AddNamedComponent(c, "ItemData0");
+		gwin->AddComponent(c);
+		c = new GComponentLabel(glm::vec2(20, 1), glm::vec3(width / 2 - 30, height/2 - 10, 0.1f), "nazwa", true);
+		AddNamedComponent(c, "ItemData1");
+		gwin->AddComponent(c);
+		c = new GComponentLabel(glm::vec2(20, 1), glm::vec3(width / 2 - 30, height/2 + 5, 0.1f), "stats", true);
+		AddNamedComponent(c, "ItemData2");
+		gwin->AddComponent(c);
+		//inv.ActivateWindow(win);
+		gui_windows.characterWindow = win;
+	}
 	void initCharInv(int width, int height, uint64_t texItemFrame) {
 		GComponent* c;
 		Inventory::Window* win = inv.AddWindow("char_inv", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
@@ -891,16 +959,19 @@ private:
 		gwin->AddComponent(exit);
 		int y = 30;
 		//sloty
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, HELMET), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 70, y), 30.0f, 30.0f, HELMET), texItemFrame);
 		y += 30;
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 - 30, y), 30.0f, 30.0f, SHIELD), texItemFrame);
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30 + 30, y), 30.0f, 30.0f, WEAPON), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 70, y), 30.0f, 30.0f, CHESTPLATE), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 70 - 30, y), 30.0f, 30.0f, SHIELD), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 70 + 30, y), 30.0f, 30.0f, WEAPON), texItemFrame);
 		y += 30;
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, LEGS), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 70, y), 30.0f, 30.0f, LEGS), texItemFrame);
 		y += 30;
-		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 30, y), 30.0f, 30.0f, BOOTS), texItemFrame);
+		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 70, y), 30.0f, 30.0f, BOOTS), texItemFrame);
 		//staty
+		c = new GComponentImage(glm::vec2(100, 100), glm::vec3(width/2 + 20, y - 80, 0.1f), LoadTextureFromFile("Data\\bt_human_1.png"));
+		AddNamedComponent(c, "ItemData0");
+		gwin->AddComponent(c);
 		auto texBase = LoadTextureFromFile("Data\\blue.png");
 		auto texFill = LoadTextureFromFile("Data\\purple.png");
 		y += 40;
@@ -1009,6 +1080,7 @@ private:
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
 		initOverworldHud();
 		initBattleHud();
+		initItemData(100, 70);
 		initShopItems(300, 300, texItemFrame);
 		initCharInv(300, 250, texItemFrame);
 		initShopRecruits(300, 400, texItemFrame);
@@ -1297,7 +1369,7 @@ private:
 
 	struct PlayerData {
 		Squad* player;
-		int money = 300;
+		int money = 1200;
 	} playerData;
 
 	struct GUI_Windows {

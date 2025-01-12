@@ -153,13 +153,7 @@ public:
 		{
 			e = units->entities[i];
 			Stats* st = e->getStats();
-			st->stamina = 3.1f;
-			st->hp = 100.0f;
-			st->defense = 2.4f;
-			st->melee = 8.1f;
-			st->bravery = 50.0f;
-			e->SetBravery(50.0f);
-			e->SetHp(99.0f);
+			e->SetBaseStats();
 			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
 			e->EntityClearMove();
 			AiDecideEntityInitialState(e);
@@ -173,12 +167,7 @@ public:
 		{
 			e = units->entities[i];
 			auto s = e->getStats();
-			s->hp = 100.0f;
-			s->ranged = 4.0f;
-			s->stamina = 7.1f;
-			s->bravery = 50.0f;
-			e->SetBravery(50.0f);
-			e->SetHp(90.0f);
+			e->SetBaseStats();
 			e->setEntityPosition(glm::vec2{ -(offsetX + 1) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
 			entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
 			e->EntityClearMove();
