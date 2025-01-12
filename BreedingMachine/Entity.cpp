@@ -76,7 +76,7 @@ int EntityCombatCloseRange::CanMoveEntity()
     return 1;
 }
 
-int EntityCombatCloseRange::AttackEntity(void* battleContext)
+int EntityCombatCloseRange::AttackEntity(void* battleContext, AnimationControllers* ac)
 {
     float tileSize = 64.0f;
     Entity* enemy_close = 0;
@@ -101,6 +101,7 @@ int EntityCombatCloseRange::AttackEntity(void* battleContext)
 
     float new_hp = min(0.0f, enemy_close->getHp() - AiGetAttackAfterArmor(enemy_close, AiGetUnitAttack(self)));
     enemy_close->SetHp(new_hp);
+    ac->mac.SetAnimation(LoadTextureFromFile("Data\\purple.png"), enemy_close->getPosition());
 
     return true;
 }
@@ -201,7 +202,7 @@ int EntityCombatLongRange::CanMoveEntity()
     return 1;
 }
 
-int EntityCombatLongRange::AttackEntity(void* battleContext)
+int EntityCombatLongRange::AttackEntity(void* battleContext, AnimationControllers* ac)
 {
     float ai_range = 5.0f;
     float tileSize = 64.0f;
@@ -227,6 +228,7 @@ int EntityCombatLongRange::AttackEntity(void* battleContext)
 
     float new_hp = max(0.0f, enemy_close->getHp() - AiGetAttackAfterArmor(enemy_close, AiGetUnitAttack(self)));
     enemy_close->SetHp(new_hp);
+    ac->rac.SetAnimation(LoadTextureFromFile("Data\\purple.png"), self->getPosition(), enemy_close->getPosition());
     return true;
 }
 
@@ -255,7 +257,7 @@ int EntityCombatDead::CanMoveEntity()
     return 0;
 }
 
-int EntityCombatDead::AttackEntity(void* battleContext)
+int EntityCombatDead::AttackEntity(void* battleContext, AnimationControllers* ac)
 {
     return 0;
 }
@@ -287,7 +289,7 @@ int EntityCombatEscape::CanMoveEntity()
     return 1;
 }
 
-int EntityCombatEscape::AttackEntity(void* battleContext)
+int EntityCombatEscape::AttackEntity(void* battleContext, AnimationControllers* ac)
 {
     return 0;
 }
@@ -317,7 +319,7 @@ int EntityCombatStand::CanMoveEntity()
     return 0;
 }
 
-int EntityCombatStand::AttackEntity(void* battleContext)
+int EntityCombatStand::AttackEntity(void* battleContext, AnimationControllers* ac)
 {
     return 0;
 }
@@ -342,6 +344,11 @@ Squad::Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position)
     this->position = position;
     this->factionID = factionID;
     this->squadState = STAND;
+}
+
+glm::vec2 lerp2f(glm::vec2 a, glm::vec2 b, float t)
+{
+    return a + (b - a) * t;
 }
 
 float AiGetEntityScaryFactor(Entity* e)
@@ -384,6 +391,8 @@ float AiGetUnitArmor(Entity* e)
         armor += items.helmet->getObjectStatistic()->armor;
     if (items.Legs != nullptr)
         armor += items.Legs->getObjectStatistic()->armor;
+    if (items.shield != nullptr)
+        armor += items.shield->getObjectStatistic()->armor;
 
     return armor;
 }
@@ -398,10 +407,8 @@ float AiGetUnitAttack(Entity* e)
     float atk = max(e->getStats()->melee, e->getStats()->ranged);
     Entity::EquipedItems items = e->getEquipedItems();
 
-   /* if (items->weapon_primary != nullptr)
-        atk += items->weapon_primary->getObjectStatistic()->damage;
-    if (items->weapon_secondary != nullptr)
-        atk += items->weapon_secondary->getObjectStatistic()->damage;*/
+    if (items.weapon != nullptr)
+        atk += items.weapon->getObjectStatistic()->damage;
 
     return atk;
 }
@@ -417,4 +424,79 @@ void AiGainUnitStdBravery(Entity* e)
     float pBravGain = 0.08f;
     if (e->state->EntityCanBattle() == true)
         e->SetBravery(e->GetBravery() + e->getStats()->bravery * pBravGain);
+}
+
+MeleeAnimationController::MeleeAnimationController(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails* mcd)
+{
+    this->r = r;
+    t = 1.0f;
+    r->newModel(ANIMATION_MELEE_ATACK, mcd->vb, mcd->p, mcd->v_cnt, mcd->rm, rasticore::Texture2DBindless(), 2);
+    r->newObject(ANIMATION_MELEE_ATACK, glm::mat4(1.0f));
+    rasticore::Program p = r->getModel(ANIMATION_MELEE_ATACK)->std_prgm;
+    p.use();
+
+    lOpacity = glGetUniformLocation(p.id, "opacity");
+}
+
+void MeleeAnimationController::Update(float dt)
+{
+    if (t <= 1.0f)
+        t += dt;
+    else
+        t = 1.0f;
+}
+
+void MeleeAnimationController::SetAnimation(uint64_t texture, glm::vec2 p)
+{
+    position = p;
+    tex = texture;
+    r->getModel(ANIMATION_MELEE_ATACK)->std_texture2d.handle = texture;
+    t = 0.0f;
+}
+
+void MeleeAnimationController::Render()
+{
+    if (t >= 1.0f)
+        return;
+
+    glUniform1f(lOpacity, 1.0 - t);
+    r->BindActiveModel(ANIMATION_MELEE_ATACK);
+    r->SetObjectMatrix(0, glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 2.15f)));
+    r->RenderSelectedModel(ANIMATION_MELEE_ATACK);
+    glUniform1f(lOpacity, 1.0f);
+}
+
+RangedAnimationController::RangedAnimationController(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails* mcd)
+{
+    this->r = r;
+    t = 1.0f;
+    r->newModel(ANIMATION_RANGE_ATTACK, mcd->vb, mcd->p, mcd->v_cnt, mcd->rm, rasticore::Texture2DBindless(), 2);
+    r->newObject(ANIMATION_RANGE_ATTACK, glm::mat4(1.0f));
+}
+
+void RangedAnimationController::SetAnimation(uint64_t texture, glm::vec2 p0, glm::vec2 p1)
+{
+    pos0 = p0;
+    pos1 = p1;
+    tex = texture;
+    r->getModel(ANIMATION_RANGE_ATTACK)->std_texture2d.handle = texture;
+    t = 0.0f;
+}
+
+void RangedAnimationController::Update(float dt)
+{
+    if (t <= 1.0f)
+        t += dt;
+    else
+        t = 1.0f;
+}
+
+void RangedAnimationController::Render()
+{
+    if (t >= 1.0f)
+        return;
+
+    r->BindActiveModel(ANIMATION_RANGE_ATTACK);
+    r->SetObjectMatrix(0, glm::translate(glm::mat4(1.0f), glm::vec3(lerp2f(pos0, pos1, t), 2.15f)));
+    r->RenderSelectedModel(ANIMATION_RANGE_ATTACK);
 }
