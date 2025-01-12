@@ -263,21 +263,14 @@ public:
 	bool ActivateWindow(Window* win) {
 		Window* winExist = windowExist(win);
 		Window* winIsActive = windowExistActive(win);
-		if (winExist && !winIsActive) {
+		if (winExist) {
 			win->setWindowHeight(MAXINT64);
 			active_windows.push_back(win);
 			sortVec();
 
 			return true;
 		}
-		else if (winExist && winIsActive) {
-			active_windows.erase(std::remove(active_windows.begin(), active_windows.end(), win), active_windows.end());
-			win->setWindowHeight(MAXINT64);
-			active_windows.push_back(win);
-
-			return true;
-		}
-		else return false;
+		return false;
 	}
 
 	bool DisableWindow(Window* win) {
@@ -560,20 +553,43 @@ public:
 	//void loadSet(std::string setName, Entity::EquipedItems& set) {
 	//	sets[setName] = set;
 	//}
-
+	
 	Entity::EquipedItems getRandomSet() {
 		int size = sets.size();
 		if (!size) return Entity::EquipedItems{};
 		return sets.at(rand() % size);
 	}
 
+
+	//FOR NOW
+	float calculateEntityPrice(Entity* entity) {
+		if (!entity) return 0;
+		float sum = BASE_ENTITY_VALUE;
+		auto items = entity->getEquipedItems();
+		if (items.helmet) sum += items.helmet->getItemPrice();
+		if (items.Chestplate) sum += items.Chestplate->getItemPrice();
+		if (items.Legs) sum += items.Legs->getItemPrice();
+		if (items.Boots) sum += items.Boots->getItemPrice();
+		if (items.shield) sum += items.shield->getItemPrice();
+		if (items.weapon) sum += items.weapon->getItemPrice();
+
+		auto stats = entity->getStats();
+		sum += MAX_MELEE_STAT_PRICE * getPercentage(20, 5, stats->melee)
+			+ MAX_RANGED_STAT_PRICE * getPercentage(20, 5, stats->ranged)
+			+ MAX_BRAVERY_STAT_PRICE * getPercentage(200, 100, stats->bravery)
+			+ MAX_DEFENCE_STAT_PRICE * getPercentage(10, 2, stats->defense)
+			+ MAX_HP_STAT_PRICE * getPercentage(30, 10, stats->hp);
+		return sum;
+	}
+
+	//FOR NOW
 	Entity* generateRandomEntity(uint8_t factionID) {
 		Stats entityStats = {
 			generatorInstance.getRandomNumber(5,20),
 			generatorInstance.getRandomNumber(2,10),
 			generatorInstance.getRandomNumber(5,20),
 			generatorInstance.getRandomNumber(100,200),
-			5.1f,
+			4.1f + generatorInstance.getRandomNumber(0,2),
 			generatorInstance.getRandomNumber(10,30) };
 		Entity::EquipedItems items = getRandomSet();
 		Entity* entity = new Entity(getRandomFactionName(factionID), 0, entityStats, items);
@@ -583,6 +599,11 @@ public:
 	}
 
 private:
+	//FOR NOW
+	float getPercentage(float min, float max, float value) {
+		return ((value - min) / (max - min));
+	}
+
 	std::unordered_map<std::string, Item*> itemMap;
 	std::unordered_map<uint8_t, std::vector<Item*>> tierItemMap;
 	//std::unordered_map<std::string, Entity::EquipedItems> sets;
@@ -603,7 +624,6 @@ struct GUI_DraggedItem {
 	Inventory::Window* win;
 	Slot* previousSlot;
 };
-
 
 struct DraggedObj {
 	GUI_DraggedWindow draggedWindow = {};
