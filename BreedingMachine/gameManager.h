@@ -339,9 +339,9 @@ public:
 					setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 				}
 				else {
+					selectedObj.building->eraseEntityItemFromRotation((EntityItem*)slot->getItem());
 					idx0 = gui_windows.recruitShop->getSlotIndex(draggedObj.draggedItem.previousSlot);
 					selectedObj.building->addSingleEntityItemToRotation((EntityItem*)draggedObj.draggedItem.previousSlot->getItem(), idx0);
-					selectedObj.building->eraseEntityItemFromRotation((EntityItem*)slot->getItem());
 					setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
 					auto comp = playerData.player->getSquadComp();
 					idx0 = gui_windows.partyView->getSlotIndex(slot);
