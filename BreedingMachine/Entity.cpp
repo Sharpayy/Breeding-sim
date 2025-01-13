@@ -276,7 +276,26 @@ int EntityCombatEscape::MoveEntity(void* battleContext)
 {
     std::vector<vec2> corners = { vec2(-512.0f, -512.0f), vec2(512.0f, -512.0f), vec2(-512.0f, 512.0f), vec2(512.0f, 512.0f)};
 
-    return false;
+    vec2 close_corner = vec2(-512.0f, -512.0f);
+    float d = INFINITY;
+
+    for (int i = 0; i < corners.size(); i++)
+    {
+        if (distance(self->getPosition(), corners.at(i)) < d)
+        {
+            d = distance(self->getPosition(), corners.at(i));
+            close_corner = corners.at(i);
+        }
+    }
+
+    if (d < 64.0f)
+    {
+        // pufff i nie ma
+        return false;
+    }
+
+    self->travel = MAPCLAMP((self->getPosition() + (normalize(self->getPosition() - close_corner) * self->getStats()->stamina * 64.0f)));
+    return true;                                                                                 
 }
 
 int EntityCombatEscape::NextState()

@@ -153,6 +153,7 @@ public:
 		{
 			e = units->entities[i];
 			Stats* st = e->getStats();
+			e->getStats()->hp = 50.0f; e->getStats()->bravery = 50.0f;
 			e->SetBaseStats();
 			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
 			e->EntityClearMove();
@@ -167,6 +168,7 @@ public:
 		{
 			e = units->entities[i];
 			auto s = e->getStats();
+			e->getStats()->hp = 50.0f; e->getStats()->bravery = 50.0f;
 			e->SetBaseStats();
 			e->setEntityPosition(glm::vec2{ -(offsetX + 1) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
 			entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);

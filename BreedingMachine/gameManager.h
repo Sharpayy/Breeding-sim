@@ -483,7 +483,6 @@ public:
 private:
 	void initItems() {
 		//Weaponry
-		stbi_set_flip_vertically_on_load(false);
 		WeaponItem* bastard_sword = new WeaponItem{"bastard sword", (void*) LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC2.png","EquipmentIconsC2.png"), MELEE, new WeaponItem::ObjectStatistic{4}, 83, TIER_2};
 		itemLoader.loadItem(bastard_sword);
 		WeaponItem* spear = new WeaponItem{ "spear", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC61.png","EquipmentIconsC61"), MELEE, new WeaponItem::ObjectStatistic{3}, 80, TIER_1 };
@@ -908,7 +907,6 @@ private:
 			pickaxe
 		};
 		itemLoader.loadSet(setMinor);
-		stbi_set_flip_vertically_on_load(true);
 	}
 
 	void initOverworldHud() {
