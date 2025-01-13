@@ -396,10 +396,13 @@ public:
 					setShopItemsRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.itemShop);
 				}
 				else {
+					selectedObj.building->eraseEntityItemFromRotation((EntityItem*)draggedObj.draggedItem.previousSlot->getItem());
 					idx0 = gui_windows.recruitShop->getSlotIndex(slot);
 					selectedObj.building->addSingleEntityItemToRotation((EntityItem*)slot->getItem(), idx0);
-					selectedObj.building->eraseEntityItemFromRotation((EntityItem*)draggedObj.draggedItem.previousSlot->getItem());
 					setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
+					auto comp = playerData.player->getSquadComp();
+					idx0 = gui_windows.partyView->getSlotIndex(draggedObj.draggedItem.previousSlot);
+					comp->entities[idx0] = ((EntityItem*)draggedObj.draggedItem.previousSlot->getItem())->getEntity();
 				}
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
@@ -1380,7 +1383,7 @@ private:
 		float distance = calculateSquadViewDistance(squadF);
 		if (factionManager.getFactionsRelationships(squadS->getSquadFactionID(), squadF->getSquadFactionID()) == ENEMY) {
 			if (glm::distance(squadF->getSquadPosition(), squadS->getSquadPosition()) <= distance) {
-				if (glm::distance(squadF->getSquadPosition(), playerData.player->getSquadPosition()) <= 4.0f) {
+				if (glm::distance(squadS->getSquadPosition(), squadF->getSquadPosition()) <= 4.0f && squadS == playerData.player) {
 					game_type = GAMETYPE_FIGHT;
 					EntityBattleManager::BattleData battleData = {
 						playerData.player,
