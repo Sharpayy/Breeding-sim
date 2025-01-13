@@ -31,13 +31,50 @@ enum Race {
 	BANDITS = 4,
 };
 
-typedef struct _EntityApperance
+class MeleeAnimationController
 {
-	float attackTextureOpacity;
-	float blockadeOpacity;
-	
-	float Reserved[2];
-} EntityApperance;
+public:
+	float t;
+	uint64_t tex;
+	glm::vec2 position;
+	uint32_t lOpacity;
+
+	rasticore::RastiCoreRender* r;
+
+	MeleeAnimationController() {};
+	MeleeAnimationController(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails* mcd);
+
+	void Update(float dt);
+	void SetAnimation(uint64_t texture, glm::vec2 p);
+	void Render();
+
+};
+
+glm::vec2 lerp2f(glm::vec2 a, glm::vec2 b, float t);
+
+class RangedAnimationController
+{
+public:
+	float t;
+	uint64_t tex;
+	glm::vec2 pos0;
+	glm::vec2 pos1;
+
+	rasticore::RastiCoreRender* r;
+
+	RangedAnimationController() {};
+	RangedAnimationController(rasticore::RastiCoreRender* r, rasticore::ModelCreationDetails* mcd);
+
+	void SetAnimation(uint64_t texture, glm::vec2 p0, glm::vec2 p1);
+	void Update(float dt);
+	void Render();
+};
+
+typedef struct _AnimationControllers
+{
+	MeleeAnimationController mac;
+	RangedAnimationController rac;
+}AnimationControllers;
 
 typedef struct _EntityData
 {
@@ -58,7 +95,7 @@ public:
 		virtual int MoveEntity(void* battleContext) = 0;
 		virtual int NextState() = 0;
 		virtual int CanMoveEntity() = 0;
-		virtual int AttackEntity(void* battleContext) = 0;
+		virtual int AttackEntity(void* battleContext, AnimationControllers* ac) = 0;
 		virtual int EntityCanBattle() = 0;
 	};
 
@@ -276,7 +313,7 @@ public:
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
 	virtual int CanMoveEntity();
-	virtual int AttackEntity(void* battleContext);
+	virtual int AttackEntity(void* battleContext, AnimationControllers* ac);
 	virtual int EntityCanBattle();
 };
 
@@ -287,7 +324,7 @@ public:
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
 	virtual int CanMoveEntity();
-	virtual int AttackEntity(void* battleContext);
+	virtual int AttackEntity(void* battleContext, AnimationControllers* ac);
 	virtual int EntityCanBattle();
 };
 
@@ -298,7 +335,7 @@ public:
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
 	virtual int CanMoveEntity();
-	virtual int AttackEntity(void* battleContext);
+	virtual int AttackEntity(void* battleContext, AnimationControllers* ac);
 	virtual int EntityCanBattle();
 };
 
@@ -309,7 +346,7 @@ public:
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
 	virtual int CanMoveEntity();
-	virtual int AttackEntity(void* battleContext);
+	virtual int AttackEntity(void* battleContext, AnimationControllers* ac);
 	virtual int EntityCanBattle();
 };
 
@@ -320,7 +357,7 @@ public:
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
 	virtual int CanMoveEntity();
-	virtual int AttackEntity(void* battleContext);
+	virtual int AttackEntity(void* battleContext, AnimationControllers* ac);
 	virtual int EntityCanBattle();
 };
 

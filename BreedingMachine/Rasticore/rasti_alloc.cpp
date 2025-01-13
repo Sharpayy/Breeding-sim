@@ -42,7 +42,7 @@ void rasticore::RsMatrixAllocator::FreeMatrix(LPVOID mat)
 	if ((pg->d_0 & index) == index)
 		return;
 
-	if (IS_MATRIXPAGE_FULL(pg))
+	if (!IS_MATRIXPAGE_FULL(pg))
 		actPagePool.push_back(pg);
 	pg->d_0 = pg->d_0 ^ index;
 }

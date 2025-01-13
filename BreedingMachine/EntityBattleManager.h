@@ -5,7 +5,7 @@
 #include "Define.h"
 #include "inventory.h"
 #include "EntityTextures.h"
-
+#include <glm/gtc/matrix_transform.hpp>
 
 class EntityBattleManager {
 public:
@@ -31,6 +31,9 @@ public:
 			r->newModel(MODEL_ENEMY_FACTION_BASE + i, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, rasticore::Texture2DBindless(), 20);
 			r->newModel(MODEL_PLAYER_FACTION_BASE + i, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, rasticore::Texture2DBindless(), 20);
 		}
+
+		ac.rac = RangedAnimationController(r, &rect_mcd);
+		ac.mac = MeleeAnimationController(r, &rect_mcd);
 
 		cLoadedFactionTexturesEnemy = -1;
 		cLoadedFactionTexturesPlayer = -1;
@@ -150,6 +153,7 @@ public:
 		{
 			e = units->entities[i];
 			Stats* st = e->getStats();
+			e->getStats()->hp = 50.0f; e->getStats()->bravery = 50.0f;
 			e->SetBaseStats();
 			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
 			e->EntityClearMove();
@@ -164,6 +168,7 @@ public:
 		{
 			e = units->entities[i];
 			auto s = e->getStats();
+			e->getStats()->hp = 50.0f; e->getStats()->bravery = 50.0f;
 			e->SetBaseStats();
 			e->setEntityPosition(glm::vec2{ -(offsetX + 1) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
 			entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
@@ -174,6 +179,9 @@ public:
 			//if (b == true) moveEntityNear(e->travel, e);
 			r->newObject(MODEL_ENEMY_FACTION_BASE + e->GetIndex(), glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), &e->id);
 		}
+
+		//ac.mac.SetAnimation(LoadTextureFromFile("Data\\purple.png"), data.s1->getSquadComp()->entities[2]->getPosition());
+		//ac.rac.SetAnimation(LoadTextureFromFile("Data\\purple.png"), data.s1->getSquadComp()->entities[0]->getPosition(), data.s2->getSquadComp()->entities[0]->getPosition());
 	}
 
 	void SetSelectedUnitPosition(glm::vec2 v)
@@ -215,7 +223,7 @@ public:
 				ent->EntitySetMove();
 				if (b == true)
 					moveEntityNear(ent->travel, ent);
-				ent->state->AttackEntity(&data);
+				ent->state->AttackEntity(&data, &ac);
 				AiGainUnitStdBravery(ent);
 				tour = BT_TOUR_PLAYER;
 			}
@@ -285,6 +293,11 @@ public:
 			r->RenderSelectedModel(MODEL_ENEMY_FACTION_BASE + i);
 		}
 		glUniform1i(fightFp, 1);
+
+		ac.rac.Update(0.004f);
+		ac.mac.Update(0.004f);
+		ac.rac.Render();
+		ac.mac.Render();
 	}
 
 	Entity* AiGetNextMoveableEntity()
@@ -604,6 +617,7 @@ private:
 	//
 	rasticore::RastiCoreRender* r;
 	rasticore::ModelCreationDetails rect_mcd;
+	AnimationControllers ac;
 
 	glm::vec2 unitSelectedPos;
 

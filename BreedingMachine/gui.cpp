@@ -147,16 +147,16 @@ void gui_init()
 	//};
 
 		float plane_vtx[] = {
-		0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 1.0f, 0.0f, 1.0f,  0.0f,
-		1.0, 0.0f, 1.0f, 1.0f, 0.0f,   1.0f,
+		0.0f,  0.0f, 1.0f, 0.0f, 1.0f,		0.0f,
+		0.0f,  1.0f, 1.0f, 0.0f, 0.0f,		0.0f,
+		1.0f,  0.0f, 1.0f, 1.0f, 1.0f,		1.0f,
 
-		1.0, 1.0f, 1.0f, 1.0f, 1.0f,	1.0f
+		1.0f,  1.0f, 1.0f, 1.0f, 0.0f,		1.0f
 	};
 
 
 	uint32_t chuj[] = {
-		0,1,2,1,2,3
+		2,1,0,3,2,1
 	};
 
 	rasticore::Buffer<GL_ARRAY_BUFFER> SquareVBO = rasticore::Buffer<GL_ARRAY_BUFFER>(sizeof(plane_vtx), plane_vtx, GL_STATIC_DRAW);
