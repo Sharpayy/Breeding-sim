@@ -123,7 +123,7 @@ public:
 		this->items = items;
 
 		hp = stats.hp;
-		state = 0;
+		state = new EntityCombatStand(this);
 	}
 
 	std::string getName() {
