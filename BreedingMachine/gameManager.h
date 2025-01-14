@@ -983,10 +983,10 @@ private:
 		
 		auto gwin = win->getGWindow();
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), "Shop", LoadTextureFromFile("Data\\red.png"));
-		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
+		drag->pfnCallback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
 		gwin->AddComponent(drag);
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
-		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
+		exit->pfnCallback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
 		GComponent* c;
 		int counter = 0;
@@ -1009,16 +1009,16 @@ private:
 		Inventory::Window* win = inv.AddWindow("interaction_viewer", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = win->getGWindow();
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"));
-		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
+		drag->pfnCallback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
 		gwin->AddComponent(drag);
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
-		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
+		exit->pfnCallback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
 		GComponentButton* tradeItems = new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 40, 0.1f), "Trade", LoadTextureFromFile("Data\\red.png"));
-		tradeItems->callback = std::bind(setShopItemsRotation, std::placeholders::_1, std::placeholders::_2, &selectedObj.building, &inv, gui_windows.itemShop);
+		tradeItems->pfnCallback = std::bind(setShopItemsRotation, std::placeholders::_1, std::placeholders::_2, &selectedObj.building, &inv, gui_windows.itemShop);
 		gwin->AddComponent(tradeItems);
 		GComponentButton* tradeEntities = new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 90, 0.1f), "Recruit", LoadTextureFromFile("Data\\red.png"));
-		tradeEntities->callback = std::bind(setShopEntityRotation, std::placeholders::_1, std::placeholders::_2, &selectedObj.building, &inv, gui_windows.recruitShop);
+		tradeEntities->pfnCallback = std::bind(setShopEntityRotation, std::placeholders::_1, std::placeholders::_2, &selectedObj.building, &inv, gui_windows.recruitShop);
 		gwin->AddComponent(tradeEntities);
 		gwin->AddComponent(new GComponentButton(glm::vec2(50, 30), glm::vec3(width / 2 - 30, 140, 0.1f), "Wait", LoadTextureFromFile("Data\\red.png")));
 		//inv.ActivateWindow(win);
@@ -1029,7 +1029,7 @@ private:
 		Inventory::Window* win = inv.AddWindow("inventory", ObjectDim{ {0, 0}, width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = win->getGWindow();
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 5, 0.1f), "Inventory", LoadTextureFromFile("Data\\red.png"), true);
-		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
+		drag->pfnCallback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
 		gwin->AddComponent(drag);
 		//przyciski do zmiany na kolejny panel ekwipunku
 		//gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(0, 5, 0.5f), nullptr, LoadTextureFromFile("Data\\red.png")));
@@ -1040,7 +1040,7 @@ private:
 		//gwin->AddComponent(new GComponentButton(glm::vec2(1, 1), glm::vec3(140, 20, 0.1f), "Inventory 1", 0));
 		//przycisk do zamknięcia okienka
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
-		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
+		exit->pfnCallback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
 		for (int i = 35; i < height - 75; i += 35) {
 			for (int j = 5; j < width - 15; j += 35) {
@@ -1062,10 +1062,10 @@ private:
 		Inventory::Window* win = inv.AddWindow("item_data", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = win->getGWindow();
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"));
-		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
+		drag->pfnCallback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
 		gwin->AddComponent(drag);
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
-		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
+		exit->pfnCallback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
 		c = new GComponentImage(glm::vec2(64, 64), glm::vec3(145, height / 2 - 25, 0.1f), 0);
 		AddNamedComponent(c, "ItemData0");
@@ -1088,7 +1088,7 @@ private:
 		Inventory::Window* win = inv.AddWindow("char_inv", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = win->getGWindow();
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"));
-		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
+		drag->pfnCallback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
 		gwin->AddComponent(drag);
 		//nazwa chłopa
 		c = new GComponentLabel(glm::vec2(20, 1), glm::vec3(width/2 - 20, 10, 0.1f), "null", true);
@@ -1096,7 +1096,7 @@ private:
 		gwin->AddComponent(c);
 		//wyjście
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
-		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
+		exit->pfnCallback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
 		int y = 30;
 		//sloty
@@ -1145,11 +1145,11 @@ private:
 
 		//Drag
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"));
-		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
+		drag->pfnCallback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
 		gwin->AddComponent(drag);
 		//wyjście
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
-		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
+		exit->pfnCallback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
 
 		GComponent* c;
@@ -1165,7 +1165,7 @@ private:
 
 				//
 				GComponentButton* button = new GComponentButton(glm::vec2(60.0f, 60.0f), glm::vec3(j, i, 0.0f), "", 0);
-				button->callback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedObj.entityItem, &inv, gui_windows.characterWindow);
+				button->pfnCallback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedObj.entityItem, &inv, gui_windows.characterWindow);
 				gwin->AddComponent(button);
 			}
 		}
@@ -1178,17 +1178,17 @@ private:
 		Inventory::Window* win = inv.AddWindow("party_view", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
 		auto gwin = win->getGWindow();
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, 0);
-		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
+		drag->pfnCallback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
 		gwin->AddComponent(drag);
 		//wyjście
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", 0);
-		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
+		exit->pfnCallback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
 		for (int i = 30; i < height - 90; i += 90) {
 			for (int j = 10; j < width - 60; j += 60) {
 				GComponentButton* button = new GComponentButton(glm::vec2(60.0f, 60.0f), glm::vec3(j, i, 0.0f), "", 0);
 				gwin->AddComponent(button);
-				button->callback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedObj.entityItem, &inv, gui_windows.characterWindow);
+				button->pfnCallback = std::bind(getCharacterInventory_EI, std::placeholders::_1, std::placeholders::_2, &selectedObj.entityItem, &inv, gui_windows.characterWindow);
 				win->AddSlotToWindow(Slot(nullptr, glm::vec2(j, i), 60.0f, 60.0f, ENTITY), texItemFrame);
 			}
 		}

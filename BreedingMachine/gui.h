@@ -131,7 +131,7 @@ public:
 	bool textCenter = false;
 
 	uint64_t texture;
-	std::function<void(void*, void*)> callback;
+	std::function<void(void*, void*)> pfnCallback;
 
 	GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t tex, bool textCenter = false);
 	void SetCallback(std::function<void(void*, void*)> func);
@@ -219,12 +219,12 @@ private:
 public:
 	GWindowBuilder(glm::vec2 pos, glm::vec2 scale, uint64_t background);
 
-	void AddSliderComponent(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t image0, uint64_t image1);
-	void AddButtonComponent(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t image);
-	void AddImageComponent(glm::vec2 scale, glm::vec2 pos, uint64_t image);
-	void AddLabelComponent(glm::vec2 scale, glm::vec2 pos, const char* text_);
+	void AddSliderComponent(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t image0, uint64_t image1);
+	void AddButtonComponent(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t image);
+	void AddImageComponent(glm::vec2 scale, glm::vec3 pos, uint64_t image);
+	void AddLabelComponent(glm::vec2 scale, glm::vec3 pos, const char* text_);
 
 	GWindow* BuildWindow();
 };
 
-void pfnBasicButtonCallback(void* button, void* window);
+void BasicButtonCallback(void* button, void* window);

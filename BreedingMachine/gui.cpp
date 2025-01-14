@@ -197,7 +197,7 @@ GComponent* GetNamedComponent(const char* name)
 	return f->second;
 }
 
-void pfnBasicButtonCallback(void* button, void* window)
+void BasicButtonCallback(void* button, void* window)
 {
 	printf("chij");
 }
@@ -216,14 +216,14 @@ GComponentButton::GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* t
 	depth = pos.z;
 
 	texture = tex;
-	callback = pfnBasicButtonCallback;
+	pfnCallback = BasicButtonCallback;
 
 	val = 0.0f;
 }
 
 void GComponentButton::SetCallback(std::function<void(void*, void*)> func)
 {
-	callback = func;
+	pfnCallback = func;
 }
 
 void GComponentButton::RenderText(glm::mat4 pm)
@@ -279,7 +279,7 @@ int GComponentButton::ClickCheck(float x, float y, void* window)
 {
 	if (x >= pos.x && x <= pos.x + scale_x
 		&& y >= pos.y && y <= pos.y + scale_y) {
-		callback(this, window);
+		pfnCallback(this, window);
 		return true;
 	}
 	return 0;
@@ -522,4 +522,34 @@ void GWindow::ChangeComponentPosition(int x, int y) {
 		component->pos.x += offsetX;
 		component->pos.y += offsetY;
 	}
+}
+
+GWindowBuilder::GWindowBuilder(glm::vec2 pos, glm::vec2 scale, uint64_t background)
+{
+	win = new GWindow(pos, scale, background);
+}
+
+void GWindowBuilder::AddSliderComponent(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t image0, uint64_t image1)
+{
+	win->AddComponent(new GComponentSlider(scale, pos, text_, image0, image1));
+}
+
+void GWindowBuilder::AddButtonComponent(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t image)
+{
+	win->AddComponent(new GComponentButton(scale, pos, text_, image));
+}
+
+void GWindowBuilder::AddImageComponent(glm::vec2 scale, glm::vec3 pos, uint64_t image)
+{
+	win->AddComponent(new GComponentImage(scale, pos, image));
+}
+
+void GWindowBuilder::AddLabelComponent(glm::vec2 scale, glm::vec3 pos, const char* text_)
+{
+	win->AddComponent(new GComponentLabel(scale, pos, text_));
+}
+
+GWindow* GWindowBuilder::BuildWindow()
+{
+	return win;
 }
