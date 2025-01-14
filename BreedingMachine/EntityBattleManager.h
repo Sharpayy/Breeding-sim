@@ -154,12 +154,11 @@ public:
 		{
 			e = units->entities[i];
 			Stats* st = e->getStats();
-			e->getStats()->hp = 50.0f; e->getStats()->bravery = 50.0f;
 			e->SetBaseStats();
-			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
+			e->setEntityPosition(glm::vec2{ (offsetX + 2) * currentMap.tileSize + tileOffset, (offsetY) * currentMap.tileSize + tileOffset });
 			e->EntityClearMove();
 			AiDecideEntityInitialState(e);
-			entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
+			entityMovementManager.AddCollision(e->getPosition() + (float)(currentMap.mapSize / 2 - tileOffset));
 			offsetY -= 1;
 			r->newObject(MODEL_PLAYER_FACTION_BASE + e->GetIndex(), glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), &e->id);
 		}
@@ -169,10 +168,9 @@ public:
 		{
 			e = units->entities[i];
 			auto s = e->getStats();
-			e->getStats()->hp = 50.0f; e->getStats()->bravery = 50.0f;
 			e->SetBaseStats();
-			e->setEntityPosition(glm::vec2{ -(offsetX + 1) * currentMap.tileSize + tileOffset, (offsetY + 1) * currentMap.tileSize + tileOffset });
-			entityMovementManager.AddCollision(e->getPosition() + 512.0f - 32.0f);
+			e->setEntityPosition(glm::vec2{ -(offsetX + 1) * currentMap.tileSize + tileOffset, (offsetY) * currentMap.tileSize + tileOffset });
+			entityMovementManager.AddCollision(e->getPosition() + (float)(currentMap.mapSize / 2 - tileOffset));
 			e->EntityClearMove();
 			offsetY -= 1;
 			AiDecideEntityInitialState(e);
@@ -201,9 +199,28 @@ public:
 			e = units->entities[i];
 			AiUpdateEntityState(e);
 			r->BindActiveModel(LONG_GET_MODEL(e->id));
-			r->SetObjectMatrix(LONG_GET_OBJECT(e->id), glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
-		}
 
+			auto mat = glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), 
+				glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f));
+
+			if (e->state->EntityCanBattle()) {
+				r->SetObjectMatrix(LONG_GET_OBJECT(e->id), mat, true);
+			}
+			else {
+				mat = glm::translate(
+					glm::scale(
+						glm::rotate(
+							glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)),
+							glm::radians(90.0f),
+							glm::vec3(0.0f, 0.0f, 1.0f)
+						),
+						glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)
+					),
+					glm::vec3(0.0f, 0.0f, 0.0f)
+				);
+				r->SetObjectMatrix(LONG_GET_OBJECT(e->id), mat, true);
+			}
+		}
 		units = data.s2->getSquadComp();
 		for (int i = 0; i < units->size; i++)
 		{
@@ -211,7 +228,27 @@ public:
 			AiUpdateEntityState(e);
 			//e->state->MoveEntity(&data);
 			r->BindActiveModel(LONG_GET_MODEL(e->id));
-			r->SetObjectMatrix(LONG_GET_OBJECT(e->id), glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f)), true);
+
+			auto mat = glm::translate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)), 
+				glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)), glm::vec3(0.0f, 0.0f, 0.0f));
+
+			if (e->state->EntityCanBattle()) {
+				r->SetObjectMatrix(LONG_GET_OBJECT(e->id), mat, true);
+			}
+			else {
+				mat = glm::translate(
+					glm::scale(
+						glm::rotate(
+							glm::translate(glm::mat4(1.0f), glm::vec3(e->getPosition().x, e->getPosition().y, 2.0f)),
+							glm::radians(-90.0f),
+							glm::vec3(0.0f, 0.0f, 1.0f)
+						),
+						glm::vec3(1.0f / 100.0f * currentMap.tileSize, 1.0f / 100.0f * currentMap.tileSize, 1.0f)
+					),
+					glm::vec3(0.0f, 0.0f, 0.0f)
+				);
+				r->SetObjectMatrix(LONG_GET_OBJECT(e->id), mat, true);
+			}
 		}
 
 		TryUpdatePlayerSquad();

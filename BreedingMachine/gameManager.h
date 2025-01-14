@@ -1205,6 +1205,7 @@ private:
 		loadNames("Data\\entityNames\\humans.txt", MODEL_HUMANS);
 		loadNames("Data\\entityNames\\nomads.txt", MODEL_NOMADS);
 		loadNames("Data\\entityNames\\orcs.txt", MODEL_ORKS);
+		loadNames("Data\\entityNames\\humans.txt", MODEL_PLAYER);
 
 		factionManager.CreateNewFaction(MODEL_ORKS, "Data\\ork.png", "Orks", buildingManager.getRaceBuildings(MODEL_ORKS));
 		factionManager.CreateNewFaction(MODEL_HUMANS, "Data\\human.png", "Humans", buildingManager.getRaceBuildings(MODEL_HUMANS));
@@ -1389,7 +1390,7 @@ private:
 		float distance = calculateSquadViewDistance(squadF);
 		if (factionManager.getFactionsRelationships(squadS->getSquadFactionID(), squadF->getSquadFactionID()) == ENEMY) {
 			if (glm::distance(squadF->getSquadPosition(), squadS->getSquadPosition()) <= distance) {
-				if (glm::distance(squadS->getSquadPosition(), squadF->getSquadPosition()) <= 4.0f && squadS == playerData.player) {
+				if (glm::distance(squadS->getSquadPosition(), squadF->getSquadPosition()) <= 8.0f && squadS == playerData.player) {
 					game_type = GAMETYPE_FIGHT;
 					EntityBattleManager::BattleData battleData = {
 						playerData.player,
