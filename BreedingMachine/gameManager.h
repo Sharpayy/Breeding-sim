@@ -253,6 +253,7 @@ public:
 					//		selectedItems.entityItem = (EntityItem*)slot->getItem();
 					//	}
 					//}
+					
 					draggedObj.draggedItem.item = slot->getItem();
 					slot->changeItem(nullptr);
 					draggedObj.draggedItem.previousSlot = slot;
