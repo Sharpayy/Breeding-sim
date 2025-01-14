@@ -253,6 +253,7 @@ public:
 					//		selectedItems.entityItem = (EntityItem*)slot->getItem();
 					//	}
 					//}
+					
 					draggedObj.draggedItem.item = slot->getItem();
 					slot->changeItem(nullptr);
 					draggedObj.draggedItem.previousSlot = slot;
@@ -289,6 +290,7 @@ public:
 						selectedObj.entityItem = (EntityItem*)slot->getItem();
 						selectedObj.win->getGWindow()->CollisionCheck(mp.x, mp.y);
 					}
+					else if (slot->getItem()) getItemInfo(nullptr, nullptr, slot->getItem(), &inv, gui_windows.itemInfo);
 					
 				}
 			}
@@ -921,7 +923,7 @@ private:
 		Inventory::Window* win = inv.AddWindow("overworld_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"), 1);
 		auto gwin = win->getGWindow();
 		GComponent* c;
-		//labelka z iloœci¹ ch³opa
+		//labelka z iloÅ›ciÄ… chÅ‚opa
 		gwin->AddComponent(new GComponentLabel(glm::vec2(100, 20), glm::vec3(x, y, 1.0f), "Squad count:"));
 		c = new GComponentLabel(glm::vec2(10, 20), glm::vec3(x + 105, y, 1.0f), "0/16");
 		AddNamedComponent(c, "squad_count");
@@ -1034,9 +1036,9 @@ private:
 		//gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(20 + 10, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(40 + 20, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
 		//gwin->AddComponent(new GComponentButton(glm::vec2(20, 20), glm::vec3(60 + 30, 5, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png")));
-		//labelka z napisem inventory + które okienko
+		//labelka z napisem inventory + ktÃ³re okienko
 		//gwin->AddComponent(new GComponentButton(glm::vec2(1, 1), glm::vec3(140, 20, 0.1f), "Inventory 1", 0));
-		//przycisk do zamkniêcia okienka
+		//przycisk do zamkniÄ™cia okienka
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
@@ -1065,18 +1067,19 @@ private:
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
-		c = new GComponentImage(glm::vec2(32, 32), glm::vec3(width / 2 -  32 + 40, height/2 - 15, 0.1f), LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC175.png"));
+		c = new GComponentImage(glm::vec2(64, 64), glm::vec3(width - 64, height/2 - 25, 0.1f), 0);
 		AddNamedComponent(c, "ItemData0");
 		gwin->AddComponent(c);
-		c = new GComponentLabel(glm::vec2(20, 1), glm::vec3(width / 2 - 30, height/2 - 10, 0.1f), "nazwa", true);
+		c = new GComponentLabel(glm::vec2(120, 1), glm::vec3(width / 2 - 110, 21, 0.1f), "mountaineer", false);
 		AddNamedComponent(c, "ItemData1");
 		gwin->AddComponent(c);
-		c = new GComponentLabel(glm::vec2(20, 1), glm::vec3(width / 2 - 30, height/2 + 5, 0.1f), "stats", true);
+		c = new GComponentLabel(glm::vec2(20, 1), glm::vec3(30, height/2 + 5, 0.1f), "ARMOR: 500000", false);
 		AddNamedComponent(c, "ItemData2");
 		gwin->AddComponent(c);
 		//inv.ActivateWindow(win);
-		gui_windows.characterWindow = win;
+		gui_windows.itemInfo = win;
 	}
+
 	void initCharInv(int width, int height, uint64_t texItemFrame) {
 		GComponent* c;
 		Inventory::Window* win = inv.AddWindow("char_inv", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
@@ -1084,11 +1087,11 @@ private:
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"));
 		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
 		gwin->AddComponent(drag);
-		//nazwa ch³opa
+		//nazwa chÅ‚opa
 		c = new GComponentLabel(glm::vec2(20, 1), glm::vec3(width/2 - 20, 10, 0.1f), "null", true);
 		AddNamedComponent(c, "Vname");
 		gwin->AddComponent(c);
-		//wyjœcie
+		//wyjÅ›cie
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
@@ -1141,7 +1144,7 @@ private:
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, LoadTextureFromFile("Data\\red.png"));
 		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
 		gwin->AddComponent(drag);
-		//wyjœcie
+		//wyjÅ›cie
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
@@ -1174,7 +1177,7 @@ private:
 		GComponentButton* drag = new GComponentButton(glm::vec2(width - 21, 20), glm::vec3(0, 0, 0.1f), nullptr, 0);
 		drag->callback = std::bind(SetDraggedWindow, std::placeholders::_1, std::placeholders::_2, &draggedObj.draggedWindow, win);
 		gwin->AddComponent(drag);
-		//wyjœcie
+		//wyjÅ›cie
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", 0);
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
@@ -1222,6 +1225,7 @@ private:
 		initInteractionViewer(200, 200);
 		initSquadViewer(300, 400, texItemFrame);
 		initPrimaryInv(300, 400, texItemFrame);
+		initItemData(300, 70);
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);
@@ -1516,6 +1520,7 @@ private:
 		Inventory::Window* recruitShop;
 		Inventory::Window* battleHud;
 		Inventory::Window* overworldHud;
+		Inventory::Window* itemInfo;
 	} gui_windows;
 
 	struct SelectedObj {

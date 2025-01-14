@@ -656,9 +656,60 @@ void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv
 	}
 }
 
+std::string roundString(double number, int places) {
+	places++;
+	std::string result = std::to_string(number);
+
+	size_t decimalPos = result.find('.');
+
+	if (decimalPos != std::string::npos) {
+		return result.substr(0, decimalPos + places);
+	}
+	else {
+		return result + std::string(".") + std::string(places,'0');
+	}
+}
+
+void getItemInfo(void* v1, void* v2, Item* itm, Inventory* inv, Inventory::Window* win) {
+	if (inv && itm) {
+		uint32_t objType = itm->getObjectType();
+		if (inv->ActivateWindow(win) && objType != ENTITY) {
+			GComponent* comp;
+			std::string componentName;
+			if (objType & ARMOR || objType & WEAPON) {
+				componentName = "ItemData0";
+				comp = GetNamedComponent(componentName.c_str());
+				((GComponentImage*)comp)->texture = (uint64_t)itm->getItemTexture();
+				
+				componentName = "ItemData1";
+				comp = GetNamedComponent(componentName.c_str());
+				comp->SetText(itm->getItemName().c_str());
+
+				if (objType & ARMOR) {
+					auto itmStats = ((ArmorItem*)itm)->getObjectStatistic();
+					
+					componentName = "ItemData2";
+					comp = GetNamedComponent(componentName.c_str());
+					std::string armorText = "Armor: " + roundString(itmStats->armor, 2);
+					comp->SetText(armorText.c_str());
+				}
+				else if (objType & WEAPON) {
+					auto itmStats = ((WeaponItem*)itm)->getObjectStatistic();
+
+					componentName = "ItemData2";
+					comp = GetNamedComponent(componentName.c_str());
+					std::string damageText = "Damage: " + roundString(itmStats->damage, 2);
+					comp->SetText(damageText.c_str());
+				}
+			}
+		}
+	}
+}
+
 void setSquadCompSize(void* v1, void* v2, uint8_t* squadSize) {
 	std::string text, componentName = "squad_count";
 	GComponent* component = GetNamedComponent(componentName.c_str());
 	text = std::to_string((int)(*squadSize)) + "/" + std::to_string((int)SQUAD_MAX_SIZE);
 	component->SetText(text.c_str());
 }
+
