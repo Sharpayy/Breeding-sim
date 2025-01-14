@@ -494,7 +494,7 @@ private:
 		itemLoader.loadItem(spear);
 		WeaponItem* hatchet = new WeaponItem{ "hatchet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC57.png","EquipmentIconsC57"), MELEE, new WeaponItem::ObjectStatistic{2}, 60, TIER_1 };
 		itemLoader.loadItem(hatchet);
-		WeaponItem* twin_daggers = new WeaponItem{ "twin daggers", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC57.png","EquipmentIconsC57"), MELEE, new WeaponItem::ObjectStatistic{4.5f}, 102, TIER_2 };
+		WeaponItem* twin_daggers = new WeaponItem{ "twin daggers", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC94.png","EquipmentIconsC94"), MELEE, new WeaponItem::ObjectStatistic{4.5f}, 102, TIER_2 };
 		itemLoader.loadItem(twin_daggers);
 		WeaponItem* short_bow = new WeaponItem{ "short bow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC103.png","EquipmentIconsC103"), RANGED, new WeaponItem::ObjectStatistic{2.0f}, 58, TIER_1};
 		itemLoader.loadItem(short_bow);
@@ -504,7 +504,7 @@ private:
 		itemLoader.loadItem(crossbow);
 		WeaponItem* morningstar = new WeaponItem{ "morningstar", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC29.png","EquipmentIconsC29"), MELEE, new WeaponItem::ObjectStatistic{5}, 124, TIER_2 };
 		itemLoader.loadItem(morningstar);
-		WeaponItem* flail = new WeaponItem{ "flail", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC15.png","EquipmentIconsC15"), MELEE, new WeaponItem::ObjectStatistic{3.5f}, 62, TIER_1 };
+		WeaponItem* flail = new WeaponItem{ "flail", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC26.png","EquipmentIconsC26"), MELEE, new WeaponItem::ObjectStatistic{3.5f}, 62, TIER_1 };
 		itemLoader.loadItem(flail);
 		WeaponItem *sickle_blade = new WeaponItem{ "sickle_blade", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC15.png","EquipmentIconsC15"), MELEE, new WeaponItem::ObjectStatistic{4}, 70, TIER_1 };
 		itemLoader.loadItem(sickle_blade);
@@ -524,7 +524,7 @@ private:
 		itemLoader.loadItem(repeater_crossbow);
 		WeaponItem *golden_bow = new WeaponItem{ "golden bow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC115.png","EquipmentIconsC115"), RANGED, new WeaponItem::ObjectStatistic{4.5}, 111,  TIER_3 };
 		itemLoader.loadItem(golden_bow);
-		WeaponItem *crusher = new WeaponItem{ "crusher", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC19.png","EquipmentIconsC19"), MELEE, new WeaponItem::ObjectStatistic{4.5f}, 102,  TIER_2 };
+		WeaponItem *crusher = new WeaponItem{ "crusher", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC22.png","EquipmentIconsC22"), MELEE, new WeaponItem::ObjectStatistic{4.5f}, 102,  TIER_2 };
 		itemLoader.loadItem(crusher);
 		WeaponItem *notched_blade = new WeaponItem{ "notched blade", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC17.png","EquipmentIconsC17"), MELEE, new WeaponItem::ObjectStatistic{1.5f}, 32,  TIER_1 };
 		itemLoader.loadItem(notched_blade);
@@ -570,7 +570,7 @@ private:
 		itemLoader.loadItem(copper_greaves);
 		ArmorItem *copper_boots = new ArmorItem{ "copper boots", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC222.png","EquipmentIconsC222"), BOOTS, new ArmorItem::ObjectStatistic{1.5f}, 31, TIER_2 };
 		itemLoader.loadItem(copper_boots);
-		ArmorItem *buckler = new ArmorItem{ "buckler", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC152.png","EquipmentIconsC152"), SHIELD, new ArmorItem::ObjectStatistic{1.5f}, 20, TIER_1 };
+		ArmorItem *buckler = new ArmorItem{ "buckler", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC141.png","EquipmentIconsC141"), SHIELD, new ArmorItem::ObjectStatistic{1.5f}, 20, TIER_1 };
 		itemLoader.loadItem(buckler);
 
 		ArmorItem *cap = new ArmorItem{ "cap", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC161.png","EquipmentIconsC161"), HELMET, new ArmorItem::ObjectStatistic{0.3f}, 14, TIER_1};
@@ -581,7 +581,7 @@ private:
 		itemLoader.loadItem(rags);
 		ArmorItem *shoes = new ArmorItem{ "shoes", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC223.png","EquipmentIconsC223"), BOOTS, new ArmorItem::ObjectStatistic{0.1f}, 4, TIER_1 };
 		itemLoader.loadItem(shoes);
-		ArmorItem *wooden_shield = new ArmorItem{ "wooden shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC152.png","EquipmentIconsC152"), SHIELD, new ArmorItem::ObjectStatistic{1}, 15, TIER_1 };
+		ArmorItem *wooden_shield = new ArmorItem{ "wooden shield", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC142.png","EquipmentIconsC142"), SHIELD, new ArmorItem::ObjectStatistic{1}, 15, TIER_1 };
 		itemLoader.loadItem(wooden_shield);
 
 
