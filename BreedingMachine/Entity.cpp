@@ -355,7 +355,7 @@ Squad::Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position, ItemLoader
     squadComp = new SquadComp{};
     //squadComp->entities[0] = new Entity{};
     //squadComp->size = 1;
-    squadComp->size = rand() % SQUAD_MAX_SIZE;
+    squadComp->size = (rand() % (SQUAD_MAX_SIZE - 1)) + 1;
     for (int i = 0; i < squadComp->size; i++) {
         squadComp->entities[i] = il->generateRandomEntity(factionID);
         uint64_t index = GetEntityRandomTextureIndex(factionID);

@@ -694,10 +694,15 @@ void getItemInfo(void* v1, void* v2, Item* itm, Inventory* inv, Inventory::Windo
 				comp = GetNamedComponent(componentName.c_str());
 				comp->SetText(itm->getItemName().c_str());
 
+				componentName = "ItemData2";
+				comp = GetNamedComponent(componentName.c_str());
+				std::string priceText = "Price: " + roundString(itm->getItemPrice(), 2);
+				comp->SetText(priceText.c_str());
+
 				if (objType & ARMOR) {
 					auto itmStats = ((ArmorItem*)itm)->getObjectStatistic();
 					
-					componentName = "ItemData2";
+					componentName = "ItemData3";
 					comp = GetNamedComponent(componentName.c_str());
 					std::string armorText = "Armor: " + roundString(itmStats->armor, 2);
 					comp->SetText(armorText.c_str());
@@ -705,7 +710,7 @@ void getItemInfo(void* v1, void* v2, Item* itm, Inventory* inv, Inventory::Windo
 				else if (objType & WEAPON) {
 					auto itmStats = ((WeaponItem*)itm)->getObjectStatistic();
 
-					componentName = "ItemData2";
+					componentName = "ItemData3";
 					comp = GetNamedComponent(componentName.c_str());
 					std::string damageText = "Damage: " + roundString(itmStats->damage, 2);
 					comp->SetText(damageText.c_str());
