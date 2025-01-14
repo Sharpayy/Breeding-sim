@@ -1067,7 +1067,7 @@ private:
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
-		c = new GComponentImage(glm::vec2(64, 64), glm::vec3(width - 64, height/2 - 25, 0.1f), LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC175.png"));
+		c = new GComponentImage(glm::vec2(64, 64), glm::vec3(width - 64, height/2 - 25, 0.1f), 0);
 		AddNamedComponent(c, "ItemData0");
 		gwin->AddComponent(c);
 		c = new GComponentLabel(glm::vec2(120, 1), glm::vec3(width / 2 - 110, 21, 0.1f), "mountaineer", false);
@@ -1225,7 +1225,7 @@ private:
 		initInteractionViewer(200, 200);
 		initSquadViewer(300, 400, texItemFrame);
 		initPrimaryInv(300, 400, texItemFrame);
-		initItemData(100, 70);
+		initItemData(300, 70);
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);

@@ -814,6 +814,20 @@ void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv
 	}
 }
 
+std::string roundString(double number, int places) {
+	places++;
+	std::string result = std::to_string(number);
+
+	size_t decimalPos = result.find('.');
+
+	if (decimalPos != std::string::npos) {
+		return result.substr(0, decimalPos + places);
+	}
+	else {
+		return result + std::string(".") + std::string(places,'0');
+	}
+}
+
 void getItemInfo(void* v1, void* v2, Item* itm, Inventory* inv, Inventory::Window* win) {
 	if (inv && itm) {
 		uint32_t objType = itm->getObjectType();
@@ -829,15 +843,12 @@ void getItemInfo(void* v1, void* v2, Item* itm, Inventory* inv, Inventory::Windo
 				comp = GetNamedComponent(componentName.c_str());
 				comp->SetText(itm->getItemName().c_str());
 
-				char buff[8];
 				if (objType & ARMOR) {
 					auto itmStats = ((ArmorItem*)itm)->getObjectStatistic();
 					
 					componentName = "ItemData2";
 					comp = GetNamedComponent(componentName.c_str());
-					_gcvt(itmStats->armor, 5, buff);
-					std::string armorText = "Armor: ";
-					armorText += buff;
+					std::string armorText = "Armor: " + roundString(itmStats->armor, 2);
 					comp->SetText(armorText.c_str());
 				}
 				else if (objType & WEAPON) {
@@ -845,9 +856,7 @@ void getItemInfo(void* v1, void* v2, Item* itm, Inventory* inv, Inventory::Windo
 
 					componentName = "ItemData2";
 					comp = GetNamedComponent(componentName.c_str());
-					_gcvt(itmStats->damage, 5, buff);
-					std::string damageText = "Damage: ";
-					damageText += buff;
+					std::string damageText = "Damage: " + roundString(itmStats->damage, 2);
 					comp->SetText(damageText.c_str());
 				}
 			}
