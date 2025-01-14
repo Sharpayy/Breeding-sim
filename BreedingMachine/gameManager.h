@@ -532,7 +532,7 @@ private:
 		itemLoader.loadItem(notched_blades);
 		WeaponItem *doom_mace = new WeaponItem{ "doom mace", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC39.png","EquipmentIconsC39"), MELEE, new WeaponItem::ObjectStatistic{5.0f}, 123,  TIER_3 };
 		itemLoader.loadItem(doom_mace);
-		WeaponItem *supreme_hatchet = new WeaponItem{ "doom mace", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC52.png","EquipmentIconsC52"), MELEE, new WeaponItem::ObjectStatistic{5.5f}, 159,  TIER_3 };
+		WeaponItem *supreme_hatchet = new WeaponItem{ "supreme hatchet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC52.png","EquipmentIconsC52"), MELEE, new WeaponItem::ObjectStatistic{5.5f}, 159,  TIER_3 };
 		itemLoader.loadItem(supreme_hatchet);
 		WeaponItem* gladius = new WeaponItem{ "gladius", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC52.png","EquipmentIconsC52"), MELEE, new WeaponItem::ObjectStatistic{2.0f}, 42,  TIER_1 };
 		itemLoader.loadItem(gladius);
