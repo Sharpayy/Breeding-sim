@@ -320,32 +320,32 @@ int EntityCombatEscape::EntityCanBattle()
     return 0;
 }
 
-EntityCombatStand::EntityCombatStand(Entity* self)
+Entity::EntityCombatStand::EntityCombatStand(Entity* self)
 {
     this->self = self;
 }
 
-int EntityCombatStand::MoveEntity(void* battleContext)
+int Entity::EntityCombatStand::MoveEntity(void* battleContext)
 {
     return false;
 }
 
-int EntityCombatStand::NextState()
+int Entity::EntityCombatStand::NextState()
 {
     return 0;
 }
 
-int EntityCombatStand::CanMoveEntity()
+int Entity::EntityCombatStand::CanMoveEntity()
 {
     return 0;
 }
 
-int EntityCombatStand::AttackEntity(void* battleContext, AnimationControllers* ac)
+int Entity::EntityCombatStand::AttackEntity(void* battleContext, AnimationControllers* ac)
 {
     return 0;
 }
 
-int EntityCombatStand::EntityCanBattle()
+int Entity::EntityCombatStand::EntityCanBattle()
 {
     return 0;
 }
