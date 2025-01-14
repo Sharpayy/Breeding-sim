@@ -1221,7 +1221,6 @@ private:
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
 		initOverworldHud();
 		initBattleHud();
-		initItemData(100, 70);
 		initShopItems(300, 300, texItemFrame);
 		initCharInv(300, 250, texItemFrame);
 		initShopRecruits(300, 400, texItemFrame);
