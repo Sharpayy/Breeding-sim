@@ -588,7 +588,7 @@ private:
 				getCharacterInventory_E(nullptr, nullptr, &se, inv, characterWindow);
 			}
 			else if (inv->isGuiClicked(mp)) {
-				auto itm = inv->getSlot(mp)->getItem();
+				Item* itm = inv->getSlot(mp)->getItem();
 				if (itm) {
 					if (itm->getObjectType() & ARMOR || itm->getObjectType() & WEAPON) getItemInfo(nullptr, nullptr, itm, inv, itemInfo);
 				}
