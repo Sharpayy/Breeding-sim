@@ -129,6 +129,7 @@ public:
 
 	void startBattle(BattleData& battleData) {
 		characterWindow = inv->GetWindow("char_inv");
+		itemInfo = inv->GetWindow("item_data");
 
 		tour = BT_TOUR_AI;
 		printf("Bitka!\n");
@@ -581,10 +582,16 @@ private:
 			}
 		}
 		if (inputHandlerInstance.KeyPressedOnce(SDL_SCANCODE_RIGHT)) {
-			auto a = getCorrectedMousePosition();
+			glm::vec2 mp = getMousePosition();
 			Entity* se = getEntity(ENTITY_WHATEVER);
 			if (se) {
 				getCharacterInventory_E(nullptr, nullptr, &se, inv, characterWindow);
+			}
+			else if (inv->isGuiClicked(mp)) {
+				auto itm = inv->getSlot(mp)->getItem();
+				if (itm) {
+					if (itm->getObjectType() & ARMOR || itm->getObjectType() & WEAPON) getItemInfo(nullptr, nullptr, itm, inv, itemInfo);
+				}
 			}
 		}
 	}
@@ -609,6 +616,7 @@ private:
 	Inventory* inv;
 
 	Inventory::Window* characterWindow;
+	Inventory::Window* itemInfo;
 
 	DraggedObj* draggedObj;
 

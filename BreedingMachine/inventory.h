@@ -736,11 +736,16 @@ void getCharacterInventory_EI(void* v1, void* v2, EntityItem** entityItem, Inven
 			slots.at(4)->changeItem(entityItems.Legs);
 			slots.at(5)->changeItem(entityItems.Boots);
 
-			std::string componentName = "Vname";
 			GComponentSlider* component;
 			GComponent* cmp;
+			std::string componentName = "Vname";
 			cmp = GetNamedComponent(componentName.c_str());
 			cmp->SetText(ent->getName().c_str());
+
+			componentName = "Vimage";
+			((GComponentImage*)GetNamedComponent(componentName.c_str()))->texture = ent->getTexture();
+			//cmp->SetText(ent->getName().c_str());
+
 			auto entStats = ent->getStats();
 			componentName = "Vhp";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));
@@ -786,6 +791,10 @@ void getCharacterInventory_E(void* v1, void* v2, Entity** entity, Inventory* inv
 			GComponent* comp;
 			comp = GetNamedComponent(componentName.c_str());
 			comp->SetText((*entity)->getName().c_str());
+			
+			componentName = "Vimage";
+			((GComponentImage*)GetNamedComponent(componentName.c_str()))->texture = (*entity)->getTexture();
+
 			auto entStats = (*entity)->getStats();
 			componentName = "Vhp";
 			component = ((GComponentSlider*)GetNamedComponent(componentName.c_str()));

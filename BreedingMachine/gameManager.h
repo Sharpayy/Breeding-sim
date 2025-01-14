@@ -1107,8 +1107,8 @@ private:
 		y += 30;
 		win->AddSlotToWindow(Slot(nullptr, glm::vec2(width / 2 - 70, y), 30.0f, 30.0f, BOOTS), texItemFrame);
 		//staty
-		c = new GComponentImage(glm::vec2(100, 100), glm::vec3(width/2 + 20, y - 80, 0.1f), LoadTextureFromFile("Data\\bt_human_1.png"));
-		AddNamedComponent(c, "ItemData0");
+		c = new GComponentImage(glm::vec2(100, 100), glm::vec3(width/2 + 20, y - 80, 0.1f), 0);
+		AddNamedComponent(c, "Vimage");
 		gwin->AddComponent(c);
 		auto texBase = LoadTextureFromFile("Data\\blue.png");
 		auto texFill = LoadTextureFromFile("Data\\purple.png");
