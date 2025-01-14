@@ -25,10 +25,10 @@ int EntityCombatCloseRange::MoveEntity(void* battleContext)
     {
         Entity* e = bc->entities[i];
         vec2 enemyPos = floor(e->getPosition() / vec2(tileSize));
-        if (advance_factor < AiGetEntityAdvanceFactor(e))
+        if (advance_factor < AiGetEntityAdvanceFactor(e) - distance(enemyPos, tilePos) * 32.0f && e->state->EntityCanBattle() == true)
         {
             enemy_close = e;
-            advance_factor = AiGetEntityAdvanceFactor(e);
+            advance_factor = AiGetEntityAdvanceFactor(e) - distance(enemyPos, tilePos) * 32.0f;
         }
     }
 
@@ -91,7 +91,7 @@ int EntityCombatCloseRange::AttackEntity(void* battleContext, AnimationControlle
     {
         Entity* e = bc->entities[i];
         vec2 enemyPos = floor(e->getPosition() / vec2(tileSize));
-        if (attack_factor < AiGetEntityAttackFactor(e) && distance(tilePos, enemyPos) * 64.0f <= 64.0f * sqrt(2.0f))
+        if (attack_factor < AiGetEntityAttackFactor(e) && distance(tilePos, enemyPos) * 64.0f <= 64.0f * sqrt(2.0f) && e->state->EntityCanBattle() == true)
         {
             enemy_close = e;
             attack_factor = AiGetEntityAttackFactor(e);
@@ -134,10 +134,10 @@ int EntityCombatLongRange::MoveEntity(void* battleContext)
     {
         Entity* e = bc->entities[i];
         vec2 enemyPos = floor(e->getPosition() / vec2(tileSize));
-        if (advance_factor < AiGetEntityAdvanceFactor(e))
+        if (advance_factor < AiGetEntityAdvanceFactor(e) - distance(enemyPos, tilePos) * 32.0f && e->state->EntityCanBattle() == true)
         {
             enemy_close = e;
-            advance_factor = AiGetEntityAdvanceFactor(e);
+            advance_factor = AiGetEntityAdvanceFactor(e) - distance(enemyPos, tilePos) * 32.0f;
         }
 
         if (distance(tilePos, enemyPos) * 64.0f <= 64.0f * sqrt(2.0f))
@@ -218,7 +218,7 @@ int EntityCombatLongRange::AttackEntity(void* battleContext, AnimationController
     {
         Entity* e = bc->entities[i];
         vec2 enemyPos = floor(e->getPosition() / vec2(tileSize));
-        if (attack_factor < AiGetEntityAttackFactor(e) && distance(tilePos, enemyPos) * 64.0f <= 64.0f * ai_range)
+        if (attack_factor < AiGetEntityAttackFactor(e) && distance(tilePos, enemyPos) * 64.0f <= 64.0f * ai_range && e->state->EntityCanBattle() == true)
         {
             enemy_close = e;
             attack_factor = AiGetEntityAttackFactor(e);
