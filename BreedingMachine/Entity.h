@@ -106,6 +106,17 @@ public:
 		virtual int EntityCanBattle() = 0;
 	};
 
+	class EntityCombatStand : public Entity::IEntityState
+	{
+	public:
+		EntityCombatStand(Entity* self);
+		virtual int MoveEntity(void* battleContext);
+		virtual int NextState();
+		virtual int CanMoveEntity();
+		virtual int AttackEntity(void* battleContext, AnimationControllers* ac);
+		virtual int EntityCanBattle();
+	};
+
 	uint64_t id;
 	struct EquipedItems {
 		ArmorItem* helmet = nullptr;
@@ -123,7 +134,7 @@ public:
 		this->items = items;
 
 		hp = stats.hp;
-		state = 0;
+		state = new Entity::EntityCombatStand(this);
 	}
 
 	std::string getName() {
@@ -508,17 +519,6 @@ class EntityCombatEscape : public Entity::IEntityState
 {
 public:
 	EntityCombatEscape(Entity* self);
-	virtual int MoveEntity(void* battleContext);
-	virtual int NextState();
-	virtual int CanMoveEntity();
-	virtual int AttackEntity(void* battleContext, AnimationControllers* ac);
-	virtual int EntityCanBattle();
-};
-
-class EntityCombatStand : public Entity::IEntityState
-{
-public:
-	EntityCombatStand(Entity* self);
 	virtual int MoveEntity(void* battleContext);
 	virtual int NextState();
 	virtual int CanMoveEntity();

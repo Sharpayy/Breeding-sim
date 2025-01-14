@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define GLT_MANUAL_VIEWPORT
 #include <cstdio>
 #include <GL/glew.h>
 #include <cstring>
@@ -27,8 +28,6 @@
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
-
-#define GLT_MANUAL_VIEWPORT
 
 #undef main
 
