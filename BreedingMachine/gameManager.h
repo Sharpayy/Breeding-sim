@@ -534,7 +534,7 @@ private:
 		itemLoader.loadItem(doom_mace);
 		WeaponItem *supreme_hatchet = new WeaponItem{ "supreme hatchet", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC52.png","EquipmentIconsC52"), MELEE, new WeaponItem::ObjectStatistic{5.5f}, 159,  TIER_3 };
 		itemLoader.loadItem(supreme_hatchet);
-		WeaponItem* gladius = new WeaponItem{ "gladius", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC52.png","EquipmentIconsC52"), MELEE, new WeaponItem::ObjectStatistic{2.0f}, 42,  TIER_1 };
+		WeaponItem* gladius = new WeaponItem{ "gladius", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC16.png","EquipmentIconsC16"), MELEE, new WeaponItem::ObjectStatistic{2.0f}, 42,  TIER_1 };
 		itemLoader.loadItem(gladius);
 		WeaponItem* hand_crossbow = new WeaponItem{ "hand crossbow", (void*)LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC132.png","EquipmentIconsC132"), RANGED, new WeaponItem::ObjectStatistic{2.5f}, 32,  TIER_1 };
 		itemLoader.loadItem(hand_crossbow);
