@@ -290,6 +290,7 @@ public:
 						selectedObj.entityItem = (EntityItem*)slot->getItem();
 						selectedObj.win->getGWindow()->CollisionCheck(mp.x, mp.y);
 					}
+					else if (slot->getItem()) getItemInfo(nullptr, nullptr, slot->getItem(), &inv, gui_windows.itemInfo);
 					
 				}
 			}
@@ -1066,7 +1067,7 @@ private:
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
-		c = new GComponentImage(glm::vec2(32, 32), glm::vec3(width / 2 -  32 + 40, height/2 - 15, 0.1f), LoadTextureFromFile("Data\\Equipment Icons\\EquipmentIconsC175.png"));
+		c = new GComponentImage(glm::vec2(32, 32), glm::vec3(width / 2 -  32 + 40, height/2 - 15, 0.1f), 0);
 		AddNamedComponent(c, "ItemData0");
 		gwin->AddComponent(c);
 		c = new GComponentLabel(glm::vec2(20, 1), glm::vec3(width / 2 - 30, height/2 - 10, 0.1f), "nazwa", true);
@@ -1076,8 +1077,9 @@ private:
 		AddNamedComponent(c, "ItemData2");
 		gwin->AddComponent(c);
 		//inv.ActivateWindow(win);
-		gui_windows.characterWindow = win;
+		gui_windows.itemInfo = win;
 	}
+
 	void initCharInv(int width, int height, uint64_t texItemFrame) {
 		GComponent* c;
 		Inventory::Window* win = inv.AddWindow("char_inv", ObjectDim{ {0,0} , width, height }, 2, LoadTextureFromFile("Data\\gui.png"));
@@ -1216,13 +1218,13 @@ private:
 		auto texItemFrame = LoadTextureFromFile("Data\\item_frame.png");
 		initOverworldHud();
 		initBattleHud();
-		initItemData(100, 70);
 		initShopItems(300, 300, texItemFrame);
 		initCharInv(300, 250, texItemFrame);
 		initShopRecruits(300, 400, texItemFrame);
 		initInteractionViewer(200, 200);
 		initSquadViewer(300, 400, texItemFrame);
 		initPrimaryInv(300, 400, texItemFrame);
+		initItemData(100, 70);
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);
@@ -1517,6 +1519,7 @@ private:
 		Inventory::Window* recruitShop;
 		Inventory::Window* battleHud;
 		Inventory::Window* overworldHud;
+		Inventory::Window* itemInfo;
 	} gui_windows;
 
 	struct SelectedObj {
