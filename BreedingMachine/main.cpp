@@ -20,7 +20,7 @@
 #include "inventory.h"
 #include "textures.h"
 
-#include "Rasticore/MapRenderer.cpp"
+#include "MapRenderer.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -370,7 +370,7 @@ int main(int argc, char* argv[])
 					glUniform1f(lShdrMoveX, (int)gm.pChunkSizeX * x - ((int)gm.pMapSizeX / 2));
 					glUniform1f(lShdrMoveY, (int)gm.pChunkSizeY * y - ((int)gm.pMapSizeY / 2));
 
-					auto c = gmproxy.GetMapChunk(x, y, 2048.0f, 2048.0f, 2048.0f, 2048.0f);
+					auto c = gmproxy.GetMapChunk(x, y, _r.MVP.matProjCamera);
 					if (c == 0)
 						continue;
 					glUniformHandleui64ARB(1, c->txb.handle);

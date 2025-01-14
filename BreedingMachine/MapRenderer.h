@@ -1,8 +1,9 @@
-#include "rasti_main.h"
-#include "rasti_alloc.h"
-#include "rasti_utils.h"
+#include "rasticore/rasti_main.h"
+#include "rasticore/rasti_alloc.h"
+#include "rasticore/rasti_utils.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <unordered_map>
+#include "Define.h"
 
 class MapChunk
 {
@@ -42,7 +43,7 @@ public:
 
 	MapChunk* aChunkArray;
 
-	
+
 	GameMap(rasticore::Image* mapImg, uint32_t blocks)
 	{
 
@@ -112,7 +113,7 @@ public:
 
 	MapChunk* GetMapChunk(int x, int y)
 	{
-		return aChunkArray+(blk * y + x);
+		return aChunkArray + (blk * y + x);
 	}
 };
 
@@ -124,29 +125,33 @@ public:
 		map = gm;
 	}
 
-	MapChunk* GetMapChunk(int x, int y, float vVisMapL, float vVisMapR, float vVisMapU, float vVisMapD)
+	MapChunk* GetMapChunk(int x, int y, glm::mat4 m)
 	{
-		float cX = x * map->pChunkSizeX;
-		float cY = y * map->pChunkSizeY;
+		glm::vec2 sPoint = glm::vec2(x * map->pChunkSizeX, y * map->pChunkSizeY);
+		glm::vec2 ePoint = glm::vec2(x * map->pChunkSizeX + map->pChunkSizeX, y * map->pChunkSizeY + map->pChunkSizeY);
+		glm::vec4 res;
 
-		vVisMapL = 0;
-		vVisMapU = 0;
-		vVisMapR *= 2.0f;
-		vVisMapD *= 2.0f;
+		res = m * glm::vec4(sPoint.x, sPoint.y, 0.0f, 1.0f);
+		sPoint = glm::vec2(res.x, res.y);
+		res = m * glm::vec4(ePoint.x, ePoint.y, 0.0f, 1.0f);
+		ePoint = glm::vec2(res.x, res.y);
+		glm::vec2 chunkSize = (ePoint - sPoint);
 
-		if ((cX >= vVisMapL && cX + map->pChunkSizeX <= vVisMapR) && (cY >= vVisMapU && cY + map->pChunkSizeY <= vVisMapD))
+		glm::vec2 mid = sPoint + (chunkSize / 2.0f);
+
+		if (glm::distance(glm::vec2(0.0f), mid) <= (sqrt(2.0f) * 5.0f) + (sqrt(2.0f) * chunkSize.x))
+		{
+			auto c = map->GetMapChunk(x, y);
+			int64_t packed = x;
+			packed = packed << 32;
+			packed += y;
+			if (cache.find(packed) == cache.end())
 			{
-				auto c = map->GetMapChunk(x, y);
-				int64_t packed = x;
-				packed = packed << 32;
-				packed += y;
-				if (cache.find(packed) == cache.end())
-				{
-					c->txb.MakeResident();
-					cache.insert({ packed, c });
-				}
-				return c;
+				c->txb.MakeResident();
+				cache.insert({ packed, c });
 			}
+			return c;
+		}
 
 		auto c = map->GetMapChunk(x, y);
 
