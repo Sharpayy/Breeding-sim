@@ -1067,14 +1067,17 @@ private:
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
-		c = new GComponentImage(glm::vec2(64, 64), glm::vec3(width - 64, height/2 - 25, 0.1f), 0);
+		c = new GComponentImage(glm::vec2(64, 64), glm::vec3(130, height / 2 - 25, 0.1f), 0);
 		AddNamedComponent(c, "ItemData0");
 		gwin->AddComponent(c);
-		c = new GComponentLabel(glm::vec2(120, 1), glm::vec3(width / 2 - 110, 21, 0.1f), "mountaineer", false);
+		c = new GComponentLabel(glm::vec2(160, 1), glm::vec3(width / 2 - 90, 21, 0.1f), "mountaineer", true);
 		AddNamedComponent(c, "ItemData1");
 		gwin->AddComponent(c);
-		c = new GComponentLabel(glm::vec2(20, 1), glm::vec3(30, height/2 + 5, 0.1f), "ARMOR: 500000", false);
+		c = new GComponentLabel(glm::vec2(20, 1), glm::vec3(30, height / 2 + 5, 0.1f), "PRICE: 325", false);
 		AddNamedComponent(c, "ItemData2");
+		gwin->AddComponent(c);
+		c = new GComponentLabel(glm::vec2(20, 1), glm::vec3(30, height/2 - 10, 0.1f), "ARMOR: 5.5", false);
+		AddNamedComponent(c, "ItemData3");
 		gwin->AddComponent(c);
 		//inv.ActivateWindow(win);
 		gui_windows.itemInfo = win;
@@ -1225,7 +1228,7 @@ private:
 		initInteractionViewer(200, 200);
 		initSquadViewer(300, 400, texItemFrame);
 		initPrimaryInv(300, 400, texItemFrame);
-		initItemData(300, 70);
+		initItemData(250, 120);
 
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_HUMANS, ENEMY);
 		factionManager.setFactionsRelationships(MODEL_GOBLINS, MODEL_EVIL_HUMANS, ALLY);
