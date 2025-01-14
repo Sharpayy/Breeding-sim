@@ -219,10 +219,10 @@ private:
 public:
 	GWindowBuilder(glm::vec2 pos, glm::vec2 scale, uint64_t background);
 
-	void AddSliderComponent(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t image0, uint64_t image1);
-	void AddButtonComponent(glm::vec2 scale, glm::vec2 pos, const char* text_, uint64_t image);
-	void AddImageComponent(glm::vec2 scale, glm::vec2 pos, uint64_t image);
-	void AddLabelComponent(glm::vec2 scale, glm::vec2 pos, const char* text_);
+	void AddSliderComponent(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t image0, uint64_t image1);
+	void AddButtonComponent(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t image);
+	void AddImageComponent(glm::vec2 scale, glm::vec3 pos, uint64_t image);
+	void AddLabelComponent(glm::vec2 scale, glm::vec3 pos, const char* text_);
 
 	GWindow* BuildWindow();
 };
