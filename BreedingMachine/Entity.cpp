@@ -5,6 +5,8 @@ using namespace glm;
 
 #define MAPCLAMP(A) clamp(A, vec2(-512.0f), vec2(512.0f-74.0f))
 
+std::unordered_map<uint8_t, std::vector<std::string>> factionNames;
+
 EntityCombatCloseRange::EntityCombatCloseRange(Entity* self)
 {
     this->self = self;
@@ -348,14 +350,14 @@ int EntityCombatStand::EntityCanBattle()
     return 0;
 }
 
-Squad::Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position)
+Squad::Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position, ItemLoader* il)
 {
     squadComp = new SquadComp{};
     //squadComp->entities[0] = new Entity{};
     //squadComp->size = 1;
     squadComp->size = rand() % SQUAD_MAX_SIZE;
     for (int i = 0; i < squadComp->size; i++) {
-        squadComp->entities[i] = new Entity("Some chujstwo", 0, {}, Entity::EquipedItems{});
+        squadComp->entities[i] = il->generateRandomEntity(factionID);
         uint64_t index = GetEntityRandomTextureIndex(factionID);
         squadComp->entities[i]->SetEntityTextureIndex(GetEntityTextureFromIndex(index, factionID), index);
     }
@@ -363,6 +365,34 @@ Squad::Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position)
     this->position = position;
     this->factionID = factionID;
     this->squadState = STAND;
+}
+
+std::string getRandomFactionName(uint8_t factionID)
+{
+    int size = factionNames[factionID].size();
+    std::string name;
+    if (!size) return "MAMBAJAMBA FLORCZYK KARAMBA";
+    return factionNames[factionID].at(rand() % size);
+}
+
+bool loadNames(const char* path, uint8_t factionID)
+{
+    std::fstream file;
+
+    file.open(path);
+
+    if (!file) return false;
+
+    int size;
+    file >> size;
+
+    std::string name;
+    int idx;
+    for (idx = 1; idx < size + 1; idx++) {
+        file >> name;
+        factionNames[factionID].push_back(name);
+    }
+    return true;
 }
 
 glm::vec2 lerp2f(glm::vec2 a, glm::vec2 b, float t)
