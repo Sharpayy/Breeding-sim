@@ -3,6 +3,7 @@
 #include "Faction.h"
 #include "Rasticore/rasti_main.h"
 #include <unordered_map>
+#include "inventory.h"
 
 class FactionManager {
 public:
@@ -13,14 +14,14 @@ public:
 		this->tileSize = tileSize;
 	}
 
-	Squad* CreateNewSquad(uint32_t faction_id, glm::vec2 starting_pos)
+	Squad* CreateNewSquad(uint32_t faction_id, glm::vec2 starting_pos, ItemLoader* il)
 	{
 		rasticore::RENDER_LONG_ID unique_id;
 		starting_pos.x = (int)(starting_pos.x / tileSize) * tileSize + tileSize / 2;
 		starting_pos.y = (int)(starting_pos.y / tileSize) * tileSize + tileSize / 2;
 		r->newObject(faction_id, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ starting_pos.x, starting_pos.y, 1.1f }), (uint64_t*)&unique_id);
 
-		Squad* squad = new Squad(*(uint64_t*)&unique_id, faction_id, starting_pos);
+		Squad* squad = new Squad(*(uint64_t*)&unique_id, faction_id, starting_pos, il);
 		factions[faction_id].squads.push_back(squad);
 		
 

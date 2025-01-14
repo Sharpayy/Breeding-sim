@@ -1264,7 +1264,7 @@ private:
 
 		factionManager.setFactionsRelationships(MODEL_HUMANS, MODEL_BANDITS, ENEMY);
 		
-		playerData.player = factionManager.CreateNewSquad(MODEL_PLAYER, glm::vec2(-1000.0f));
+		playerData.player = factionManager.CreateNewSquad(MODEL_PLAYER, glm::vec2(-1000.0f), &itemLoader);
 		playerData.player->force = 1.0f;
 
 		Squad* squad;
@@ -1274,7 +1274,7 @@ private:
 		for (int i = 0; i < 32; i++) {
 			auto buildings = buildingManager.getRaceBuildings(i % 8);
 			if (i == MODEL_PLAYER || !buildings.size()) continue;
-			squad = factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size())->getPosition());
+			squad = factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size())->getPosition(), &itemLoader);
 			if (squad) amount++;
 			timerInstance.startMeasure(squad->getSquadID(), 0);
 			squad->force = generatorInstance.getRandomNumber(10, 100);

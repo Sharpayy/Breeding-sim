@@ -7,6 +7,8 @@
 #include "textures.h"
 #include "EntityTextures.h"
 #include "gui.h"
+#include "generator.h"
+#include "EntityNames.h"
 
 struct BattleMap {
 	uint64_t texture;
@@ -30,6 +32,11 @@ enum Race {
 	GOBLINS = 3,
 	BANDITS = 4,
 };
+
+extern std::unordered_map<uint8_t, std::vector<std::string>> factionNames;
+
+std::string getRandomFactionName(uint8_t factionID);
+bool loadNames(const char* path, uint8_t factionID);
 
 class MeleeAnimationController
 {
@@ -234,6 +241,164 @@ private:
 	//GComponentSlider* hp_bar;
 };
 
+class ItemLoader {
+public:
+	ItemLoader() :
+		generatorInstance(Generator::getInstance())
+	{
+		tierItemMap[TIER_0] = {};
+		tierItemMap[TIER_1] = {};
+		tierItemMap[TIER_2] = {};
+		tierItemMap[TIER_3] = {};
+	}
+
+	void loadItem(Item& item) {
+		uint8_t type = item.getObjectType();
+		assert(!(item.getItemTier() == TIER_ALL));
+		if (type & ARMOR) {
+			auto armor = new ArmorItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (ArmorItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice(), item.getItemTier() };
+			itemMap[item.getItemName()] = armor;
+			tierItemMap.at(item.getItemTier()).push_back(armor);
+		}
+		if (type & WEAPON) {
+			auto weapon = new WeaponItem{ item.getItemName(), item.getItemTexture(), item.getObjectType(), (WeaponItem::ObjectStatistic*)item.getObjectStatistic(), item.getItemPrice(), item.getItemTier() };
+			itemMap[item.getItemName()] = weapon;
+			tierItemMap.at(item.getItemTier()).push_back(weapon);
+		}
+		else {
+			auto nitem = new Item{ item.getItemName(), item.getItemTexture(), item.getObjectType(), item.getObjectStatistic(), item.getItemPrice(), item.getItemTier() };
+			itemMap[item.getItemName()] = nitem;
+			tierItemMap.at(item.getItemTier()).push_back(nitem);
+		}
+	}
+	void loadItem(Item* item) {
+		assert(!(item->getItemTier() == TIER_ALL));
+		itemMap[item->getItemName()] = item;
+		tierItemMap.at(item->getItemTier()).push_back(item);
+	}
+
+	template <typename T = Item>
+	T* getItem(std::string itemName) {
+		auto it = itemMap.find(itemName);
+		if (it != itemMap.end()) {
+			uint8_t objectType = it->second->getObjectType();
+			if (objectType & WEAPON) {
+				if constexpr (std::is_same_v<T, WeaponItem>) {
+					return (T*)it->second;
+				}
+				else return nullptr;
+			}
+			if (objectType & ARMOR) {
+				if constexpr (std::is_same_v<T, ArmorItem>) {
+					return (T*)it->second;
+				}
+				return nullptr;
+			}
+			if (objectType & EVERY_ITEM) {
+				if constexpr (std::is_same_v<T, Item>) {
+					return (T*)it->second;
+				}
+				return nullptr;
+			}
+		}
+		return nullptr;
+	}
+
+	Item* getRandomItem(uint8_t tier = TIER_ALL) {
+		int idx = 0;
+		if (tier == TIER_ALL) {
+			uint8_t availableTiers[] = { TIER_1, TIER_2, TIER_3 };
+			tier = availableTiers[rand() % 3];
+		}
+		idx = rand() % tierItemMap.at(tier).size();
+		auto it = tierItemMap.at(tier).at(idx);
+
+		return it;
+	}
+
+	template<typename T>
+	Item* getRandomSpecificItem(uint8_t tier = TIER_ALL) {
+		int idx = 0;
+		if (tier == TIER_ALL) {
+			uint8_t availableTiers[] = { TIER_1, TIER_2, TIER_3 };
+			tier = availableTiers[rand() % 3];
+		}
+		Item* it = nullptr;
+		while (!it) {
+			idx = rand() % tierItemMap.at(tier).size();
+			if constexpr (std::is_same_v<decltype(it), T>) {
+				it = tierItemMap.at(tier).at(idx);
+			}
+		}
+		return it;
+	}
+
+	void loadSet(Entity::EquipedItems set) {
+		sets.push_back(set);
+	}
+
+	//void loadSet(std::string setName, Entity::EquipedItems& set) {
+	//	sets[setName] = set;
+	//}
+
+	Entity::EquipedItems getRandomSet() {
+		int size = sets.size();
+		if (!size) return Entity::EquipedItems{};
+		return sets.at(rand() % size);
+	}
+
+
+	//FOR NOW
+	float calculateEntityPrice(Entity* entity) {
+		if (!entity) return 0;
+		float sum = BASE_ENTITY_VALUE;
+		auto items = entity->getEquipedItems();
+		if (items.helmet) sum += items.helmet->getItemPrice();
+		if (items.Chestplate) sum += items.Chestplate->getItemPrice();
+		if (items.Legs) sum += items.Legs->getItemPrice();
+		if (items.Boots) sum += items.Boots->getItemPrice();
+		if (items.shield) sum += items.shield->getItemPrice();
+		if (items.weapon) sum += items.weapon->getItemPrice();
+
+		auto stats = entity->getStats();
+		sum += MAX_MELEE_STAT_PRICE * getPercentage(20, 5, stats->melee)
+			+ MAX_RANGED_STAT_PRICE * getPercentage(20, 5, stats->ranged)
+			+ MAX_BRAVERY_STAT_PRICE * getPercentage(200, 100, stats->bravery)
+			+ MAX_DEFENCE_STAT_PRICE * getPercentage(10, 2, stats->defense)
+			+ MAX_HP_STAT_PRICE * getPercentage(30, 10, stats->hp);
+		return sum;
+	}
+
+	//FOR NOW
+	Entity* generateRandomEntity(uint8_t factionID) {
+		Stats entityStats = {
+			generatorInstance.getRandomNumber(5,20),
+			generatorInstance.getRandomNumber(2,10),
+			generatorInstance.getRandomNumber(5,20),
+			generatorInstance.getRandomNumber(100,200),
+			4.1f + generatorInstance.getRandomNumber(0,2),
+			generatorInstance.getRandomNumber(10,30) };
+		Entity::EquipedItems items = getRandomSet();
+		Entity* entity = new Entity(getRandomFactionName(factionID), 0, entityStats, items);
+		uint32_t index = GetEntityRandomTextureIndex(factionID);
+		entity->SetEntityTextureIndex(GetEntityTextureFromIndex(index, factionID), index);
+		return entity;
+	}
+
+private:
+	//FOR NOW
+	float getPercentage(float min, float max, float value) {
+		return ((value - min) / (max - min));
+	}
+
+	std::unordered_map<std::string, Item*> itemMap;
+	std::unordered_map<uint8_t, std::vector<Item*>> tierItemMap;
+	//std::unordered_map<std::string, Entity::EquipedItems> sets;
+	std::vector<Entity::EquipedItems> sets;
+	Generator& generatorInstance;
+
+};
+
 class Squad {
 public:
 	struct SquadComp {
@@ -244,7 +409,7 @@ public:
 	Squad() {
 		std::cout << "CHUJOWY SQUAD error \n";
 	};
-	Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position);
+	Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position, ItemLoader* il);
 
 	void setSquadPosition(glm::vec2 position) {
 		this->position = position;

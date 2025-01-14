@@ -3,6 +3,13 @@
 #extension GL_ARB_gpu_shader_int64: enable
 #extension GL_ARB_bindless_texture: enable
 
+//#extension GL_NV_vertex_attrib_integer_64bit: enable
+//#extension GL_NV_gpu_shader5 : enable
+//#extension GL_NV_bindless_texture: enable
+
+//#extension GL_NV_texture_array: enable
+
+
 #define GUI_ELEMENT_SLIDER 1
 #define GUI_ELEMENT_BUTTON 2
 #define GUI_ELEMENT_WINDOW 3
