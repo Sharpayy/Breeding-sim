@@ -285,7 +285,8 @@ public:
 	}
 
 	Window* AddWindow(std::string windowName, ObjectDim dim, uint8_t height, uint64_t tex, uint8_t flag = 0) {
-		Window* win = new Window{ windowName, dim, height, {}, new GWindow{ dim.position, glm::vec2{ dim.width, dim.height }, tex }, flag };
+		GWindowBuilder builder(dim.position, glm::vec2{ dim.width, dim.height }, tex);
+		Window* win = new Window{ windowName, dim, height, {}, builder.BuildWindow(), flag };
 		windows.push_back(win);
 		return win;
 	}

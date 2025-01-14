@@ -920,7 +920,7 @@ private:
 		int x = (MAP_WIDTH) / 4;
 		int buttonWidth = 100;
 		int offset = 10;
-		Inventory::Window* win = inv.AddWindow("overworld_hud", ObjectDim{ {0, y},  int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"), 1);
+		Inventory::Window* win = inv.AddWindow("overworld_hud", ObjectDim{ {0, y}, int(MAP_WIDTH), 40 }, 2, LoadTextureFromFile("Data\\gui.png"), 1);
 		auto gwin = win->getGWindow();
 		GComponent* c;
 		//labelka z ilością chłopa
