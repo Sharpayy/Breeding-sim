@@ -1067,7 +1067,7 @@ private:
 		GComponentButton* exit = new GComponentButton(glm::vec2(20, 20), glm::vec3(width - 20, 0, 0.1f), "X", LoadTextureFromFile("Data\\red.png"));
 		exit->callback = std::bind(DisableWindow, std::placeholders::_1, std::placeholders::_2, &inv, win);
 		gwin->AddComponent(exit);
-		c = new GComponentImage(glm::vec2(64, 64), glm::vec3(130, height / 2 - 25, 0.1f), 0);
+		c = new GComponentImage(glm::vec2(64, 64), glm::vec3(145, height / 2 - 25, 0.1f), 0);
 		AddNamedComponent(c, "ItemData0");
 		gwin->AddComponent(c);
 		c = new GComponentLabel(glm::vec2(160, 1), glm::vec3(width / 2 - 90, 21, 0.1f), "mountaineer", true);
