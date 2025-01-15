@@ -5,8 +5,8 @@
 class Generator {
 public:
 	static Generator& getInstance() {
-		static Generator inputHandlerInstance;
-		return inputHandlerInstance;
+		static Generator generatorInstance;
+		return generatorInstance;
 	}
 
 	Generator(const Generator&) = delete;
