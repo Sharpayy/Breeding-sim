@@ -379,11 +379,10 @@ int main(int argc, char* argv[])
 			}
 		}
 		RS_ENABLE_FRATURE(GL_BLEND);
+		gmanager.update();
 		gmanager.inv.UpdateCursorPosition(gmanager.getMousePosition());
 		gmanager.inv.Render(gui_projection_matrix);
 		gmanager.inv.RenderText(gui_projection_matrix);
-		gmanager.update();
-
 
 
 
