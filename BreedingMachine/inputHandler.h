@@ -29,6 +29,8 @@ public:
 
     void handleKeys() {
         while (SDL_PollEvent(events)) {
+            if (events->type == SDL_QUIT)
+                exit(0);
             switch (events->type) {
             case SDL_KEYDOWN:
                 inputData.keysPressed[events->key.keysym.scancode] = true;
