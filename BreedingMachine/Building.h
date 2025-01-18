@@ -11,7 +11,6 @@
 class Building {
 public:
 	Building() {
-		std::cout << "chujowy budynek\n";
 	}
 	Building(uint64_t buildingID, glm::vec2 position, uint8_t buildingType) {
 		this->buildingID = buildingID;

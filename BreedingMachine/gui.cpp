@@ -155,12 +155,12 @@ void gui_init()
 	};
 
 
-	uint32_t chuj[] = {
+	uint32_t SomethingNotImportant[] = {
 		2,1,0,3,2,1
 	};
 
 	rasticore::Buffer<GL_ARRAY_BUFFER> SquareVBO = rasticore::Buffer<GL_ARRAY_BUFFER>(sizeof(plane_vtx), plane_vtx, GL_STATIC_DRAW);
-	rasticore::Buffer<GL_ELEMENT_ARRAY_BUFFER> SquareEBO = rasticore::Buffer<GL_ELEMENT_ARRAY_BUFFER>(sizeof(chuj), chuj, GL_STATIC_DRAW);
+	rasticore::Buffer<GL_ELEMENT_ARRAY_BUFFER> SquareEBO = rasticore::Buffer<GL_ELEMENT_ARRAY_BUFFER>(sizeof(SomethingNotImportant), SomethingNotImportant, GL_STATIC_DRAW);
 
 	gui_square = new rasticore::VertexBuffer();
 	gui_square->bind();

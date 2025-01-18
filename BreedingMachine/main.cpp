@@ -283,12 +283,12 @@ int main(int argc, char* argv[])
 		0.5 * 100.0f, 0.5f * 100.0f, 1.0f, 1.0f, 1.0f
 	};
 
-	uint32_t chuj[] = {
+	uint32_t SomethingNotImportant[] = {
 		0,1,2,1,2,3
 	};
 
 	rasticore::Buffer<GL_ARRAY_BUFFER> SquareVBO = rasticore::Buffer<GL_ARRAY_BUFFER>(sizeof(plane_vtx), plane_vtx, GL_STATIC_DRAW);
-	rasticore::Buffer<GL_ELEMENT_ARRAY_BUFFER> SquareEBO = rasticore::Buffer<GL_ELEMENT_ARRAY_BUFFER>(sizeof(chuj), chuj, GL_STATIC_DRAW);
+	rasticore::Buffer<GL_ELEMENT_ARRAY_BUFFER> SquareEBO = rasticore::Buffer<GL_ELEMENT_ARRAY_BUFFER>(sizeof(SomethingNotImportant), SomethingNotImportant, GL_STATIC_DRAW);
 
 	rasticore::VertexBuffer Square = rasticore::VertexBuffer();
 	Square.bind();
