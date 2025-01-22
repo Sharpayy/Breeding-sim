@@ -625,9 +625,14 @@ private:
 				getCharacterInventory_E(nullptr, nullptr, &se, inv, characterWindow);
 			}
 			else if (inv->isGuiClicked(mp)) {
-				Item* itm = inv->getSlot(mp)->getItem();
-				if (itm) {
-					if (itm->getObjectType() & ARMOR || itm->getObjectType() & WEAPON) getItemInfo(nullptr, nullptr, itm, inv, itemInfo);
+				
+				Slot* slot = inv->getSlot(mp);
+				if (slot != nullptr)
+				{
+					Item* itm = slot->getItem();
+					if (itm) {
+						if (itm->getObjectType() & ARMOR || itm->getObjectType() & WEAPON) getItemInfo(nullptr, nullptr, itm, inv, itemInfo);
+					}
 				}
 			}
 		}
