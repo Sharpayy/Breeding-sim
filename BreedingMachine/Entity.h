@@ -90,8 +90,6 @@ typedef struct _EntityData
 	float Reserevd;
 } EntityData;
 
-#define SQUAD_MAX_SIZE 15
-
 class Entity {
 public:
 
@@ -348,10 +346,6 @@ public:
 		sets.push_back(set);
 	}
 
-	//void loadSet(std::string setName, Entity::EquipedItems& set) {
-	//	sets[setName] = set;
-	//}
-
 	Entity::EquipedItems getRandomSet() {
 		int size = sets.size();
 		if (!size) return Entity::EquipedItems{};
@@ -410,7 +404,47 @@ private:
 
 };
 
-class Squad {
+////////////////////////////////////////////////////
+class Observer {
+public:
+	virtual void update(const std::string& message) = 0;
+	virtual ~Observer() = default;
+};
+
+class Observable {
+private:
+	std::vector<Observer*> observers;
+
+public:
+	void registerObserver(Observer* observer) {
+		observers.push_back(observer);
+	}
+
+	void unregisterObserver(Observer* observer) {
+		observers.erase(
+			std::remove(observers.begin(), observers.end(), observer),
+			observers.end()
+		);
+	}
+
+	void unregisterAllObservers() {
+		observers.clear();
+	}
+
+	uint32_t getObserversAmount() {
+		return observers.size();
+	}
+
+	void notifyObservers(const std::string& message) {
+		for (auto observer : observers) {
+			observer->update(message);
+		}
+	}
+};
+///////////////////////////////////////
+
+
+class Squad : public Observable, public Observer {
 public:
 	struct SquadComp {
 		Entity* entities[SQUAD_MAX_SIZE];
@@ -423,6 +457,7 @@ public:
 
 	void setSquadPosition(glm::vec2 position) {
 		this->position = position;
+		//notifyObservers("Squad position updated: (" + std::to_string(position.x) + ", " + std::to_string(position.y) + ")");
 	}
 
 	glm::vec2 getSquadPosition() const {
@@ -445,6 +480,7 @@ public:
 
 	void setSquadState(SquadState squadState) {
 		this->squadState = squadState;
+		//notifyObservers("Squad state changed.");
 	}
 
 	SquadState getSquadState() {
@@ -455,6 +491,10 @@ public:
 		return squadComp;
 	}
 
+	void update(const std::string& message) override {
+		std::cout << "Squad " << squadID << " received notification: " << message << std::endl;
+	}
+
 private:
 	glm::vec2 position;
 
@@ -463,6 +503,8 @@ private:
 
 	SquadState squadState;
 	SquadComp* squadComp;
+
+
 };
 
 float AiGetEntityScaryFactor(Entity* e);

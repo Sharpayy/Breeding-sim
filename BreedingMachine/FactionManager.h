@@ -40,7 +40,7 @@ public:
 		rasticore::Texture2DBindless txb{ tx };
 		txb.MakeResident();
 
-		r->newModel(faction_id, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, txb, 10);
+		r->newModel(faction_id, rect_mcd.vb, rect_mcd.p, rect_mcd.v_cnt, rect_mcd.rm, txb, 80);
 
 		factions[faction_id] = { Faction(faction_name, faction_id, factionBuildings), {} };
 	}
@@ -63,6 +63,10 @@ public:
 			}
 		}
 		return squads;
+	}
+
+	std::vector<Squad*> getFactionSquads(uint8_t id) {
+		return factions.at(id).squads;
 	}
 
 private:

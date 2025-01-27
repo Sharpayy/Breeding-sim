@@ -65,6 +65,16 @@ public:
 		return allBuildings;
 	}
 
+
+	uint8_t getBuildingRace(Building* building) {
+		uint8_t res = 0;
+		for (auto& fbuilding : fBuildings) {
+			for (auto& b : fbuilding.second) {
+				if (b == building) return fbuilding.first;
+			}
+		}
+		return res;
+	}
 private:
 	void setRandomRotation(Building* building, ItemLoader* itm) {
 		int itemAmount = 0;
@@ -98,16 +108,6 @@ private:
 			entityItem = new EntityItem(entity, itm->calculateEntityPrice(entity));
 			building->addSingleEntityItemToRotation(entityItem, entitiesAmount);
 		}
-	}
-
-	uint8_t getBuildingRace(Building* building) {
-		uint8_t res = 0;
-		for (auto& fbuilding : fBuildings) {
-			for (auto& b : fbuilding.second) {
-				if (b == building) return fbuilding.first;
-			}
-		}
-		return res;
 	}
 
 	Generator& generatorInstance;

@@ -199,7 +199,7 @@ GComponent* GetNamedComponent(const char* name)
 
 void BasicButtonCallback(void* button, void* window)
 {
-	printf("chij");
+	printf("Callback");
 }
 
 GComponentButton::GComponentButton(glm::vec2 scale, glm::vec3 pos, const char* text_, uint64_t tex, bool textCenter)

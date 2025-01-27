@@ -26,7 +26,6 @@
 //	};
 //public:
 //	Squad() {
-//		std::cout << "CHUJOWY SQUAD error \n";
 //	};
 //	Squad(uint64_t squadID, uint8_t factionID, glm::vec2 position) {
 //		squadComp = new SquadComp{};

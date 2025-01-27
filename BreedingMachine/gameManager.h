@@ -13,7 +13,6 @@
 #include "EntityBattleManager.h"
 #include <functional>
 #include "EntityNames.h"
-#include "timer.h"
 
 #define THRESHOLD 10.0f
 
@@ -267,6 +266,19 @@ public:
 					for (auto& building : buildingManager.getAllBuildings()) {
 						auto buildingPos = building->getPosition();
 						if (glm::distance(mousePos, buildingPos) < 64.0f) {
+
+							//NOTIFY
+							playerData.player->unregisterAllObservers();
+							auto raceID = buildingManager.getBuildingRace(building);
+							uint8_t relation;
+							for (auto& squad : factionManager.getFactionSquads(raceID)) {
+								relation = factionManager.getFactionsRelationships(playerData.player->getSquadFactionID(), squad->getSquadFactionID());
+								playerData.player->registerObserver(squad);
+							}
+							if (relation == ALLY || relation == NEUTRAL) playerData.player->notifyObservers("player near village");
+							else playerData.player->notifyObservers("Village being raided");
+							//
+							
 							inv.ActivateWindow(gui_windows.interaction);
 							buildingPos = getOnScreenPosition(buildingPos);
 							selectedObj.building = building;
@@ -321,7 +333,7 @@ public:
 					selectedObj.building->eraseEntityItemFromRotation((EntityItem*)slot->getItem());
 					setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
 					auto comp = playerData.player->getSquadComp();
-					comp->entities[comp->size++] = ((EntityItem*)slot->getItem())->getEntity();
+					comp->entities[comp->size++ - 1] = ((EntityItem*)slot->getItem())->getEntity();
 				}
 				playerData.money -= finallPrice;
 				setInventory(nullptr, nullptr, &playerData.money, &inv, gui_windows.inventory);
@@ -372,9 +384,12 @@ public:
 					selectedObj.building->addSingleEntityItemToRotation((EntityItem*)slot->getItem(), -1);
 					setShopEntityRotation(nullptr, nullptr, &selectedObj.building, &inv, gui_windows.recruitShop);
 					int idx = gui_windows.partyView->getSlotIndex(draggedObj.draggedItem.previousSlot);
-					auto comp = playerData.player->getSquadComp();
-					comp->entities[idx] = ((EntityItem*)slot->getItem())->getEntity();
+					Squad::SquadComp* comp = playerData.player->getSquadComp();
+					comp->entities[idx] = nullptr;// selectedObj.entityItem;
+					auto z = comp->size - 1;
+					int e = 0;
 					for (int i = idx; i < comp->size - 1; i++) {
+						e = i + 1;
 						comp->entities[i] = comp->entities[i + 1];
 					}
 					comp->size--;
@@ -1278,7 +1293,7 @@ private:
 		srand(time(NULL));
 		playerData.player->setSquadState(STAND);
 		int amount = 0;
-		for (int i = 0; i < 32; i++) {
+		for (int i = 0; i < 20; i++) {
 			auto buildings = buildingManager.getRaceBuildings(i % 8);
 			if (i == MODEL_PLAYER || !buildings.size()) continue;
 			squad = factionManager.CreateNewSquad(i % 8, buildings.at(rand() % buildings.size())->getPosition(), &itemLoader);

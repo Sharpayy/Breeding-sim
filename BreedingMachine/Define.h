@@ -16,7 +16,7 @@
 #define ENEMY 1
 #define ALLY 2
 
-#define SQUAD_MAX_SIZE 15
+#define SQUAD_MAX_SIZE 16
 
 #define MODEL_ORKS 0
 #define MODEL_HUMANS 1
